@@ -1,3 +1,7 @@
+2017-11-25 Bernard Victor Delvaux  <nadaeck@hotmail.com>
+    Version : Spectrum3d-2.7.2 :
+    * display.c : swap buffer has been changed : it is called only when drawing is effective, not during pauses (diplay problem);
+
 2016-12-24 Bernard Victor Delvaux  <nadaeck@hotmail.com>
     Version : Spectrum3d-2.7.1 :
     * events.c : Some new key/mouse bindings and gestures;

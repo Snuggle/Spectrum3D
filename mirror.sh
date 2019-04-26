@@ -9,7 +9,7 @@ cd ./www
 
 # Download Latest Package and Archive
 cd ..
-wget -O "Spectrum3D_latest.tar.gz" https://sourceforge.net/projects/spectrum3d/files/spectrum3d-2.7.1.tar.gz/download
+wget -O "Spectrum3D_latest.tar.gz" https://sourceforge.net/projects/spectrum3d/files/spectrum3d-2.7.2.tar.gz/download
 rm -rf "./pkg/*"; cd ./pkg
 tar --strip-components=1 -xvf "../Spectrum3D_latest.tar.gz"
 

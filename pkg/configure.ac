@@ -4,7 +4,7 @@
 ############### INITIALIZE EVERYTHING ######################
 
 AC_INIT([Spectrum3d],
-	[2.7.1],
+	[2.7.2],
 	[nadaeck@hotmail.com], 
 	[spectrum3d],
 	[https://sourceforge.net/projects/spectrum3d/])

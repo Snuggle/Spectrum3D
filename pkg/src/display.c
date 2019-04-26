@@ -314,10 +314,8 @@ gboolean display_spectro(Spectrum3dGui *spectrum3dGui){
 	if (spectrum3dGui->lineScale == TRUE) {
 		drawScale();
 		}
-	
-	}
 
-/* The call to 'swap buffer' or 'end gl' function, depending on the use of gtkglext1, gtkglext3 or sdl */
+	/* The call to 'swap buffer' or 'end gl' function, depending on the use of gtkglext1, gtkglext3 or sdl */
 #ifdef GTKGLEXT3
 	gtk_widget_end_gl (spectrum3dGui->drawing_area, TRUE);
 #elif defined GTKGLEXT1
@@ -335,6 +333,8 @@ gboolean display_spectro(Spectrum3dGui *spectrum3dGui){
 #elif defined HAVE_LIBSDL
 	SDL_GL_SwapBuffers();
 #endif
+	
+	}
 
 
 	return TRUE;	
