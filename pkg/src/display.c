@@ -43,7 +43,7 @@ GLfloat i = 0, l = 0, q = 0; // factors used to calculate position of the vertex
 GLfloat YcoordFactor = 1, ZcoordFactor = 0; //factors used to get the value of the pointer 
 
 #if defined HAVE_LIBSDL2
-    SDL_Window *SDLwindow=NULL;
+    SDL_Window *SDLwindow;
 #endif
 
 void init_SDL(){
@@ -78,56 +78,7 @@ void init_display_values(Spectrum3dGui *spectrum3dGui){
 	newEvent = TRUE; // set newEvent to TRUE allows to have a first empty scale at the beginning
 }
 
-/* Initialise OpenGL if GTKGLEXT is used */
-gboolean configure_event (GtkWidget *widget, GdkEventConfigure *event, gpointer data){
-	GtkAllocation allocation;
-	GLfloat w;   GLfloat h;
 
-	gtk_widget_get_allocation (widget, &allocation);
-	w = allocation.width;
-	h = allocation.height;
-	spectrum3d.width = (int)w;
-	spectrum3d.height = (int)h;
-	//printf("h = %d, w = %d\n", spectrum3d.width, spectrum3d.height);
-#ifdef HAVE_LIBSDL
-	//SDL_SetVideoMode((int)w, (int)h, 24, SDL_OPENGL | SDL_GL_DOUBLEBUFFER | SDL_RESIZABLE);
-#endif
-
-#ifdef GTKGLEXT3
-	if (!gtk_widget_begin_gl (widget))
-    		return FALSE;
-
-#elif defined GTKGLEXT1
-  	GdkGLContext *glcontext = gtk_widget_get_gl_context (widget);
-	GdkGLDrawable *gldrawable = gtk_widget_get_gl_drawable (widget);
-
-	if (!gdk_gl_drawable_gl_begin (gldrawable, glcontext))
-	{
-		g_assert_not_reached ();
-	}
-#endif
-
-  	glLoadIdentity();
-	glViewport (0, 0, (GLsizei) w, (GLsizei) h);
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_TEXTURE_2D);
-	glEnable (GL_BLEND);
-	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	gluPerspective(45, (float)2, .1, 200);
-	glMatrixMode(GL_MODELVIEW);
-
-#ifdef GTKGLEXT3
-  	gtk_widget_end_gl (widget, FALSE);
-
-#elif defined GTKGLEXT1
-	gdk_gl_drawable_gl_end (gldrawable);
-#endif
-
-  	newEvent = TRUE;
-	return TRUE;
-}
 
 /* Initialise SDL window and OpenGL */
 

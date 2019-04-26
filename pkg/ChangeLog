@@ -1,3 +1,8 @@
+2016-12-24 Bernard Victor Delvaux  <nadaeck@hotmail.com>
+    Version : Spectrum3d-2.7.1 :
+    * events.c : Some new key/mouse bindings and gestures;
+    * main.c : "shortcuts", "gestures" and "quick start" have been removed from menu.
+
 2016-12-16 Bernard Victor Delvaux  <nadaeck@hotmail.com>
     Version : Spectrum3d-2.7.0 :
     * general changes : Thanks to SDL2, multitouch is back!

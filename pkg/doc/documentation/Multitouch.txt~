@@ -1,0 +1,28 @@
+MULTITOUCH SUPPORT FOR SPECTRUM 3D
+
+Multitouch support in Spectrum3d is still experimental for now. It is provided by the uTouch-geis API (Geis2).
+
+Where to get general information about multitouch?
+--------------------------------------------------
+For general information about multitouch in Ubuntu, you can refer to : https://wiki.ubuntu.com/Multitouch
+
+Where to get it?
+----------------
+It is available from Natty's repositories. For Maverick, it has to be installed from the uTouch-geis website(the libutouch-geis-dev in the Maverick's repositories is the Geis1 API and we are using Geis2 here). A convenient way to do that on Maverick is :
+	- first uninstall libutouch-geis-dev  and libutouch-geis if you have them installed;
+	- type in a terminal : sudo apt-get build-dep libutouch-geis-dev  (this will get all the needed dependencied to build Geis2);
+	- then download the source package from uTouch-Geis website (https://launchpad.net/canonical-multitouch/utouch-geis) and follow the instruction from the INSTALL file; steps should include go in the source package directory, then ./configure, make, make install.
+
+How is it implemented in Spectrum3d?
+------------------------------------
+Only one and two fingers gestures have been implemented untill now since most of the touchscreen supports only 2 fingers gestures. On the other hand, as gestures can be used at a system wide level, it seems that 2 fingers gestures are more application-specific, while 3 or 4 fingers gestures apply to window or system management.
+
+The following is important for Ubuntu 11.04 and before (from 11.10, there is no need to change anything for complete and fully working multitouch support).
+
+When 'Touch' function is activated, everything seems 'captured' by the 'Touch' function : mouse pointer cannot be controlled anymore by a single touch on the screen or on the touchpad.
+
+Any time a gesture is detected, no X interaction will occur. For example, if you listen for one finger drag on a trackpad you won't be able to move the cursor while it resides within the window you are listening to gesture events from. This is to prevent one physical interaction from firing two separate events through the system. It is be possible to "filter" gestures so that only 2 fingers gestures are taken in charge, and the mouse can still be controlled by one finger touch. However this is not possible for libutouch-geis version inferior or equal to 2.0.11 (Bug#769859, https://bugs.launchpad.net/utouch-geis/+bug/769859), and this is fixed in the 2.1.0 version. However, if you use Ubuntu 11.04 Natty Narwhal, that has the 2.0.10 version in the repositories, you will be affected, unless replace it by the 2.1.0 version (or higher); you have to install it directly from the utouch-geis website (https://launchpad.net/utouch-geis).
+
+A possible future alternative : Ginn
+------------------------------------
+If you don't want to use uTouch-geis, it should be possible to use the excellent 'Ginn' software (https://launchpad.net/canonical-multitouch/ginn) that allows to "inject" gestures without installing the geis API. However, Ginn cannot yet "inject" gestures in a 'SDL' window such as spctrum3d's main window (Bug#751354, https://bugs.launchpad.net/ginn/+bug/751354), but the developpers are planning to implement it. When it will be possible, Ginn will have to be started as root.

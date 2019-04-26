@@ -4,10 +4,10 @@
 ############### INITIALIZE EVERYTHING ######################
 
 AC_INIT([Spectrum3d],
-	[2.7.0],
+	[2.7.1],
 	[nadaeck@hotmail.com], 
 	[spectrum3d],
-	[spectrum3d.sourceforge.net])
+	[https://sourceforge.net/projects/spectrum3d/])
 AC_CONFIG_SRCDIR([Makefile.am])
 
 AM_INIT_AUTOMAKE([-Wall])
@@ -105,7 +105,7 @@ AS_IF([test "x$enable_jack" != "xno"], [
 	[jack=0])
 
 # Checks for header files.		
-AC_CHECK_HEADERS([stdlib.h string.h])
+AC_CHECK_HEADERS([stdlib.h string.h math.h])
 
 # Checks for library functions.
 AC_CHECK_FUNCS([memset putenv strchr strerror strstr strtol])

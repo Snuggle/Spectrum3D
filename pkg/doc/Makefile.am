@@ -1,4 +1,4 @@
 
 
 
-EXTRA_DIST=txt
+EXTRA_DIST=documentation

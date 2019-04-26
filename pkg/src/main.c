@@ -103,14 +103,14 @@ int main(int argc, char *argv[])
 {
 	printf("%s \nPlease report any bug to %s\n", PACKAGE_STRING, PACKAGE_BUGREPORT);	
 	//printf("number of arg = %d, argv = %s\n", argc, argv[1]);
-	printf("argc = %d\n", argc);
+	//printf("argc = %d\n", argc);
 	if (argv[1] != NULL) {
 		if (strstr (argv[1],"debug") != NULL) {
 		debug = TRUE;
 		printf("debug = TRUE\n");
 			}  
 		}
-	//DEBUG("debug is true\n");
+	DEBUG("debug is true\n");
 	gchar *filename;
 	int i = 0;
 	gint initialWindowHeight = 170;
@@ -121,9 +121,7 @@ int main(int argc, char *argv[])
 	GSList *radio_menu_group;
 	GError **error;
 
-#if defined (GTKGLEXT3) || defined (GTKGLEXT1)
-	GdkGLConfig *glconfig;
-#endif 
+
 	init_SDL(); 
 	// It seems that SDL_Init must be called before gtk_init in sdl2, otherwise there will be a segfault
 	gst_init (NULL, NULL);
@@ -131,27 +129,6 @@ int main(int argc, char *argv[])
 		
 	get_saved_values();
 	intervalDisplaySpectro = (guint)spectrum3d.interval_display;
-
-#if defined (GTKGLEXT3) || defined (GTKGLEXT1)
-	gtk_gl_init(NULL, NULL);
-	glconfig = gdk_gl_config_new_by_mode (GDK_GL_MODE_RGB    |
-					GDK_GL_MODE_DEPTH  |
-					GDK_GL_MODE_DOUBLE);
-	  if (glconfig == NULL)
-	    {
-	      g_print ("\n*** Cannot find the double-buffered visual.\n");
-	      g_print ("\n*** Trying single-buffered visual.\n");
-
-	      /* Try single-buffered visual */
-	      glconfig = gdk_gl_config_new_by_mode (GDK_GL_MODE_RGB   |
-						    GDK_GL_MODE_DEPTH);
-	      if (glconfig == NULL)
-		{
-		  g_print ("*** No appropriate OpenGL-capable visual found.\n");
-		  exit (1);
-		}
-	    }
-#endif
 
 	initGstreamer();
 	init_audio_values();
@@ -165,6 +142,7 @@ int main(int argc, char *argv[])
 	gtk_window_set_title(GTK_WINDOW(spectrum3dGui.mainWindow), PACKAGE_NAME);
 	filename = g_build_filename (G_DIR_SEPARATOR_S, DATADIR, "icons", "spectrum3d.png", NULL);
 	gtk_window_set_icon(GTK_WINDOW(spectrum3dGui.mainWindow), gdk_pixbuf_new_from_file (filename, error));
+	gtk_window_set_default_icon(gdk_pixbuf_new_from_file (filename, error));
 	g_signal_connect (G_OBJECT (spectrum3dGui.mainWindow), "destroy", G_CALLBACK (quit_spectrum3d), NULL);
 
 #ifdef GTK3
@@ -290,20 +268,11 @@ int main(int argc, char *argv[])
 			gtk_menu_shell_append(GTK_MENU_SHELL(submenu), submenuItem);
 
 	menu = gtk_menu_new(); // 'Help...' submenu
-	menuItem = gtk_menu_item_new_with_label("Shortcuts"); 
-	g_signal_connect(G_OBJECT(menuItem), "activate", G_CALLBACK(onShortcuts), (GtkWidget*) spectrum3dGui.mainWindow);
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuItem);
-#ifdef HAVE_LIBGEIS
-	menuItem = gtk_menu_item_new_with_label("Gestures Shortcuts");
-	g_signal_connect(G_OBJECT(menuItem), "activate", G_CALLBACK(onGesturesShortcuts), (GtkWidget*) spectrum3dGui.mainWindow);
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuItem);
-#endif 
+
 	menuItem = gtk_menu_item_new_with_label("About...");
 	g_signal_connect(G_OBJECT(menuItem), "activate", G_CALLBACK(onAbout), (GtkWidget*) spectrum3dGui.mainWindow);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuItem);
-	menuItem = gtk_menu_item_new_with_label("Quick start");
-	g_signal_connect(G_OBJECT(menuItem), "activate", G_CALLBACK(onQuickStart), (GtkWidget*) spectrum3dGui.mainWindow);
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuItem);
+
 	menuItem = gtk_menu_item_new_with_label("Help");
 	gtk_menu_item_set_submenu(GTK_MENU_ITEM(menuItem), menu);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menuBar), menuItem);
@@ -394,7 +363,7 @@ int main(int argc, char *argv[])
 #endif	
 	gtk_box_pack_start(GTK_BOX(pHBox[1]), widget, FALSE, FALSE, 5);
 
-/* JACK check button */
+/* JACK fcheck button */
 	filename = g_build_filename (G_DIR_SEPARATOR_S, DATADIR, "icons", "spectrum3d-qjackctl.png", NULL);
 	image = gtk_image_new_from_file(filename);
 	widget = gtk_check_button_new ();
@@ -445,8 +414,8 @@ int main(int argc, char *argv[])
 	gtk_box_pack_start(GTK_BOX(pHBox[5]), timeLabel, FALSE, FALSE, 0);
 
 /* Starting value of the display */
-	frame = gtk_frame_new("Start value of display (in Hz)");
-	gtk_widget_set_tooltip_text (frame, "The lower displayed frequency (in herz)");
+	frame = gtk_frame_new("Lower displayed frequency (in Hz)");
+	gtk_widget_set_tooltip_text (frame, "Shortcuts : ALT + left/right (slow)\nX + left/right (fast)\n X + mouse right/left\nMultitouch : touch lower left corner + right/left");
 	spectrum3dGui.adjustStart = gtk_adjustment_new(0, 0, 9000, ((gdouble)hzStep * (gdouble)zoomFactor), (((gdouble)hzStep * (gdouble)zoomFactor) * 10), 0);
 #ifdef GTK3
 	pScaleStart = gtk_scale_new(GTK_ORIENTATION_HORIZONTAL, GTK_ADJUSTMENT(spectrum3dGui.adjustStart));
@@ -464,7 +433,7 @@ int main(int argc, char *argv[])
 
 /* Range of display */
 	frame = gtk_frame_new("Range of display (in Hz)");
-	gtk_widget_set_tooltip_text (frame, "The range of the displayed frequency (in herz)");
+	gtk_widget_set_tooltip_text (frame, "Shortcuts : ALT + up/down (slow)\nX + up/down (fast)\n C + mouse right/left\nMultitouch : touch upper left corner + right/left");
 	spectrum3dGui.adjustBands = gtk_adjustment_new(1000, 20, 1000, 10, 50, 0);
 #ifdef GTK3
 	spectrum3dGui.scaleBands = gtk_scale_new(GTK_ORIENTATION_HORIZONTAL, GTK_ADJUSTMENT(spectrum3dGui.adjustBands));
@@ -485,7 +454,7 @@ int main(int argc, char *argv[])
 
 /* Factor that multiplies the range of display */
 	frame = gtk_frame_new("");
-	gtk_widget_set_tooltip_text (frame, "Factor that multiplies the frequency range, to make it larger");
+	gtk_widget_set_tooltip_text (frame, "Factor that multiplies the frequency range, to make it larger\nShortcut : B + up/down");
 	spectrum3dGui.cbRange = gtk_combo_box_text_new();
 	gtk_container_add(GTK_CONTAINER(frame), spectrum3dGui.cbRange);
 	gtk_box_pack_start(GTK_BOX(pHBox[11]), frame, FALSE, FALSE, 0);
@@ -525,10 +494,6 @@ int main(int argc, char *argv[])
 	//g_object_set (pScaleGain, "update-policy", GTK_UPDATE_DISCONTINUOUS, NULL);
 	g_signal_connect(G_OBJECT(spectrum3dGui.scaleGain), "value-changed", G_CALLBACK(change_gain), NULL);
 
-#ifdef HAVE_LIBGEIS
-	setupGeis();
-#endif
-
 	gtk_widget_show_all (spectrum3dGui.mainWindow);
 
 	timeoutEvent = g_timeout_add (100, (GSourceFunc)sdl_event, &spectrum3dGui);
@@ -540,9 +505,6 @@ int main(int argc, char *argv[])
 
 /* Quit everything */
 
-#ifdef HAVE_LIBGEIS
-	geisQuit();
-#endif
 	on_stop();
 	g_source_remove(spectrum3d.timeoutExpose);
 	g_source_remove(timeoutEvent);

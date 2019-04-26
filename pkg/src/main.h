@@ -32,10 +32,7 @@ void check_menu_pointer(GtkWidget *widget, gpointer data);
 void reset_view();
 void front_view();
 void set_view_from_preset();
-void onQuickStart(GtkWidget* widget, gpointer data);
 void onAbout(GtkWidget* widget, gpointer data);
-void onShortcuts (GtkWidget* widget, gpointer data);
-void onGesturesShortcuts (GtkWidget* widget, gpointer data);
 
 void get_saved_values();		
 void initGstreamer();

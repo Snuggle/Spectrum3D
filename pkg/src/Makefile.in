@@ -100,10 +100,9 @@ CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
 am_spectrum3d_OBJECTS = display.$(OBJEXT) events.$(OBJEXT) \
-	equalizer.$(OBJEXT) geis.$(OBJEXT) gstreamer.$(OBJEXT) \
-	main.$(OBJEXT) menu.$(OBJEXT) onclick.$(OBJEXT) \
-	preferences.$(OBJEXT) record.$(OBJEXT) scale.$(OBJEXT) \
-	typesource.$(OBJEXT)
+	equalizer.$(OBJEXT) gstreamer.$(OBJEXT) main.$(OBJEXT) \
+	menu.$(OBJEXT) onclick.$(OBJEXT) preferences.$(OBJEXT) \
+	record.$(OBJEXT) scale.$(OBJEXT) typesource.$(OBJEXT)
 spectrum3d_OBJECTS = $(am_spectrum3d_OBJECTS)
 spectrum3d_LDADD = $(LDADD)
 AM_V_P = $(am__v_P_@AM_V@)
@@ -263,7 +262,7 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 
 #AM_CFLAGS=-Wall -Wextra -O2 -g -DGST_DISABLE_DEPRECATED
-spectrum3d_SOURCES = display.c events.c equalizer.c geis.c gstreamer.c main.c menu.c onclick.c preferences.c record.c scale.c typesource.c display.h equalizer.h events.h geis.h gstreamer.h main.h menu.h onclick.h preferences.h record.h scale.h spectrum3d.h typesource.h
+spectrum3d_SOURCES = display.c events.c equalizer.c gstreamer.c main.c menu.c onclick.c preferences.c record.c scale.c typesource.c display.h equalizer.h events.h gstreamer.h main.h menu.h onclick.h preferences.h record.h scale.h spectrum3d.h typesource.h
 AM_CPPFLAGS = -DDATADIR='"$(datadir)"'
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
@@ -370,7 +369,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/display.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/equalizer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/events.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/geis.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gstreamer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/menu.Po@am__quote@
