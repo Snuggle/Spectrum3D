@@ -13,19 +13,19 @@ It is build with the Gstreamer, SDL (or Gtkglext), OpenGl, GTK+-2.0 and uTouch-G
 Spectrum3d can be compiled against GTK2 or GTK3. SDL will be used as the OpenGL extension by default untill GtkGlExt has a stable release for GTK3 (however, GtkGlExt can be used already in Spectrum3d, including the development version (GTKGLEXT3 for GTK3), but this has to be specifically enabled at the time of compiling).
 
 
-![Example 1](/img/spectrum3d_1.png)
+![Example 1](/img/spectrum3d_1.jpg)
 
 
-![Example 2](/img/spectrum3d_2.png)
+![Example 2](/img/spectrum3d_2.jpg)
 
 
-![Example 3](/img/spectrum3d_3.png)
+![Example 3](/img/spectrum3d_3.jpg)
 
 
-![Example 4](/img/spectrum3d_4.png)
+![Example 4](/img/spectrum3d_4.jpg)
 
 
-![Example 5](/img/spectrum3d_5.png)
+![Example 5](/img/spectrum3d_5.jpg)
 
 
-![Example 6](/img/spectrum3d_6.png)
+![Example 6](/img/spectrum3d_6.jpg)
