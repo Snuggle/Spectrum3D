@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    	<meta charset="utf-8">
+	<!--[if lt IE 9]>
+	<script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+	<link rel="stylesheet" href="style.css" />
+	<title>Spectrum3D : an audio spectrum analyser in 3D for Linux</title>
+    </head>
+
+    <body>
+	<header>
+	    <h1>Spectrum3d</h1>
+	    <h2>An audio spectrum analyser in 3D for Linux</h2>
+	    
+	</header>
+
+	<div id="header_picture_index">
+        </div>
+
+	<nav class="menu">
+	    <ul>
+		<li><a href="index.html">Home</a></li>
+		<li><a href="screenshots.html">Screenshots</a></li>
+	    	<li><a href="download.html">Downloads</a></li>
+	    	<li><a href="documentation.html">Documentation</a></li>
+	    	<li><a href="support.html">Support</a></li>
+	    </ul>
+	</nav>
+
+	<section>
+
+	    <aside class="anchor">
+		<a href="index.html#what_is_spectrum3d">What is Spectrum3d?</a>
+		<a href="index.html#what_s_new">What's new?</a>
+	    </aside>
+
+	    <article>
+
+		    <h3 id="what_is_spectrum3d">What is Spectrum3d?</h3>
+
+		    <p> Spectrum 3D displays a 3D audio spectrogram in real time or not from the microphone or an audio file (including recorded file from the microphone); it is compatible with Jack (jack-audio-connection-kit). Optionally, it supports multitouch gestures from touchscreen and touchpad. </p>
+		    <p> It is build with the Gstreamer, SDL (or Gtkglext), OpenGl, GTK+-2.0 and uTouch-Geis free libraries and is under GPL license. It is written for Ubuntu but works for other Linux distributions except for the multitouch frame (the uTouch suite is now available for Ubuntu).</p>
+		    <p>	Spectrum3d can be compiled against GTK2 or GTK3. SDL will be used as the OpenGL extension by default untill GtkGlExt has a stable release for GTK3 (however, GtkGlExt can be used already in Spectrum3d, including the development version (GTKGLEXT3 for GTK3), but this has to be specifically enabled at the time of compiling).</p>
+
+		    <h3 id="what_s_new">What's new?</h3>
+
+		    <p>
+			New features of version 2.2.0:<br>
+			- SDL library is used by default as OpenGL 
+			extension; now display can be done either in the same window or in
+			another window than the graphical user interface (GUI) through a Gtk
+			window hack. Use of GTKGLEXT library is probably more consistent since
+			the GUI is already in GTK (and there are less dependencies to install),
+			but GTKGLEXT-3.0 for GTK3 is still in development; it will be probably
+			be the default when it is officially released; however, GTKGLEXT is
+			already completely supported in Spectrum3d (GTKGLEXT1 for GTK2 and even
+			the development version of GTKGLEXT-3.0 for GTK3) but you have to
+			specially mention it at the './configure' step of installation (add the
+			option '--enable-gtkglext' after './configure'; see README); to install
+			the development version of GTKGLEXT-3.0 for GTK3, see
+			doc-&gt;txt-&gt;gtkglext.txt or www.spectrum3d.sourceforge.net. Using GTKGLEXT should provide consistency, but final display is exactly the same when both SDL or GTKGLEXT are used. </p>
+
+		    <p> <strong>Important note regarding a bug in Gstreamer plugins-good version 0.10.30 :</strong> the gstreamer-plugins-good package version 0.10.30 containing the 'spectrum' element (that allows the spectral analysis) has a bug leading to a segmentation fault; this has been observed in Ubuntu 11.10; a previous or later version should be used instead; see FAQ in doc directory or <a href="index.html">spectrum3d.sourceforge.net</a>.</p>
+		</article>
+	</section>
+
+	<figure>
+	    <a href="pictures/spectrum3d_6.jpg"><img src="pictures/spectrum3d_6.jpg" width="150" height="85" alt="Spectrum3d" title="Click to enlarge" /></a>
+	    <a href="pictures/spectrum3d_3.jpg"><img src="pictures/spectrum3d_3.jpg" width="150" height="85" alt="Spectrum3d" title="Click to enlarge" /></a>
+	</figure>
+
+	<footer>
+	    <a href="index.html">Home </a>
+	    <a href="mailto:nadaeck@hotmail.com">Contact</a>
+	</footer>
+	  
+    </body>
+</html>

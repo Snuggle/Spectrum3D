@@ -1,0 +1,12 @@
+[Desktop Entry]
+Name=spectrum3d
+GenericName=spectrum3d
+Comment=Displays a 3D audio spectrogram
+Exec=spectrum3d
+Icon=spectrum3d
+Terminal=false
+Type=Application
+Categories=GTK;GNOME;AudioVideo;
+Type=Application
+StartupNotify=true
+

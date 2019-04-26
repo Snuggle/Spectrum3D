@@ -1,0 +1,54 @@
+REALTIME MODE IN Spectrum3D
+
+RealTime mode will allow Spectrum3d to have priority on other running processes, in order to not be slowed down by them. In any case, it won't decrease the amount of CPU and GPU ressources needed to perform the task. 
+IMPORTANT WARNING : If you enable RealTime mode and if you don't do the following, you'll have to run Spectrum3d as root.
+
+Edit audio.conf file and make yourself a member of 'audio' group
+----------------------------------------------------------------
+
+If you want to take advantage of this you should edit or create an '/etc/security/limits.d/audio.conf' file : 
+
+	sudo gedit /etc/security/limits.d/audio.conf
+
+and put this inside : 
+
+	@audio   -  rtprio     95
+	@audio   -  memlock    unlimited
+
+then you should add yourself as a member of the 'audio' group :
+
+	- either go in System->Preferences->Users and Groups->Manage Groups, then select the 'audio' groups, click on 'Properties' and add yourself;
+	- or type in a terminal : sudo adduser ${LOGNAME} audio
+
+then reboot.
+IMPORTANT WARNING : If you enable RealTime mode and if you don't do this, you'll have to run Spectrum3d as root :
+
+	sudo spectrum3d
+
+
+How to check that you are using realtime policy?
+------------------------------------------------
+
+If realtime mode is chosen, gstreamer will play the sound with the RR ('Round Robin') policy with a priority of 50. You can check that the RR policy is used by typing in a terminal :
+
+	ps -cLe
+
+while Spectrum3d is playing; you'll see something like this :
+
+	3119  3119 TS   19 pts/0    00:00:01 spectrum3d
+	3119  3120 TS   19 pts/0    00:00:00 threaded-ml
+	3119  3121 TS   19 pts/0    00:00:00 threaded-ml
+	3119  3123 TS   19 pts/0    00:00:00 task0
+	3119  3124 TS   19 pts/0    00:00:00 spectrum3d
+	3119  3125 RR   90 pts/0    00:00:02 alsasrc:src
+
+
+The thread called "alsasrc:src" is running with the RR policy ('RR' in the 3d column).
+
+What about Jack?
+----------------
+
+This is not needed for Jack, since, if Jack is run in realtime mode, all its clients (including the Gstreamer thread of Spectrum3d) are run in realtime mode also. So for Jack realtime mode depends on Jack, since Spectrum3d connects to Jack as a client.
+
+
+

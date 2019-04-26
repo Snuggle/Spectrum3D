@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    	<meta charset="utf-8">
+	<!--[if lt IE 9]>
+	<script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+	<link rel="stylesheet" href="style.css" />
+	<title>Spectrum3D : an audio spectrum analyser in 3D for Linux</title>
+    </head>
+
+    <body>
+	<header>
+	    <h1>Spectrum3d</h1>
+	    <h2>An audio spectrum analyser in 3D for Linux</h2>
+	    
+	</header>
+
+	<div id="header_picture_index">
+        </div>
+
+	<nav class="menu">
+	    <ul>
+		<li><a href="index.html">Home</a></li>
+		<li><a href="screenshots.html">Screenshots</a></li>
+	    	<li><a href="download.html">Downloads</a></li>
+	    	<li><a href="documentation.html">Documentation</a></li>
+	    	<li><a href="support.html">Support</a></li>
+	    </ul>
+	</nav>
+
+	<section>
+
+	    <aside class="anchor">
+		<a href="support.html#support">Support</a>
+		<a href="support.html#faq">FAQ</a>
+	    </aside>
+
+	    <article>
+
+		<h2 id="support">Support</h2>
+
+		    <p> Contact the author via <a href="mailto:nadaeck@hotmail.com">email</a> or <a href="http://sourceforge.net/p/spectrum3d/discussion/">discussion on Sourceforge</a> or have a look on existing <a href="support.html#faq">FAQ</a>. </p>
+
+		<h2 id="faq">F.A.Q.</h2>
+
+		    <ol>
+			<li><span class="underlined"> There is a segmentation fault causing a crash of Spectrum3d when play button is pressed: </span></li>
+			<p> This could be due to a bug in the plugins-good of Gstreamer in version 10.30; to solve this a previous or later version should be installed instead (see here); </p>
+	
+			<li><span class="underlined"> Spectrum3d fails to start: </span></li>
+			<p> Spectrum3d should be run from a terminal. You'll have different messages and probably some error message that you should report to the mail address nadaeck@hotmail.com. This should be done for any problem in Spectrum3d. </p>
+
+    			<li><span class="underlined"> Spectrum3D starts but the display window remains black when playing: </span></li>
+
+    			<p> Check if this happens only when you have chosen the 'realtime' mode; if so, you should check if you have a proper '/etc/security/limits.d/audio.conf', and if you are a member of the 'audio'group. Cfr Realtime.txt document. </p>
+
+    			<li><span class="underlined"> Despite the installation of the uTouch-Geis library, I get this error message at Spectrum3d's start: </span></li>
+
+			<div class="code">"error while loading shared libraries: libutouch-geis.so.1: cannot open shared object file: No such file or directory" </div>
+
+			<p> This could be related to an 'environment variable' problem. You have probably installed libutouch-geis in the '/usr/local' directory which is the default directory, unless another directory is specified), and spectrum3d doesn't look there to find it. This suggests that '/usr/local/lib' is not in the ld.so configuration. This directory should be in /etc/ld.so.conf or a .conf file in /etc/ld.so.conf.d. For example, you can create a custom file that you will place in /etc/ld.so.conf.d : 'sudo gedit /etc/ld.so.conf.d'; then write '/usr/local/lib' in this text file and save; then type in a terminal 'sudo ldconfig'. Another way is to put '/usr/local/lib' in the '/etc/ld.so.conf' file. </p>
+
+			<li><span class="underlined"> When 'Touch' function is activated, everything seems 'captured' by the 'Touch' function : mouse pointer cannot be controlled by the touchpad anymore: </span></li>
+
+    			<p> See <a href="documentation.html#multitouch_support">Multitouch support</a> : How is it implemented in Spectrum3d? </p>
+
+    			<li><span class="underlined"> In command line, I get this error message when multitouch is enabled: </span></li>
+
+			<div class="code"> WARNING **: Failed to fetch view type at /org/ayatana/bamf/window73400334: Method "ViewType" with signature "" on interface "org.ayatana.bamf.view" doesn't exist </div>
+
+			<p> Well, I don't have a clue to explain what it is, but this does not seem to be a real issue since everything works despite that message. It could be related somehow with Unity. </p>
+		    </ol>
+		</article>
+	</section>
+
+	<figure>
+	    <a href="pictures/spectrum3d_6.jpg"><img src="pictures/spectrum3d_6.jpg" width="150" height="85" alt="Spectrum3d" title="Click to enlarge" /></a>
+	    <a href="pictures/spectrum3d_3.jpg"><img src="pictures/spectrum3d_3.jpg" width="150" height="85" alt="Spectrum3d" title="Click to enlarge" /></a>
+	</figure>
+
+	<footer>
+	    <a href="index.html">Home </a>
+	    <a href="mailto:nadaeck@hotmail.com">Contact</a>
+	</footer>
+	  
+    </body>
+</html>

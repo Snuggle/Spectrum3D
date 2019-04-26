@@ -1,0 +1,109 @@
+
+	body
+	{
+	    background-color: rgb(229,213,249);
+	    width: 90%;
+	    margin: auto;
+	}
+
+	strong
+	{
+	    color: red;
+	}
+
+	h1
+	{
+	    font-size: 2.5em;
+	}
+
+/* Header's picture; different for each page; this has the forme of a background picture */
+
+	#header_picture_index
+	{
+	    margin-top: 15px;
+	    margin-bottom: 25px;
+	    height: 250px;
+	    border-radius: 3px;
+	    position: relative;
+	    box-shadow: 0px 4px 4px #1c1a19;
+	    background: url('pictures/spectrum3d_header_2.png') no-repeat;
+	}
+
+	#header_picture_documentation
+	{
+	    margin-top: 15px;
+	    margin-bottom: 25px;
+	    height: 250px;
+	    border-radius: 3px;
+	    position: relative;
+	    box-shadow: 0px 4px 4px #1c1a19;
+	    background: url('pictures/spectrum3d_header_1.png') no-repeat;
+	}
+
+/* Main menu */
+
+	nav
+	{
+	    display: inline-block;
+	}
+
+	nav ul
+	{
+	    list-style-type: none;
+	}
+
+	nav li
+	{
+	    display: inline-block;
+	    margin-right: 15px;
+	    font-size: 1.5em;
+	    font-weight: bold;
+	}
+
+/* Aside is the menu that displays anchors to the main titles of the displayed page; article is the main subject of the page */
+
+	article, aside
+	{
+	    display: inline-block;
+	    vertical-align: top;
+	}
+
+	aside
+	{
+	    border: 2px black solid;
+	    width: 25%;
+	    padding: 5px;
+	}
+
+	aside a
+	{
+	    display: block;
+	}
+
+	article
+	{
+	    width: 60%;
+	    padding: 10px;
+	}
+
+	.code
+	{
+	    background-color: rgb(251,255,159);
+	    margin: 20px;
+	    padding: 15px;
+	}
+
+	.bold
+	{
+	    font-weight: bold;
+	}
+
+	.underlined
+	{
+	    text-decoration: underline;
+	}
+
+	p, li
+	{
+	    font-size: 1.2em;
+	}
