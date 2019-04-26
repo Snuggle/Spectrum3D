@@ -34,275 +34,9 @@
 #include "events.h"
 
 
-gboolean a_keyPressed = FALSE, g_keyPressed = FALSE, q_keyPressed = FALSE, shift_keyPressed = FALSE, control_keyPressed = FALSE;
-gdouble oldXPos = 0, oldYPos = 0;
-
-gboolean on_mouse_scroll (GtkWidget *window, GdkEventScroll *event, gpointer data){
-	if (event->state & GDK_BUTTON1_MASK){
-		if (event->direction == GDK_SCROLL_UP){
-			AngleZ+=0.4;
-			}
-		if (event->direction == GDK_SCROLL_DOWN){
-			AngleZ-=0.4;
-			}
-	newEvent = TRUE;
-		}
-  	else if (event->state & GDK_BUTTON3_MASK){
-
-		if (event->direction == GDK_SCROLL_UP){
-			Z += 0.02;
-			}
-		if (event->direction == GDK_SCROLL_DOWN){
-			Z -= 0.02;
-			}
-	newEvent = TRUE;
-		}
-	return FALSE;
-}
-
-
-gboolean on_mouse_motion (GtkWidget *window, GdkEventMotion *event, gpointer data){
-	
-  	if (event->state & GDK_BUTTON1_MASK){
-		if (event->x > oldXPos){
-			AngleH+=0.4;
-			}
-		if (event->x < oldXPos){
-			AngleH-=0.4;
-			}
-		oldXPos = event->x;
-		if (event->y > oldYPos){
-			AngleV+=0.4;
-			}
-		if (event->y < oldYPos){
-			AngleV-=0.4;
-			}
-		oldYPos = event->y;
-	newEvent = TRUE;
-		}
-	else if (event->state & GDK_BUTTON3_MASK){
-		if (event->x > oldXPos){
-			X+=0.004;
-			}
-		if (event->x < oldXPos){
-			X-=0.004;
-			}
-		oldXPos = event->x;
-		if (event->y > oldYPos){
-			Y-=0.006;
-			}
-		if (event->y < oldYPos){
-			Y+=0.006;
-			}
-		oldYPos = event->y;
-	newEvent = TRUE;
-		}
-	else if (event->state & GDK_BUTTON2_MASK){
-		if (event->x > oldXPos){
-			AngleZ-=0.4;
-			}
-		if (event->x < oldXPos){
-			AngleZ+=0.4;
-			}
-		oldXPos = event->x;
-		if (event->y > oldYPos){
-			Z+=0.01;
-			}
-		if (event->y < oldYPos){
-			Z-=0.01;
-			}
-		oldYPos = event->y;
-	newEvent = TRUE;
-		}
-	return FALSE;
-}
-
-/* Manage key press events with GDK */  
-gboolean on_key_press (GtkWidget * window, GdkEventKey*	event, Spectrum3dGui *spectrum3dGui){
-	//printf("shift_keyPressed = %d, control_keyPressed = %d\n", shift_keyPressed, control_keyPressed);
-	if (event->type == GDK_KEY_PRESS){
-		  switch (event->keyval){
-			case GDK_KEY_Escape :
-				on_stop ();
-				break;
-			case GDK_KEY_Left :
-				if (event->state == GDK_CONTROL_MASK){
-					X -= 0.02;
-					}
-				else if (control_keyPressed){
-					X -= 0.02;
-					}
-				else if (a_keyPressed){
-					Xpointer -=  (x / bandsNumber) * 10;
-					Ypointer -= (y_2d / bandsNumber) * 10;
-					}
-				else if (q_keyPressed){
-					Xpointer -=  (x / bandsNumber);
-					Ypointer -= (y_2d / bandsNumber);
-					}
-				else {
-					AngleH-=0.4;
-					}
-				break;
-			case GDK_KEY_Right :
-				if (event->state == GDK_CONTROL_MASK){
-					X += 0.02;
-					}
-				else if (control_keyPressed){
-					X += 0.02;
-					}
-				else if (a_keyPressed){
-					Xpointer +=  (x / bandsNumber) * 10;
-					Ypointer += (y_2d / bandsNumber) * 10;
-					}
-				else if (q_keyPressed){
-					Xpointer +=  (x / bandsNumber);
-					Ypointer += (y_2d / bandsNumber);
-					}
-				else {
-					AngleH+=0.4;
-					}
-				break;
-			case GDK_KEY_Up :
-				if (control_keyPressed && shift_keyPressed){
-					Z -= 0.02;
-					}
-				else if (control_keyPressed){
-					Y += 0.02;
-					}
-				else if (shift_keyPressed){
-					AngleZ += 0.4;
-					}
-				else if (a_keyPressed){
-					Xpointer +=  (x / bandsNumber) * 10;
-					Ypointer += (y_2d / bandsNumber) * 10;
-					}
-				else if (q_keyPressed){
-					Xpointer +=  (x / bandsNumber);
-					Ypointer += (y_2d / bandsNumber);
-					}
-				else if (g_keyPressed){
-					gtk_scale_button_set_value( GTK_SCALE_BUTTON(spectrum3dGui->scaleGain), (gtk_scale_button_get_value(GTK_SCALE_BUTTON(spectrum3dGui->scaleGain)) + 0.01) );
-					}
-				else {
-					AngleV -= 0.4;
-					}
-				break;
-			case GDK_KEY_Down :
-				if (control_keyPressed && shift_keyPressed){
-					Z += 0.02;
-					}
-				else if (control_keyPressed){
-					Y -= 0.02;
-					}
-				else if (shift_keyPressed){
-					AngleZ -= 0.4;
-					}
-				else if (a_keyPressed){
-					Xpointer -=  (x / bandsNumber) * 10;
-					Ypointer -= (y_2d / bandsNumber) * 10;
-					}
-				else if (q_keyPressed){
-					Xpointer -=  (x / bandsNumber);
-					Ypointer -= (y_2d / bandsNumber);
-					}
-				else if (g_keyPressed){
-					gtk_scale_button_set_value( GTK_SCALE_BUTTON(spectrum3dGui->scaleGain), (gtk_scale_button_get_value(GTK_SCALE_BUTTON(spectrum3dGui->scaleGain)) - 0.01) );
-					}
-				else {
-					AngleV += 0.4;
-					}
-				break;
-			case GDK_KEY_space :
-				//playFromSource(NULL, NULL);
-				break;
-			case GDK_KEY_t :
-				gtk_menu_item_activate(GTK_MENU_ITEM(spectrum3dGui->checkMenuText));
-				break;
-			case GDK_KEY_l :
-				gtk_menu_item_activate(GTK_MENU_ITEM(spectrum3dGui->checkMenuLines));
-				break;
-			case GDK_KEY_p :
-				gtk_menu_item_activate(GTK_MENU_ITEM(spectrum3dGui->checkMenuPointer));
-				break;
-			case GDK_KEY_r :
-				reset_view();
-				//gtk_menu_item_activate(GTK_MENU_ITEM(spectrum3dGui->reset));
-				break;
-			case GDK_KEY_o :
-				front_view();
-				//gtk_menu_item_activate(GTK_MENU_ITEM(spectrum3dGui->front));
-				break;
-			case GDK_KEY_d :
-				if (viewType == THREE_D){
-					gtk_menu_item_activate(GTK_MENU_ITEM(spectrum3dGui->radio2D));
-					}
-				else {
-					gtk_menu_item_activate(GTK_MENU_ITEM(spectrum3dGui->radio3D));
-					}
-				break;
-			case GDK_KEY_f :
-				gtk_menu_item_activate(GTK_MENU_ITEM(spectrum3dGui->radio3Dflat));					
-				break;
-			case GDK_KEY_a :
-				a_keyPressed = TRUE;
-				break;
-			case GDK_KEY_q :
-				q_keyPressed = TRUE;
-				break;
-			case GDK_KEY_g :
-				g_keyPressed = TRUE;
-				break;
-			case GDK_KEY_Shift_L :
-				shift_keyPressed = TRUE;
-				break;
-			case GDK_KEY_Shift_R :
-				shift_keyPressed = TRUE;
-				break;
-			case GDK_KEY_Control_L :
-				control_keyPressed = TRUE;
-				break;
-			case GDK_KEY_Control_R :
-				control_keyPressed = TRUE;
-				break;
-		}
-	newEvent = TRUE;
-	}
-
-	return TRUE;  // return TRUE instead of FALSE allows default key bindings not to be aplied to the GtkScale widgets used in the GUI
-}
-
-/* Manage key release events with GDK; this is used for key combinations */ 
-gboolean on_key_release (GtkWidget *window, GdkEventKey *event, Spectrum3dGui *spectrum3dGui){
-	if (event->type == GDK_KEY_RELEASE){
-		//printf("key release\n");
-       		switch (event->keyval){
-			case GDK_KEY_a :
-				a_keyPressed = FALSE;
-				break;
-			case GDK_KEY_q :
-				q_keyPressed = FALSE;
-				break;
-			case GDK_KEY_Shift_L :
-				shift_keyPressed = FALSE;
-				break;
-			case GDK_KEY_Shift_R :
-				shift_keyPressed = FALSE;
-				break;
-			case GDK_KEY_g :
-				g_keyPressed = FALSE;
-				break;
-			case GDK_KEY_Control_L :
-				control_keyPressed = FALSE;
-				break;
-			case GDK_KEY_Control_R :
-				control_keyPressed = FALSE;
-				break;
-			}
-		}
-
-	return FALSE;
-}
+float previousX, previousY; 
+Uint32 previousTimeStamp, previousFingerDownTimeStamp, previousFingerUpId;
+GtkWidget *pScaleStart;
 
 
 #ifdef HAVE_LIBSDL2 
@@ -314,6 +48,8 @@ gboolean sdl_event(Spectrum3dGui *spectrum3dGui)
 	const Uint8 *keystate;
 	SDL_Event event;
 	int MouseX,MouseY;
+	gdouble step_increment;
+	gboolean multiTouch=FALSE;
 	
     while (SDL_PollEvent(&event)){
 	//printf("SDL_event\n");
@@ -372,6 +108,77 @@ gboolean sdl_event(Spectrum3dGui *spectrum3dGui)
 					}	
 							
 				break;
+			
+			/*case SDL_FINGERMOTION:
+				//if (event.mgesture.numFingers < 2){
+          			SDL_Log("Finger: %"SDL_PRIs64",x: %f, y: %f",event.tfinger.fingerId,
+               			event.tfinger.dx,event.tfinger.dy);
+				//}
+         			break;*/
+        		case SDL_FINGERDOWN:
+				//SDL_Log("Finger: %"SDL_PRIs64" down - x: %f, y: %f, timestamp = %i", event.tfinger.fingerId,event.tfinger.x,event.tfinger.y, event.tfinger.timestamp);
+				if (((event.tfinger.timestamp-previousFingerDownTimeStamp) < 250) && (event.tfinger.fingerId == previousFingerUpId + 1)){
+					g_idle_add ((GSourceFunc)playFromSource, NULL);
+					}
+// PreviousFingerUpId is used to be sure that the first finger has been released (= a dubble tap with one finger); other wise a double touch can also trigger this if the 2 fingers don't touch the screen exactly at the same time
+				previousFingerDownTimeStamp = event.tfinger.timestamp;
+				break;
+			case SDL_FINGERUP:
+				previousFingerUpId = event.tfinger.fingerId;
+			        //SDL_Log("Finger: %"SDL_PRIs64" up - x: %f, y: %f",
+               			//event.tfinger.fingerId,event.tfinger.x,event.tfinger.y);
+				break;
+			case SDL_MULTIGESTURE:
+				multiTouch = TRUE;
+				/*SDL_Log("Multi Gesture: x = %f, y = %f, dAng = %f, dR = %f",
+				event.mgesture.x,
+				event.mgesture.y,
+				event.mgesture.dTheta,
+				event.mgesture.dDist);*/
+				//printf("timestamp = %i\n", event.mgesture.timestamp);
+			    if (event.mgesture.numFingers == 2){
+				Z+=(event.mgesture.dDist/200); //Pinch
+				AngleZ-=(event.mgesture.dTheta*10);  //Rotate
+				if ((event.mgesture.timestamp-previousTimeStamp) < 10){ //Drag
+					X+=((event.mgesture.x-previousX)/300);
+					Y-=((event.mgesture.y-previousY)/300);
+					}
+				newEvent = TRUE;
+				}
+			   
+				/*if ((event.mgesture.timestamp-previousTimeStamp) < 100){
+				    //step_increment = gtk_adjustment_get_step_increment (GTK_ADJUSTMENT(spectrum3dGui->adjustStart));
+				    gtk_range_set_value (GTK_RANGE(spectrum3dGui->scaleBands),
+                     //((gtk_range_get_value (GTK_RANGE(spectrum3dGui->scaleBands))) + (event.mgesture.y-previousY)));
+				    ((gtk_range_get_value (GTK_RANGE(spectrum3dGui->scaleBands))) + (event.mgesture.dDist)));
+				    //printf("pinch\n");
+				    newEvent = TRUE;
+				    }*/
+
+
+				//SDL_Log("MG: numDownTouch = %i",event.mgesture.numFingers);
+			    
+				previousX=event.mgesture.x;
+				previousY=event.mgesture.y;
+				previousTimeStamp=event.mgesture.timestamp;	
+				break;
+
+			case SDL_FINGERMOTION:
+				if (!multiTouch){
+          			//SDL_Log("Finger: %"SDL_PRIs64",x: %f, y: %f",event.tfinger.fingerId, event.tfinger.dx,event.tfinger.dy);
+				
+				AngleH+=(event.tfinger.dx/10);
+				AngleV+=(event.tfinger.dy/10);
+				newEvent = TRUE;
+
+				/*if ((event.tfinger.timestamp-previousTimeStamp) > 400){
+				    gtk_range_set_value (GTK_RANGE(pScaleStart),                   		((gtk_range_get_value (GTK_RANGE(pScaleStart))) +((gdouble)(event.tfinger.dx))));
+				printf("drag\n");
+				    }*/	
+				}
+				multiTouch=FALSE;
+         			break;
+
 			case SDL_KEYDOWN:
 				keystate = SDL_GetKeyboardState(NULL);
 								
@@ -489,8 +296,7 @@ gboolean sdl_event(Spectrum3dGui *spectrum3dGui)
 					}		
 				default:
 					break;
-
-    }
+		}
 	}
 	return TRUE;
 }

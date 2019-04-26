@@ -31,8 +31,6 @@ typedef struct
 	GtkWidget *reload;
 	GtkWidget *record;
 
-	GtkWidget *drawing_area;
-
 	GtkWidget *cbRange;
 	GtkWidget *scaleGain;
 	GtkWidget *scaleBands;

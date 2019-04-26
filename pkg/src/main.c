@@ -31,10 +31,6 @@
     #include <SDL/SDL.h>
 #endif
 
-#if defined (GTKGLEXT3) || defined (GTKGLEXT1)
-    #include <gtk/gtkgl.h>
-#endif
-
 #include "spectrum3d.h"
 #include "main.h"
 
@@ -101,71 +97,7 @@ void quit_spectrum3d(){
 	gtk_main_quit();
 }
 
-void create_external_window_drawing_area(Spectrum3dGui *spectrum3dGui){
-	GtkWidget *window;
-	window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-	gtk_window_set_title(GTK_WINDOW(window), PACKAGE_NAME);
-	gtk_window_set_default_size (GTK_WINDOW(window), (gint)spectrum3d.width, (gint)spectrum3d.height);
-	g_signal_connect (G_OBJECT (window), "destroy", G_CALLBACK (quit_spectrum3d), NULL);
-	gtk_widget_set_events (window, GDK_KEY_PRESS_MASK | GDK_KEY_RELEASE_MASK | GDK_BUTTON_PRESS_MASK | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK);
-	gtk_widget_realize(window);
-	spectrum3dGui->drawing_area = gtk_drawing_area_new ();
-	 
-	gtk_widget_realize(spectrum3dGui->drawing_area);
-	//gtk_box_pack_start (GTK_BOX (vBox), spectrum3dGui->drawing_area, TRUE, TRUE, 0);
 
-#if defined (GTKGLEXT3) || defined (GTKGLEXT1)
-	GdkGLConfig *glconfig = gdk_gl_config_new_by_mode (GDK_GL_MODE_RGB    |
-					GDK_GL_MODE_DEPTH  |
-					GDK_GL_MODE_DOUBLE);
-	  if (glconfig == NULL)
-	    {
-	      g_print ("\n*** Cannot find the double-buffered visual.\n");
-	      g_print ("\n*** Trying single-buffered visual.\n");
-
-	      /* Try single-buffered visual */
-	      glconfig = gdk_gl_config_new_by_mode (GDK_GL_MODE_RGB   |
-						    GDK_GL_MODE_DEPTH);
-	      if (glconfig == NULL)
-		{
-		  g_print ("*** No appropriate OpenGL-capable visual found.\n");
-		  exit (1);
-		}
-	    }
-	/* Set OpenGL-capability to the widget */
-  	gtk_widget_set_gl_capability (spectrum3dGui->drawing_area,
-				glconfig,
-				NULL,
-				TRUE,
-				GDK_GL_RGBA_TYPE);
-#endif
-	
-gtk_container_add(GTK_CONTAINER(window), spectrum3dGui->drawing_area);
-
-#ifdef HAVE_LIBSDL 
-	/* Hack to get SDL to use GTK window */
-	/*{ char SDL_windowhack[32];
-		sprintf(SDL_windowhack,"SDL_WINDOWID=%ld",
-			GDK_WINDOW_XID(gtk_widget_get_window(spectrum3dGui->drawing_area)));
-			// GDK_WINDOW_XID( spectrum3dGui.drawing_area->window))); pour GTK2??
-		putenv(SDL_windowhack);
-	printf("%s\n", SDL_windowhack);
-	}
-
-	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-		fprintf(stderr, "Unable to init SDL: %s\n", SDL_GetError());
-		exit(1);
-		}*/
-#endif
-	
-	//g_signal_connect (window, "key-press-event", G_CALLBACK (on_key_press), spectrum3dGui);
-	//g_signal_connect (window, "key-release-event", G_CALLBACK (on_key_release), spectrum3dGui);
-	//g_signal_connect (window, "motion-notify-event", G_CALLBACK (on_mouse_motion), NULL);
-	//g_signal_connect (window, "scroll-event", G_CALLBACK (on_mouse_scroll), NULL);
-	//g_signal_connect (G_OBJECT (spectrum3dGui->drawing_area), "configure_event", G_CALLBACK (configure_event), NULL);
-
-	gtk_widget_show_all(window);
-}
 
 int main(int argc, char *argv[])
 {
@@ -511,52 +443,6 @@ int main(int argc, char *argv[])
 	
 	timeLabel=gtk_label_new("           0:00 / 0:00           ");
 	gtk_box_pack_start(GTK_BOX(pHBox[5]), timeLabel, FALSE, FALSE, 0);
-
-/* Create drawing area */
-	if (externalWindow == FALSE){
-		/* Resize spectrum3dGui.mainWindow to contain drawing_area; using gtk_window_set_defaut() allows to shrink the window (gtk_widget_set_size_request() does not allow to shrink the window below the requested size); */
-		//gtk_window_set_default_size (GTK_WINDOW(spectrum3dGui.mainWindow), (gint)spectrum3d.width, initialWindowHeight + (gint)spectrum3d.height);
-		
-		//gtk_widget_realize(spectrum3dGui.mainWindow);
-
-		spectrum3dGui.drawing_area = gtk_drawing_area_new ();
-		
-#if defined (GTKGLEXT3) || defined (GTKGLEXT1)
-		/* Set OpenGL-capability to the widget */
-	  	gtk_widget_set_gl_capability (spectrum3dGui.drawing_area,
-					glconfig,
-					NULL,
-					TRUE,
-					GDK_GL_RGBA_TYPE);		
-#endif	
-		
-		/* drawing_area has to be put in vBox AFTER the call to gtk_widget_set_gl_capability() (if GtkGlExt is used) and BEFORE the call to the sdl-gtk hack (if sdl is used)*/ 
-		//gtk_box_pack_start (GTK_BOX (pVBox[1]), spectrum3dGui.drawing_area, TRUE, TRUE, 0);	
-		
-#ifdef HAVE_LIBSDL 
-		/* Hack to get SDL to use GTK window */
-		/*{ char SDL_windowhack[32];
-			sprintf(SDL_windowhack,"SDL_WINDOWID=%ld",
-				GDK_WINDOW_XID(gtk_widget_get_window(spectrum3dGui.drawing_area)));
-				// GDK_WINDOW_XID( spectrum3dGui.drawing_area->window))); pour GTK2??
-			putenv(SDL_windowhack);
-		printf("%s\n", SDL_windowhack);
-		}*/
-
-		
-		//SDL_EnableKeyRepeat(10, 10);
-#endif
-
-		//g_signal_connect (spectrum3dGui.mainWindow, "key-press-event", G_CALLBACK (on_key_press), &spectrum3dGui);
-		//g_signal_connect (spectrum3dGui.mainWindow, "key-release-event", G_CALLBACK (on_key_release), &spectrum3dGui);
-		//g_signal_connect (spectrum3dGui.mainWindow, "motion-notify-event", G_CALLBACK (on_mouse_motion), NULL);
-		//g_signal_connect (spectrum3dGui.mainWindow, "scroll-event", G_CALLBACK (on_mouse_scroll), NULL);
-		//g_signal_connect (G_OBJECT (spectrum3dGui.drawing_area), "configure_event", G_CALLBACK (configure_event), NULL);
-		//gtk_widget_add_events (spectrum3dGui.mainWindow, gtk_widget_get_events (spectrum3dGui.mainWindow) | GDK_KEY_PRESS_MASK | GDK_KEY_RELEASE_MASK | GDK_POINTER_MOTION_MASK | GDK_SCROLL_MASK);
-	}
-	else {
-		create_external_window_drawing_area(&spectrum3dGui);
-		}	
 
 /* Starting value of the display */
 	frame = gtk_frame_new("Start value of display (in Hz)");

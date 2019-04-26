@@ -1,3 +1,8 @@
+2016-12-16 Bernard Victor Delvaux  <nadaeck@hotmail.com>
+    Version : Spectrum3d-2.7.0 :
+    * general changes : Thanks to SDL2, multitouch is back!
+    * general changes : some code cleaning;
+
 2016-12-11 Bernard Victor Delvaux  <nadaeck@hotmail.com>
     Version : Spectrum3d-2.6.0 :
     * general changes : Display was distorted due to the inclusion of the SDL window in the GTK window; so Spectrum3d uses now only SDL in a separate window, like it used to be until version 2.1. Migration to SDL2 has been made, but it can still be compiled against SDL1.

@@ -12,17 +12,8 @@
 /* Define to 1 if you have the `GTK3' library */
 #undef GTK3
 
-/* Define to 1 if you have the `GTKGLEXT1' library */
-#undef GTKGLEXT1
-
-/* Define to 1 if you have the `GTKGLEXT3' library */
-#undef GTKGLEXT3
-
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
-
-/* Define to 1 if you have the Geis library. */
-#undef HAVE_LIBGEIS
 
 /* Define to 1 if you have the `GL' library (-lGL). */
 #undef HAVE_LIBGL

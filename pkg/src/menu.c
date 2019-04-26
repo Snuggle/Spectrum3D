@@ -61,6 +61,7 @@ void onPreferences(GtkWidget* widget, Spectrum3dGui *spectrum3dGui)
 			"_CANCEL",GTK_RESPONSE_CANCEL,
 			NULL);
 	gtk_window_set_default_size(GTK_WINDOW(pPreferences), 300, 300);
+	gtk_window_set_transient_for (GTK_WINDOW(pPreferences), GTK_WINDOW(spectrum3dGui->mainWindow));
 
 	pNotebook = gtk_notebook_new();
 
@@ -118,24 +119,6 @@ void onPreferences(GtkWidget* widget, Spectrum3dGui *spectrum3dGui)
 	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(comboColor), "RAINBOW");
 	gtk_combo_box_set_active(GTK_COMBO_BOX(comboColor), 2);
 
-	/* Radio button to choose wheter the display is within the UI or in another window - DISABLED in Spectrum3d-2.6 */
-	pFrame = gtk_frame_new("Display window :");
-	gtk_widget_set_tooltip_text (pFrame, "Choose the window where harmonics will be displayed (same or different window than the graphical user interface");
-	gtk_box_pack_start(GTK_BOX(pVBox[0]), pFrame, TRUE, TRUE, 0);
-	gtk_container_add(GTK_CONTAINER(pFrame), pHBox[5]);
-	radio[0] = gtk_radio_button_new_with_label (NULL, "all in one window");
-	gtk_widget_set_tooltip_text (radio[0], "Harmonics will be displayed in the same window than the graphical user interface");
-   	//entry = gtk_entry_new ();
-   	//gtk_container_add (GTK_CONTAINER (radio[0]), entry);
-	radio[1] = gtk_radio_button_new_with_label_from_widget (GTK_RADIO_BUTTON (radio[0]),
-                                                         "external window");
-	gtk_widget_set_tooltip_text (radio[1], "Harmonics will be displayed in another window than the graphical user interface");
-	if (externalWindow)
-		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(radio[1]), TRUE);
-	//gtk_box_pack_start (GTK_BOX (pHBox[5]), radio[0], TRUE, TRUE, 0);
-	//gtk_box_pack_start (GTK_BOX (pHBox[5]), radio[1], TRUE, TRUE, 0);
-	
-	
 	/* Check button to save the current position as 'Preset' */
 	pCheckPreset = gtk_check_button_new_with_label("Save current position as preset");
 	gtk_widget_set_tooltip_text (pCheckPreset, "Save the current position of display as preset");
@@ -211,10 +194,6 @@ void onPreferences(GtkWidget* widget, Spectrum3dGui *spectrum3dGui)
 			// get other values
 			colorType = gtk_combo_box_get_active(GTK_COMBO_BOX(comboColor));
 				 // ColorType enum is detailed in menu.h
-			if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(radio[1])))
-				externalWindow = TRUE;
-			else if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(radio[0])))
-				externalWindow = FALSE;
 
 			bState = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(pCheckPreset));
 				if (bState) {
@@ -226,9 +205,9 @@ void onPreferences(GtkWidget* widget, Spectrum3dGui *spectrum3dGui)
 					spectrum3d.presetAngleZ = AngleZ;
 				}
 			spectrum3d.interval_rt = gtk_spin_button_get_value(GTK_SPIN_BUTTON(spinSpectrumInterval));
-			gchar *string = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(pComboPolicy));
-			sprintf(policyName, "%s", string);
-			spectrum3d.enableTouch = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(pCheckEnableTouch));
+			//gchar *string = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(pComboPolicy));
+			//sprintf(policyName, "%s", string);
+			//spectrum3d.enableTouch = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(pCheckEnableTouch));
 			newEvent = TRUE;
 		break;
 		case GTK_RESPONSE_CANCEL:

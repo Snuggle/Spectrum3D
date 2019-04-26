@@ -2,7 +2,7 @@
 #ifndef DEFINE_MAIN
 #define DEFINE_MAIN
 
-gboolean analyse_rt, jack, newEvent, externalWindow;
+gboolean analyse_rt, jack, newEvent;
 int playing, pose, zoomFactor, hzStep;
 //static GtkWidget *mainWindow;
 GtkWidget *timeLabel, *scaleSeek;
@@ -41,8 +41,6 @@ void get_saved_values();
 void initGstreamer();
 void init_audio_values();
 void init_display_values();
-void setupGeis();
-void geisQuit();
 void print_rc_file();
 
 void change_source_button (GtkWidget *widget, Spectrum3dGui *spectrum3dGui);
@@ -67,12 +65,6 @@ void init_SDL();
 
 gboolean configure_SDL_gl_window (int width, int height);
 void sdl_event();
-
-gboolean configure_event (GtkWidget *widget, GdkEventConfigure *event, gpointer data);
-gboolean on_key_press (GtkWidget * window, GdkEventKey *event, gpointer userdata);
-gboolean on_key_release (GtkWidget * window, GdkEventKey *event, gpointer userdata);
-gboolean on_mouse_motion (GtkWidget * window, GdkEventMotion *event, gpointer userdata);
-gboolean on_mouse_scroll (GtkWidget * window, GdkEventScroll *event, gpointer userdata);
 
 #endif
 

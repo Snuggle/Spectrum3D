@@ -1,8 +1,8 @@
 SPECTRUM 3D: 3D AUDIO SPECTRUM ANALYSER IN REAL TIME
 
-Spectrum 3D displays a 3D audio spectrogram in real time; the source can be either the microphone or an audio file; it is also possible to record a file and to have it analysed; so analysis can be done done on the fly (harmonics are displayed while the audio file is being played), or before the file is being played (in that case, the analysis of the whole will be performed and displayed, then the file can be played afterwards). It is compatible with jack (jack-audio-connection-kit). Optionally, it supports multitouch gestures from touchscreen and touchpad. Optionally also, the audio stream can be run in realtime even if Jack is not used. It is build with the Gstreamer, SDL (or Gtkglext), OpenGl, GTK+-2.0 and uTouch-Geis free libraries and is under GPL license. It is written for Ubuntu but works for other Linux distributions except for the multitouch capabilities (the uTouch library is written for Ubuntu). 
+Spectrum 3D displays a 3D audio spectrogram in real time; the source can be either the microphone or an audio file; it is also possible to record a file and to have it analysed; so analysis can be done done on the fly (harmonics are displayed while the audio file is being played), or before the file is being played (in that case, the analysis of the whole will be performed and displayed, then the file can be played afterwards). It is compatible with jack (jack-audio-connection-kit). Optionally, it supports multitouch gestures from touchscreen. It is build with the Gstreamer, SDL 1 or 2, OpenGl, GTK2 or GTK3 and is under GPL license. It is written for Ubuntu but works for other Linux distributions. 
 
-Spectrum3d can be compiled against GTK2 or GTK3. It can use either SDL or GTKGLEXT libraries as OpenGL extension. For this, SDL is used by default. GTKGLEXT is a more logical choice but GTKGLEXT for GTK3 is still in development; it will probably the default when a stable version is released. However, GTKGLEXT can be used already in Spectrum3d, including the development version (GTKGLEXT3 for GTK3), but this has to be specifically enabled at the time of compiling.
+Spectrum3d can be compiled against GTK2 or GTK3, against Gstreamer0.1 or Gstreamer1 and against SDL 1 or SDL2. Multitouch is now handled entirely by SDL2.
 
 *******************
 |  INSTALLATION:  |
@@ -18,17 +18,16 @@ FOR UBUNTU from 10.10 : All dependencies are available in the Ubuntu repositorie
 		- libsdl2-dev or lidsdl1.2-dev;
 		
 
-		- gstreamer0.10-plugins-bad, gstreamer0.10-plugins-bad-multiverse, gstreamer0.10-plugins-ugly et gstreamer0.10-plugins-ugly-multiverse (for reading files such as mp3);
+		- gstreamer0.10-plugins-bad, gstreamer0.10-plugins-bad-multiverse, gstreamer0.10-plugins-ugly et gstreamer0.10-plugins-ugly-multiverse (for reading files such as mp3) and the same plugins for libgstreamer1.0;
 
 	For JACK support : 
 		- (optional) libjack-dev (for jack1) or libjack-jackd2-dev for jack2; note that you don't need to have the 'jackd' package installed, but only the '-dev' library;
 
 	For multitouch support (touchscreen and also for multitouch touchpad from Natty):
 		- (optional) libutouch-geis-dev version 2 untill Ubuntu 12.04; this has been renamed libgeis-dev from Ubuntu 12.10;
-		  NOTE : For Ubuntu 11.04, the repositories version will work, but filtering on number of touches won't work (Bug#769859 in libutouch-geis); to solve this you need a version of uTouch-geis that is at least 2.1.0; you can have it either by installing the '.deb' packages from Oneiric repositories (type in a terminal 'sudo apt-get build-dep libutouch-geis-dev', then install 'libutouch-geis1' first, then 'libutouch-geis-dev'), or by compiling the latest version from source (https://launchpad.net/utouch-geis); if you compile from sources, you can type in a terminal 'sudo apt-get build-dep libutouch-geis-dev' to have all dependencies installed. For Ubuntu 10.10, do not use the repositories version; use one of the previous solutions. 
-
+		  
 FOR OTHER DISTRIBUTIONS : 
-	For the other distributions, the dependencies should be very similar. Only the multitouch features maybe won't work since uTouch-Geis has been build for Ubuntu. However, the uTouch Suite (including uTouch-Geis) starts beeing ported in other distributions such as Gentoo (https://sabotageandi.wordpress.com/2011/04/20/utouch-gentoo/) or Fedora. More info on this in the documentation directory.
+	For the other distributions, the dependencies should be very similar. 
 
 2. compilation and installation : 
 """""""""""""""""""""""""""""""""
@@ -59,17 +58,15 @@ FOR OTHER DISTRIBUTIONS :
 		$ ./configure --disable-sdl2
 
 	
-	NOTE for JACK and MULTITOUCH SUPPORT:
-	If Jack library is found, JACK support will be enabled. Also, if libbamf and libutouch-geis version 2 libraries are found, MULTITOUCH support will be enabled. If those libraries are not installed, JACK and MULTITOUCH support won't be enabled. However, if you have those libraries installed but don't want those features enabled, you have to type '--disable-jack' or '--disable-geis' after 'configure' ('--enable-jack=no' and '--enable-geis=no' also works).
-	For example :	
+	NOTE for JACK SUPPORT:
+	If Jack library is found, JACK support will be enabled. Both jack and jack2 are supported.However, jack support can be disabled by typing :
+	
+		$ ./configure --disable-jack 
 
-		$ ./configure --disable-jack --disable-geis
 
-will deactivate JACK and MULTITOUCH support if those libraries are installed.
+	You can combine several arguments. For example :
 
-	You can combine many arguments. For example :
-
-		$ ./configure --disable-gtk3 --enable-gtkglext --disable-jack
+		$ ./configure --disable-gtk3 --disable-jack
 
 	If you want Spectrum3d to be installed in another directory than the default one ('/usr/local/bin'), you can add it at 'configure' step according to the 'Autoconf' standards. For example : 
 
@@ -101,7 +98,7 @@ Type in a terminal :
 or run it from 'Menu->Applications->Sound & Video->Spectrum3d'
 
 The 2 most important things to do first are :
-			- to select the type of audio source : either microphone or audio file;
+			- to select the type of audio source : either microphone or audio file; microphone is the default;
 			- set if analyse will be done in real time or not : if 'analyze in real time' is checked, harmonics will be retrieved and displayed on the fly, while the sound is being played; if 'Analyse in real time' is unchecked, harmonics of the whole audio file will be retrieved and displayed first, then the file can be played afterwards. When source is set to microphone and 'Analyse in real time' is unchecked, recording can be made; it will be analysed and displayed like for an audio file; similarly it can be also played afterward. 
 
 Selection of multiple audio files is not possible anymore. The 'reload' button allows to reload (i.e. analyse and display its harmonics) without reselecting the file.
@@ -134,8 +131,7 @@ From the menu :
 		- the color of the display (when analyse in real-time is selected);
 		- whether you want the display in the same window as the GUI or in a separate window;
 		- whether you want that the actual display is saved as preset;
-		- the interval of time (in milliseconds) between each new analysis of the spectral data; as for display, the smallest this value will be, the more demanding it will be on the cpu; this value should match the interval of time between 2 displays for better display but this is not mandatory;
-		- whether you want Spectrum3d to run in realtime mode (when JACK is not used); if so, you can choose between SCHED_RR or SCHED_FIFO policies, and set the priority; please see important note at the end of this file.
+		- the interval of time (in milliseconds) between each new analysis of the spectral data; as for display, the smallest this value will be, the more demanding it will be on the cpu; this value should match the interval of time between 2 displays for better display but this is not mandatory.
 
 	All those preferences are kept in a 'preferences' file that is created at first use of Spectrum3d and placed in the home directory : ~/.spectrum3d/spectrum3d.pref. Everytime Spectrum3d starts, it check some values of this 'preferences' file for consistency; if out of range value is found, a new 'preferences' file with default values is created.
 
@@ -174,37 +170,19 @@ Command				Gesture
 Play/pause			Double Tap
 Rotate around X axis		1 finger Drag Up/down	
 Rotate around Y axis		1 finger Right/left
-Rotate around Z axis		2 fingers Rotate
-Translate along X axis		2 fingers Right/left
-Translate along Y axis		2 fingers Drag Up/down
-Translate along Z axis		2 fingers Pinch
+Rotate around Z axis		2 (or more) fingers Rotate
+Translate along X axis		2 (or more) fingers Right/left
+Translate along Y axis		2 (or more) fingers Drag Up/down
+Translate along Z axis		2 (or more) fingers Pinch
 
 
-*********************
-|  IMPORTANT NOTES  |
-*********************
+**********
+| NOTES  |
+**********
 
 1. Although it is 3D with OpenGL, the drivers for 3D acceleration are not needed (no need for proprietary drivers here!), but it can help to have a better rendering. 
 
-2. Spectrum 3D can use a lot of resources on your machine, given the real-time analysis and 3D display of the data's. 3 aspects are important : the power of the processor, the performance of the graphic card (with or without the 3D drivers) and the type of kernel that is being used (a preempt or real-time will allow better performance). The amount of needed resources is proportional to the width of the window. If your machine has difficulty, you can use a smaller window size (in Menu -> Edit -> Preferences), which decreases the needed resources.
-
-3. RealTime mode will allow Spectrum3d to have priority on other running processes, in order to not be slowed down by them; it won't decrease the amount of CPU and GPU resources needed to perform the task. IMPORTANT WARNING : If you want to take advantage of this you should edit or create an '/etc/security/limits.d/audio.conf' file and put this inside : 
-
-	@audio   -  rtprio     95
-	
-then you should add yourself as a member of the 'audio' group :
-
-	- either go in System->Preferences->Users and Groups->Manage Groups, then select the 'audio' groups, click on 'Properties' and add yourself;
-	- or by typing in a terminal : sudo adduser ${LOGNAME} audio 
-
-then reboot.
-
-If you don't do this, you'll have to run Spectrum3d as root, which is NOT RECOMMENDED AT ALL.
-You'll find more information in the 'Realtime' file in the Doc directory.
-
-4. Multitouch support is provided by the uTouch-geis API. For now, the whole screen receives fingers input for Spectrum3d while Spectrum3d is running (input is not limited to the Spectrum3d window), unless you use a version of uTouch-geis that is at least 2.1.0. On the other hand, when Sprectrum3d is running, the mouse pointer cannot be used from the touchpoint on the screen, but the mouse pointer is still driven by the mouse. This behavior could be the same in Natty or later, if you have a touchpad that supports multitouch : the touchpad only receives input as multitouch gestures, and you cannot use it anymore to drive the mouse as long as Spectrum 3d is running. 
-
-You'll find more information in the 'Multitouch' file in the Doc directory.
+2. Spectrum 3D can use a lot of resources on your machine, given the real-time analysis and 3D display of the data's. 3 aspects are important : the power of the processor, the performance of the graphic card (with or without the 3D drivers) and the type of kernel that is being used (a preempt or real-time will allow better performance). The amount of needed resources is proportional to the width of the window. If your machine has difficulty, you can use a smaller window size (in Menu -> Edit -> Preferences), which decreases the needed resources. However, given the increased capabilities of computers, those precautions are now to be taken on old computers (or very basic models).
 
 
 Thank you for telling me whatever you want too and than you for your presence!
