@@ -141,6 +141,8 @@ gboolean compareGLfloat(GLfloat value1, GLfloat value2, GLfloat precision)
 /* Draw the spectrogram */
 gboolean display_spectro(Spectrum3dGui *spectrum3dGui){
 
+//printf("display_spectro\n");
+
 /* The opengl initializing functions when gtkglext is used */
 #ifdef GTKGLEXT3
 	if (!gtk_widget_begin_gl (spectrum3dGui->drawing_area))

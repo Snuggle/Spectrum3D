@@ -33,14 +33,27 @@ void onPreferences(GtkWidget* widget, Spectrum3dGui *spectrum3dGui)
 	gchar *sTabLabel[3];
 	GtkWidget *pPreferences, *pNotebook, *pTabLabel, *label, *spinFrames, *spinZStep, *spinDisplayInterval, *spinSpectrumInterval, *comboColor, *pCheckRealtime, *pComboPolicy, *pSpinPriority, *pCheckPreset, *pCheckEnableTouch, *pFrame, *content_area, *radio[2], *entry;
 	GtkWidget *pVBox[3];
+#ifdef GTK3
+	for (i = 0; i < 3; i++) {
+		pVBox[i] = gtk_box_new(GTK_ORIENTATION_VERTICAL, 4);
+		}
+#elif defined GTK2
 	for (i = 0; i < 3; i++) {
 		pVBox[i] = gtk_vbox_new(FALSE, 4);
 		}
+#endif
+	
 	GtkWidget *pHBox[25];
+#ifdef GTK3
+	for (i = 0; i < 25; i++) {
+		pHBox[i] = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
+		}
+#elif defined GTK2
 	for (i = 0; i < 25; i++) {
 		pHBox[i] = gtk_hbox_new(FALSE, 4);
 		}
-		
+#endif
+			
         pPreferences = gtk_dialog_new_with_buttons("Preferences",
 			NULL,
 			GTK_DIALOG_MODAL,
@@ -182,7 +195,7 @@ void onPreferences(GtkWidget* widget, Spectrum3dGui *spectrum3dGui)
 	
 	sTabLabel[2] = g_strdup_printf("Touch");
 	pTabLabel = gtk_label_new(sTabLabel[2]);
-#ifdef HAVE_LIBUTOUCH_GEIS
+#ifdef HAVE_LIBGEIS
 	gtk_notebook_append_page(GTK_NOTEBOOK(pNotebook), pVBox[2], pTabLabel);
 #endif
 	g_free(sTabLabel[2]);
@@ -280,10 +293,16 @@ void test_sound_window(Spectrum3dGui *spectrum3dGui){
 	spectrum3dGui->dialogTestSound = gtk_dialog_new();
 	gtk_window_set_title(GTK_WINDOW(spectrum3dGui->dialogTestSound), "Play Test Sound");
 	g_signal_connect (G_OBJECT (spectrum3dGui->dialogTestSound), "destroy", G_CALLBACK (set_check_menu_test_sound), spectrum3dGui);
+#ifdef GTK3
+	hbox[0] = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 15);
+	hbox[1] = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
+	vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 15);
+#elif defined GTK2
 	hbox[0] = gtk_hbox_new (FALSE, 15);
 	hbox[1] = gtk_hbox_new (FALSE, 0);
 	vbox = gtk_vbox_new (FALSE, 15);
-	
+#endif
+		
 	gtk_widget_set_tooltip_text (spectrum3dGui->dialogTestSound, "Play a pure sine wave sound");
 	widget = gtk_button_new_with_label("Play/Pause");
 	gtk_widget_set_tooltip_text (widget, "Play/Pause a pure sine wave sound");
@@ -524,7 +543,7 @@ the 3 axis (see 'Shortcuts' in menu)\n\
 	content_area = gtk_dialog_get_content_area (GTK_DIALOG (quickStartWindow));
 	gtk_container_add (GTK_CONTAINER (content_area), label);
 	gtk_widget_show_all(quickStartWindow);
-#elif GTK2
+#elif defined GTK2
 	gtk_container_add(GTK_CONTAINER(GTK_DIALOG(quickStartWindow)->vbox), label);
 	gtk_widget_show_all(GTK_DIALOG(quickStartWindow)->vbox);
 #endif

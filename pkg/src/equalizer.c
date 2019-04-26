@@ -245,7 +245,7 @@ void effects_window(Spectrum3dGui *spectrum3dGui){
 
 #ifdef GTK3
 	GtkAdjustment *adjustment;
-#elif GTK2
+#elif defined GTK2
 	GtkObject *adjustment;
 #endif
 			
@@ -255,10 +255,17 @@ void effects_window(Spectrum3dGui *spectrum3dGui){
 	//g_signal_connect (G_OBJECT (spectrum3dGui->effectsWindow), "destroy", G_CALLBACK (destroy), NULL);
 	g_signal_connect (G_OBJECT (spectrum3dGui->effectsWindow), "delete-event", G_CALLBACK (delete_event), NULL);
 	
+#ifdef GTK3
+	vbox[0] = gtk_box_new (GTK_ORIENTATION_VERTICAL, 6);
+	hbox[0] = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+	hbox[1] = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+	hbox[2] = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+#elif defined GTK2
 	vbox[0] = gtk_vbox_new (FALSE, 6);
 	hbox[0] = gtk_hbox_new(TRUE, 0);
 	hbox[1] = gtk_hbox_new(TRUE, 0);
-	hbox[2] = gtk_hbox_new(FALSE, 0);			
+	hbox[2] = gtk_hbox_new(FALSE, 0);
+#endif		
 
 	gtk_container_add(GTK_CONTAINER(spectrum3dGui->effectsWindow), vbox[0]);
 	gtk_box_pack_start(GTK_BOX(vbox[0]), hbox[0], TRUE, TRUE, 0);
@@ -282,7 +289,7 @@ void effects_window(Spectrum3dGui *spectrum3dGui){
 	frame = gtk_frame_new("Lower value of BP filter (hz)");
 #ifdef GTK3
 	adjustment = GTK_ADJUSTMENT(gtk_adjustment_new(200, 0, 40000, 1, 100, 0));
-#elif GTK2
+#elif defined GTK2
 	adjustment = gtk_adjustment_new(200, 0, 40000, 1, 100, 0);
 #endif
 	spinBPlowerValue = gtk_spin_button_new(GTK_ADJUSTMENT(adjustment), 1, 0);
@@ -294,7 +301,7 @@ NULL);
 	frame = gtk_frame_new("Upper value of BP filter (hz)");
 #ifdef GTK3
 	adjustment = GTK_ADJUSTMENT(gtk_adjustment_new(400, 0, 40000, 1, 100, 0));
-#elif GTK2
+#elif defined GTK2
 	adjustment = gtk_adjustment_new(400, 0, 40000, 1, 100, 0);
 #endif
 	spinBPupperValue = gtk_spin_button_new(GTK_ADJUSTMENT(adjustment), 1, 0);
@@ -344,10 +351,18 @@ NULL);
 		frame = gtk_frame_new (label);
 		g_free (label);
 
-		scales_hbox = gtk_hbox_new (TRUE, 6);
+#ifdef GTK3
+	scales_hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 6);
+#elif defined GTK2
+	scales_hbox = gtk_hbox_new (TRUE, 6);
+#endif	
 
 		/* Draw the scales for gain of each band; the displayed value will be multiplied by 3 since there 3 equalizers placed in serie controlled by the same Scale */
+#ifdef GTK3
+		widgetG[i] = gtk_scale_new_with_range (GTK_ORIENTATION_VERTICAL, -24.0, 12.0, 0.5);
+#elif defined GTK2
 		widgetG[i] = gtk_vscale_new_with_range (-24.0, 12.0, 0.5);
+#endif	
 		gtk_widget_set_tooltip_text (widgetG[i], "Gain in dB");
 		gtk_scale_set_draw_value (GTK_SCALE (widgetG[i]), TRUE);
 		gtk_scale_set_value_pos (GTK_SCALE (widgetG[i]), GTK_POS_TOP);
@@ -365,7 +380,11 @@ NULL);
 		gtk_box_pack_start (GTK_BOX (scales_hbox), widgetG[i], TRUE, TRUE, 0);
 
 		/* Draw the scales for bandwith of each band, from 0 to 20000 Hz */
+#ifdef GTK3
+		widgetB[i] = gtk_scale_new_with_range (GTK_ORIENTATION_VERTICAL, 0.0, 20000.0, 5.0);
+#elif defined GTK2
 		widgetB[i] = gtk_vscale_new_with_range (0.0, 20000.0, 5.0);
+#endif	
 		gtk_widget_set_tooltip_text (widgetB[i], "Bandwidth of this band in Herz; finer adjustment can be done with the Up/Down or PgUp/PgDn Keys");
 		gtk_scale_set_draw_value (GTK_SCALE (widgetB[i]), TRUE);
 		gtk_scale_set_value_pos (GTK_SCALE (widgetB[i]), GTK_POS_TOP);
@@ -380,7 +399,11 @@ NULL);
 		gtk_box_pack_start (GTK_BOX (scales_hbox), widgetB[i], TRUE, TRUE, 0);
 		
 		/* Draw the scales to ajust frequency of each band, from 20 to 20000 Hz */
+#ifdef GTK3
+		widgetF[i] = gtk_scale_new_with_range (GTK_ORIENTATION_VERTICAL, 20.0, 20000.0, 5.0);
+#elif defined GTK2
 		widgetF[i] = gtk_vscale_new_with_range (20.0, 20000.0, 5.0);
+#endif	
 		gtk_widget_set_tooltip_text (widgetF[i], "Frequency of this band in Herz; finer adjustment can be done with the Up/Down or PgUp/PgDn Keys");
 		gtk_scale_set_draw_value (GTK_SCALE (widgetF[i]), TRUE);
 		gtk_scale_set_value_pos (GTK_SCALE (widgetF[i]), GTK_POS_TOP);

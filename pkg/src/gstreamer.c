@@ -118,7 +118,8 @@ sync_bus_handler (GstBus * bus, GstMessage * message, GstElement * bin)
 gboolean message_handler (GstBus * bus, GstMessage * message, gpointer data)
 {	
 	int ii = 0;
-			
+
+	//printf("message = %d\n", message->type);			
         if (message->type == GST_MESSAGE_ELEMENT) {
 		const GstStructure *s = gst_message_get_structure (message);
 		const gchar *name = gst_structure_get_name (s);
@@ -272,6 +273,7 @@ if (playing){
 /* Play */
 else if (playing == 0) {
 					
+	GstStateChangeReturn ret;
 	guint timeoutPrintPosition;
 	GstElement *src, *audioconvert, *audioconvert2, *audioconvert3, *spectrum, *flacenc, *sink;
 	GstBus *bus, *busRT;
@@ -359,7 +361,7 @@ else if (playing == 0) {
 				g_assert (src);
 				}
 			else {
-				src = gst_element_factory_make ("autoaudiosrc", NULL);
+				src = gst_element_factory_make ("alsasrc", NULL);
 				g_assert (src);
 				}
 			}
@@ -503,13 +505,17 @@ else if (playing == 0) {
 
 /* set state to PLAYING and start main loop */
 		if (source == MICRO) {
-			gst_element_set_state (pipeline, GST_STATE_PLAYING);
+			ret = gst_element_set_state (pipeline, GST_STATE_PLAYING);
 			}
 		else if (source == SOUND_FILE) {
 			gst_element_set_state (playbin, GST_STATE_PLAYING);
 			timeoutPrintPosition = g_timeout_add (200, (GSourceFunc) cb_print_position, pipeline);
 			}
-		printf ("Now playing\n");
+		if (ret == GST_STATE_CHANGE_FAILURE) {
+    			GstMessage *msg;
+    			g_print ("Failed to start up pipeline!\n");
+			}
+		else printf ("Now playing\n");
 		g_main_loop_run (loop);
 
 /* stop playing */

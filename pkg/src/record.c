@@ -40,13 +40,18 @@ void record_window() {
 		NULL);
 	gtk_window_set_default_size(GTK_WINDOW(recordWindow), 250, 50);
 
+#ifdef GTK3
+	hbox[0] = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
+	hbox[1] = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+#elif defined GTK2
 	hbox[0] = gtk_hbox_new(TRUE, 10);
 	hbox[1] = gtk_hbox_new(TRUE, 0);
+#endif	
 	
 #ifdef GTK3
 	content_area = gtk_dialog_get_content_area (GTK_DIALOG (recordWindow));
 	gtk_container_add (GTK_CONTAINER (content_area), hbox[0]);
-#elif GTK2
+#elif defined GTK2
 	gtk_box_pack_start(GTK_BOX(GTK_DIALOG(recordWindow)->vbox), hbox[0], TRUE, TRUE, 0);
 #endif			
 
@@ -73,6 +78,7 @@ void record_window() {
 			recording = FALSE;
 			analyse_rt = FALSE;
 			selected_file = g_build_filename (tmpPath, NULL);
+			printf("tmpPath is %s\n", selected_file);
     			load_audio_file();
 		break;
 		case GTK_RESPONSE_CANCEL:

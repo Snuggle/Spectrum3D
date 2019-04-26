@@ -161,6 +161,7 @@ void select_audio_file()
 /* Get the lenght of the pipeline */
 gboolean get_pipeline_lenght (GstElement *pipeline)
 {
+	printf("get_pipeline_length\n");
 	gboolean result = TRUE;
 	GstFormat fmt = GST_FORMAT_TIME; 
 	if (gst_element_query_duration (pipeline, &fmt, &len)) {
@@ -206,13 +207,18 @@ void show_progression() {
 	gtk_container_set_border_width(GTK_CONTAINER(progressWindow), 4);
 	g_signal_connect(G_OBJECT(progressWindow), "delete-event", G_CALLBACK(on_stop), NULL);
 
+	
+#ifdef GTK3
+	vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+#elif defined GTK2
 	vbox = gtk_vbox_new(TRUE, 0);
+#endif
 	gtk_container_add(GTK_CONTAINER(progressWindow), vbox);
 
 	progress = gtk_progress_bar_new();
 #ifdef GTK3
 	gtk_progress_bar_set_inverted(GTK_PROGRESS_BAR(progress), FALSE);
-#elif GTK2
+#elif defined GTK2
 	gtk_progress_bar_set_orientation(GTK_PROGRESS_BAR(progress), GTK_PROGRESS_LEFT_TO_RIGHT);
 #endif
 	gtk_box_pack_start(GTK_BOX(vbox), progress, TRUE, FALSE, 0);
@@ -226,6 +232,7 @@ void show_progression() {
 
 /* Load the audio file : get its lenght, allocate memory for it, analyse the spectrum and display it */
 void load_audio_file(){
+	printf("load audio file\n");
 	GstElement *playbin;
 	
 	if (selected_file == NULL){
@@ -237,16 +244,17 @@ void load_audio_file(){
 	// (re)initialize frame_number_counter
 	frame_number_counter = 0;
 	
-	/* get lenght of the file; for that, a pipeline will be run with a "fakesink"; the loop will be terminated when a valid value is obtained */
+	/* get lenght of the file; a 'playbin' pipeline is created with the file and its length is retrieved */
 	load_loop = g_main_loop_new(NULL, FALSE);
 	playbin = gst_element_factory_make ("playbin", NULL);
 	g_assert (playbin);
 	g_object_set (G_OBJECT (playbin), "uri", g_filename_to_uri(selected_file, NULL, NULL), NULL);
-	gst_element_set_state (playbin, GST_STATE_PAUSED);
-	g_timeout_add (200, (GSourceFunc) get_pipeline_lenght, playbin);
-	g_main_loop_run (load_loop);
-	gst_element_set_state (playbin, GST_STATE_NULL);
-
+	GstFormat fmt = GST_FORMAT_TIME; 
+	if (gst_element_query_duration (playbin, &fmt, &len)) {
+		lenght = (int)GST_TIME_AS_SECONDS(len);
+		printf("lenght = %d seconds\n", lenght);
+		}
+	
 	/* Calculate time interval between frames according to the lenght of the file; we will use a number of 'frames' = 200 to have everything displayed on the same screen */ 
 
 	spectrum3d.interval_loaded = (lenght * 1000) / spectrum3d.frames;

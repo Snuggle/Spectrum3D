@@ -4,7 +4,7 @@
 ############### INITIALIZE EVERYTHING ######################
 
 AC_INIT([Spectrum3d],
-	[2.2.0],
+	[2.3.0],
 	[nadaeck@hotmail.com], 
 	[spectrum3d],
 	[spectrum3d.sourceforge.net])
@@ -107,13 +107,10 @@ AS_IF([test "x$enable_geis" != "xno"], [
   PKG_CHECK_MODULES([BAMF], [libbamf >= $BAMF_REQUIRED], [
 	CFLAGS="$CFLAGS $BAMF_CFLAGS"
   	LIBS="$LIBS $BAMF_LIBS"
-	PKG_CHECK_MODULES([GEIS], [libutouch-geis > GEIS_REQUIRED], [
-		AC_DEFINE([HAVE_LIBUTOUCH_GEIS], [1], [Define to 1 if you have the `utouch-geis' library version 2 (advanced API) (-lutouch-geis).])
+	PKG_CHECK_MODULES([GEIS], [libgeis], [
+		AC_DEFINE([HAVE_LIBGEIS], [1], [Define to 1 if you have the Geis library.])
 		CFLAGS="$CFLAGS $GEIS_CFLAGS"
    		LIBS="$LIBS $GEIS_LIBS"
-		PKG_CHECK_MODULES([GEIS_12], [libutouch-geis > 2.0.11], [
-			AC_DEFINE([GEIS_12], [1], [Define to 1 if you have the `utouch-geis' library > 2.0.11.])
-			], [geis12=0])
 		], [geis=0])
 	], [geis=0])],
 	[geis=0])

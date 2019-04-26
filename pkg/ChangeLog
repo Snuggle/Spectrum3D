@@ -1,3 +1,13 @@
+2012-02-15 Bernard Victor Delvaux  <nadaeck@hotmail.com>
+    Version : Spectrum3d-2.3.0 :
+    * general changes : some deprecated functions have been replaced in Gtk3;
+    * general changes : new main icon;
+    * main.c and events.c : events are managed by Gtk only (not by SDL anymore);
+    * gstreamer.c : when source is microphone, 'autoaudiosrc' has been changed for 'alsasrc' since the first didn't work anymore on Ubuntu 12.10;
+    * record.c and typesource.c : length of a audio file (either recorded or preexisting) is measured more simply; there was a bug with this on Ubuntu 12.10;
+    * main.c : main window icon has been created;
+    * geis.c : libutouch-geis has been renamed as libgeis; only the version 2 can be used, but it seems broken due to a bug in libgeis regarding gesture recognition;
+
 2012-02-18 Bernard Victor Delvaux  <nadaeck@hotmail.com>
     Version : Spectrum3d-2.1.2 :
     * main.c and display.c : SDL is used by defaut and hack a gtk window : either a window in the same window as the GUI, or a separate window; GtlGlExt can be used instead with the same result;

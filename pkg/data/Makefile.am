@@ -13,7 +13,8 @@ dist_icon_DATA = stop.png \
 		file_grey.png \
 		qjackctl.png \
 		equalizer.png \
-		gain.png
+		gain.png\
+		spectrum3d.png
 
 gtk_update_icon_cache = gtk-update-icon-cache -f -t $(svgicondir)
 

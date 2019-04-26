@@ -26,7 +26,7 @@ FOR UBUNTU from 10.10 : All dependencies are available in the Ubuntu repositorie
 		- (optional) libjack-dev (for jack1) or libjack-jackd2-dev for jack2; note that you don't need to have the 'jackd' package installed, but only the '-dev' library;
 
 	For multitouch support (touchscreen and also for multitouch touchpad from Natty):
-		- (optional) libutouch-geis-dev version 2. 
+		- (optional) libutouch-geis-dev version 2 untill Ubuntu 12.04; this has been renamed libgeis-dev from Ubuntu 12.10;
 		  NOTE : For Ubuntu 11.04, the repositories version will work, but filtering on number of touches won't work (Bug#769859 in libutouch-geis); to solve this you need a version of uTouch-geis that is at least 2.1.0; you can have it either by installing the '.deb' packages from Oneiric repositories (type in a terminal 'sudo apt-get build-dep libutouch-geis-dev', then install 'libutouch-geis1' first, then 'libutouch-geis-dev'), or by compiling the latest version from source (https://launchpad.net/utouch-geis); if you compile from sources, you can type in a terminal 'sudo apt-get build-dep libutouch-geis-dev' to have all dependencies installed. For Ubuntu 10.10, do not use the repositories version; use one of the previous solutions. 
 
 FOR OTHER DISTRIBUTIONS : 

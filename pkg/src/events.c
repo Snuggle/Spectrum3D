@@ -24,101 +24,94 @@
 
 #include "config.h"
 
-#ifdef HAVE_LIBSDL
+/*#ifdef HAVE_LIBSDL
     #include <SDL/SDL.h>
-#endif
+#endif*/
 
 #include "spectrum3d.h"
 #include "events.h"
+
+/* Events are entirely managed by Gtk/Gdk, not SDL anymore */
 
 gboolean a_keyPressed = FALSE, g_keyPressed = FALSE, q_keyPressed = FALSE, shift_keyPressed = FALSE, control_keyPressed = FALSE;
 gdouble oldXPos = 0, oldYPos = 0;
 
 gboolean on_mouse_scroll (GtkWidget *window, GdkEventScroll *event, gpointer data){
-	//printf("state = %d\n", event->state);
-	if (event->type == GDK_SCROLL){
-		if (event->state == GDK_BUTTON1_MASK){
-			//printf("mouse motion\n");
-			if (event->direction == GDK_SCROLL_UP){
-				AngleZ+=0.4;
-				}
-			if (event->direction == GDK_SCROLL_DOWN){
-				AngleZ-=0.4;
-				}
-		newEvent = TRUE;
+	if (event->state & GDK_BUTTON1_MASK){
+		if (event->direction == GDK_SCROLL_UP){
+			AngleZ+=0.4;
 			}
-	  	else if (event->state == GDK_BUTTON3_MASK){
-			//printf("mouse motion\n");
-			if (event->direction == GDK_SCROLL_UP){
-				Z += 0.02;
-				}
-			if (event->direction == GDK_SCROLL_DOWN){
-				Z -= 0.02;
-				}
-		newEvent = TRUE;
+		if (event->direction == GDK_SCROLL_DOWN){
+			AngleZ-=0.4;
 			}
+	newEvent = TRUE;
+		}
+  	else if (event->state & GDK_BUTTON3_MASK){
+
+		if (event->direction == GDK_SCROLL_UP){
+			Z += 0.02;
+			}
+		if (event->direction == GDK_SCROLL_DOWN){
+			Z -= 0.02;
+			}
+	newEvent = TRUE;
 		}
 	return FALSE;
 }
 
 
 gboolean on_mouse_motion (GtkWidget *window, GdkEventMotion *event, gpointer data){
-	//printf("state = %d\n", event->state);
-	if (event->type == GDK_MOTION_NOTIFY){
-	  	if (event->state == GDK_BUTTON1_MASK){
-			//printf("mouse motion\n");
-			if (event->x > oldXPos){
-				AngleH+=0.4;
-				}
-			if (event->x < oldXPos){
-				AngleH-=0.4;
-				}
-			oldXPos = event->x;
-			if (event->y > oldYPos){
-				AngleV+=0.4;
-				}
-			if (event->y < oldYPos){
-				AngleV-=0.4;
-				}
-			oldYPos = event->y;
-		newEvent = TRUE;
+	
+  	if (event->state & GDK_BUTTON1_MASK){
+		if (event->x > oldXPos){
+			AngleH+=0.4;
 			}
-		else if (event->state == GDK_BUTTON3_MASK){
-			//printf("mouse motion\n");
-			if (event->x > oldXPos){
-				X+=0.004;
-				}
-			if (event->x < oldXPos){
-				X-=0.004;
-				}
-			oldXPos = event->x;
-			if (event->y > oldYPos){
-				Y-=0.006;
-				}
-			if (event->y < oldYPos){
-				Y+=0.006;
-				}
-			oldYPos = event->y;
-		newEvent = TRUE;
+		if (event->x < oldXPos){
+			AngleH-=0.4;
 			}
-		else if (event->state == GDK_BUTTON2_MASK){
-			//printf("mouse motion\n");
-			if (event->x > oldXPos){
-				AngleZ-=0.4;
-				}
-			if (event->x < oldXPos){
-				AngleZ+=0.4;
-				}
-			oldXPos = event->x;
-			if (event->y > oldYPos){
-				Z+=0.01;
-				}
-			if (event->y < oldYPos){
-				Z-=0.01;
-				}
-			oldYPos = event->y;
-		newEvent = TRUE;
+		oldXPos = event->x;
+		if (event->y > oldYPos){
+			AngleV+=0.4;
 			}
+		if (event->y < oldYPos){
+			AngleV-=0.4;
+			}
+		oldYPos = event->y;
+	newEvent = TRUE;
+		}
+	else if (event->state & GDK_BUTTON3_MASK){
+		if (event->x > oldXPos){
+			X+=0.004;
+			}
+		if (event->x < oldXPos){
+			X-=0.004;
+			}
+		oldXPos = event->x;
+		if (event->y > oldYPos){
+			Y-=0.006;
+			}
+		if (event->y < oldYPos){
+			Y+=0.006;
+			}
+		oldYPos = event->y;
+	newEvent = TRUE;
+		}
+	else if (event->state & GDK_BUTTON2_MASK){
+		if (event->x > oldXPos){
+			AngleZ-=0.4;
+			}
+		if (event->x < oldXPos){
+			AngleZ+=0.4;
+			}
+		oldXPos = event->x;
+		if (event->y > oldYPos){
+			Z+=0.01;
+			}
+		if (event->y < oldYPos){
+			Z-=0.01;
+			}
+		oldYPos = event->y;
+	newEvent = TRUE;
 		}
 	return FALSE;
 }
@@ -133,6 +126,9 @@ gboolean on_key_press (GtkWidget * window, GdkEventKey*	event, Spectrum3dGui *sp
 				break;
 			case GDK_KEY_Left :
 				if (event->state == GDK_CONTROL_MASK){
+					X -= 0.02;
+					}
+				else if (control_keyPressed){
 					X -= 0.02;
 					}
 				else if (a_keyPressed){
@@ -151,6 +147,9 @@ gboolean on_key_press (GtkWidget * window, GdkEventKey*	event, Spectrum3dGui *sp
 				if (event->state == GDK_CONTROL_MASK){
 					X += 0.02;
 					}
+				else if (control_keyPressed){
+					X += 0.02;
+					}
 				else if (a_keyPressed){
 					Xpointer +=  (x / bandsNumber) * 10;
 					Ypointer += (y_2d / bandsNumber) * 10;
@@ -165,13 +164,12 @@ gboolean on_key_press (GtkWidget * window, GdkEventKey*	event, Spectrum3dGui *sp
 				break;
 			case GDK_KEY_Up :
 				if (control_keyPressed && shift_keyPressed){
-					printf("ctrl + shift\n");
 					Z -= 0.02;
 					}
-				else if (event->state == GDK_CONTROL_MASK){
+				else if (control_keyPressed){
 					Y += 0.02;
 					}
-				else if (event->state == GDK_SHIFT_MASK){
+				else if (shift_keyPressed){
 					AngleZ += 0.4;
 					}
 				else if (a_keyPressed){
@@ -186,17 +184,17 @@ gboolean on_key_press (GtkWidget * window, GdkEventKey*	event, Spectrum3dGui *sp
 					gtk_scale_button_set_value( GTK_SCALE_BUTTON(spectrum3dGui->scaleGain), (gtk_scale_button_get_value(GTK_SCALE_BUTTON(spectrum3dGui->scaleGain)) + 0.01) );
 					}
 				else {
-					AngleV+=0.4;
+					AngleV -= 0.4;
 					}
 				break;
 			case GDK_KEY_Down :
 				if (control_keyPressed && shift_keyPressed){
 					Z += 0.02;
 					}
-				else if (event->state == GDK_CONTROL_MASK){
+				else if (control_keyPressed){
 					Y -= 0.02;
 					}
-				else if (event->state == GDK_SHIFT_MASK){
+				else if (shift_keyPressed){
 					AngleZ -= 0.4;
 					}
 				else if (a_keyPressed){
@@ -211,7 +209,7 @@ gboolean on_key_press (GtkWidget * window, GdkEventKey*	event, Spectrum3dGui *sp
 					gtk_scale_button_set_value( GTK_SCALE_BUTTON(spectrum3dGui->scaleGain), (gtk_scale_button_get_value(GTK_SCALE_BUTTON(spectrum3dGui->scaleGain)) - 0.01) );
 					}
 				else {
-					AngleV-=0.4;
+					AngleV += 0.4;
 					}
 				break;
 			case GDK_KEY_space :
@@ -303,12 +301,15 @@ gboolean on_key_release (GtkWidget *window, GdkEventKey *event, Spectrum3dGui *s
 	return FALSE;
 }
 
+/*
 #ifdef HAVE_LIBSDL
 gboolean sdl_event(Spectrum3dGui *spectrum3dGui)
 {
 	Uint8 mouseState, *keystate;
 	SDL_Event event;
 	int MouseX,MouseY;
+
+	printf("sdl event?\n");
 	
 	while (SDL_PollEvent(&event)){
 		switch (event.type)
@@ -501,5 +502,6 @@ gboolean sdl_event(Spectrum3dGui *spectrum3dGui)
 }
 
 #endif
+*/
 
 

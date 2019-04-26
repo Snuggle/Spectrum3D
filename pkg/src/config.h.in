@@ -1,8 +1,5 @@
 /* src/config.h.in.  Generated from configure.ac by autoheader.  */
 
-/* Define to 1 if you have the `utouch-geis' library > 2.0.11. */
-#undef GEIS_12
-
 /* Define to 1 if you have the `GTK2' library */
 #undef GTK2
 
@@ -18,6 +15,9 @@
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 
+/* Define to 1 if you have the Geis library. */
+#undef HAVE_LIBGEIS
+
 /* Define to 1 if you have the `GL' library (-lGL). */
 #undef HAVE_LIBGL
 
@@ -29,10 +29,6 @@
 
 /* Define to 1 if you have the `SDL' library (-lSDL). */
 #undef HAVE_LIBSDL
-
-/* Define to 1 if you have the `utouch-geis' library version 2 (advanced API)
-   (-lutouch-geis). */
-#undef HAVE_LIBUTOUCH_GEIS
 
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H

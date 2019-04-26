@@ -17,7 +17,7 @@ the utouch-geis-2.0.10 at https://launchpad.net/canonical-multitouch/utouch-geis
 
 #include "config.h"
 
-#ifdef HAVE_LIBUTOUCH_GEIS
+#ifdef HAVE_LIBGEIS
  
 #include <stdlib.h>
 #include <stdio.h>
@@ -49,16 +49,16 @@ char *getCurrentApp()
 void setupGeis()
 {
 	printf("Set up Geis\n");
-#ifdef GEIS_12
+//#ifdef GEIS_12
 	geis = geis_new(GEIS_INIT_TRACK_DEVICES, GEIS_INIT_TRACK_GESTURE_CLASSES, NULL);
 	geis_get_configuration(geis, GEIS_CONFIGURATION_FD, &fd);
 
 	subscription = geis_subscription_new(geis, "example", GEIS_SUBSCRIPTION_CONT);
-#endif
-#ifndef GEIS_12
+//#endif
+/*#ifndef GEIS_12
 	//GeisFilter filter;
 	geis = geis_new(GEIS_INIT_TRACK_DEVICES, NULL);
-	subscription = geis_subscription_new(geis, "example", GEIS_SUBSCRIPTION_CONT);
+	subscription = geis_subscription_new(geis, "example", GEIS_SUBSCRIPTION_CONT);*/
 	/*filter = geis_filter_new(geis, "filter");
 	
 	geis_filter_add_term(filter,
@@ -67,10 +67,10 @@ void setupGeis()
 			NULL);
 	
 	status = geis_subscription_add_filter(subscription, filter);*/
-	status = geis_subscription_activate(subscription);
+	/*status = geis_subscription_activate(subscription);
 
 	geis_get_configuration(geis, GEIS_CONFIGURATION_FD, &fd);
-#endif
+#endif*/
 
 	if (spectrum3d.enableTouch){
 		timeoutTouch = g_timeout_add (50, (GSourceFunc) geisGesture, NULL);
@@ -108,7 +108,7 @@ void processTouchEvent(int drag, int pinch, int rotate, int tap, int touchNumber
 		}
 }
 
-/*void print_attr(GeisAttr attr)
+void print_attr(GeisAttr attr)
 {
   GeisString attr_name = geis_attr_name(attr);
   switch (geis_attr_type(attr))
@@ -129,10 +129,10 @@ void processTouchEvent(int drag, int pinch, int rotate, int tap, int touchNumber
     default:
       break;
   }
-}*/
+}
 
 
-/*void
+void
 dump_device_event(GeisEvent event)
 {
   GeisDevice device;
@@ -142,13 +142,12 @@ dump_device_event(GeisEvent event)
 
   attr = geis_event_attr_by_name(event, GEIS_EVENT_ATTRIBUTE_DEVICE);
   device = geis_attr_value_to_pointer(attr);
-  printf("device %02d \"%s\"\n",
-         geis_device_id(device), geis_device_name(device));
+  printf("device %02d \"%s\"\n", geis_device_id(device), geis_device_name(device));
   for (i = 0; i < geis_device_attr_count(device); ++i)
   {
     print_attr(geis_device_attr(device, i));
   }
-}*/
+}
 
 
 gboolean dump_gesture_event(GeisEvent event)
@@ -167,6 +166,7 @@ gboolean dump_gesture_event(GeisEvent event)
   groupset = geis_attr_value_to_pointer(attr);
 
   //printf("gesture\n");
+  printf(" \n");
   for (i= 0; i < geis_groupset_group_count(groupset); ++i) {
     GeisSize j;
     GeisGroup group = geis_groupset_group(groupset, i);
@@ -179,9 +179,10 @@ gboolean dump_gesture_event(GeisEvent event)
 
       //printf("+frame %u\n", geis_frame_id(frame));
 	for (k = 0; k < attr_count; ++k) {
-		//print_attr(geis_frame_attr(frame, k));
+		print_attr(geis_frame_attr(frame, k));
 		GeisAttr attrIndex = geis_frame_attr(frame, k);
 		GeisString attr_name = geis_attr_name(geis_frame_attr(frame, k));
+		//printf("name = %s\n", geis_attr_value_to_string(attrIndex));
 		if (geis_attr_type(attrIndex) == GEIS_ATTR_TYPE_STRING) {
 			if ((strcmp(geis_attr_value_to_string(attrIndex), "Drag,touch=2") == 0) || (strcmp(geis_attr_value_to_string(attrIndex), "Drag,touch=1")== 0)) {
 				drag = 1;
@@ -244,7 +245,7 @@ else {
 	}
 }
 
-#ifdef GEIS_12
+//#ifdef GEIS_12
 void
 target_subscription(Geis geis, GeisSubscription subscription)
 {
@@ -261,7 +262,7 @@ target_subscription(Geis geis, GeisSubscription subscription)
     fprintf(stderr, "error adding filter\n");
   }
 }
-#endif
+//#endif
 
 
 gboolean geisGesture()
@@ -273,16 +274,16 @@ gboolean geisGesture()
 	status = geis_next_event(geis, &eventGeis);
 	while (status == GEIS_STATUS_CONTINUE || status == GEIS_STATUS_SUCCESS){
 		switch (geis_event_type(eventGeis)){
-#ifdef GEIS_12
+//#ifdef GEIS_12
 		case GEIS_EVENT_INIT_COMPLETE:
 		    target_subscription(geis, subscription);
 		    status = geis_subscription_activate(subscription);
 		    break;
-#endif
-		  /*case GEIS_EVENT_DEVICE_AVAILABLE:
+//#endif
+		  case GEIS_EVENT_DEVICE_AVAILABLE:
 		  case GEIS_EVENT_DEVICE_UNAVAILABLE:
-		    dump_device_event(eventGeis);
-		    break;*/
+		    //dump_device_event(eventGeis);
+		    break;
 
 		case GEIS_EVENT_GESTURE_BEGIN:
 		case GEIS_EVENT_GESTURE_UPDATE:

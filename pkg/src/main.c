@@ -39,6 +39,21 @@
 char prefPath[100];
 GtkWidget *playButton, *pScaleStart, *displayLabel;
 
+/* Main window icon */
+GdkPixbuf *create_pixbuf(const gchar * filename)
+{
+   GdkPixbuf *pixbuf;
+   GError *error = NULL;
+   pixbuf = gdk_pixbuf_new_from_file(filename, &error);
+   if(!pixbuf) {
+      fprintf(stderr, "%s\n", error->message);
+      g_error_free(error);
+   }
+
+   return pixbuf;
+}
+
+
 /* Sets the icon of 'playButton' as 'play' or 'pause' */
 void setPlayButtonIcon (){
 	GtkWidget *playImage = gtk_image_new_from_stock (GTK_STOCK_MEDIA_PLAY, GTK_ICON_SIZE_SMALL_TOOLBAR);
@@ -198,11 +213,24 @@ int main(int argc, char *argv[])
 	gtk_widget_set_size_request (spectrum3dGui.mainWindow, 700, initialWindowHeight);
 	gtk_widget_realize(spectrum3dGui.mainWindow);
 	gtk_window_set_title(GTK_WINDOW(spectrum3dGui.mainWindow), PACKAGE_NAME);
+	filename = g_build_filename (G_DIR_SEPARATOR_S, DATADIR, "icons", "spectrum3d.png", NULL);
+	gtk_window_set_icon(GTK_WINDOW(spectrum3dGui.mainWindow), create_pixbuf(filename));
 	g_signal_connect (G_OBJECT (spectrum3dGui.mainWindow), "destroy", G_CALLBACK (quit_spectrum3d), NULL);
 
 #ifdef GTK3
 	gtk_container_set_reallocate_redraws (GTK_CONTAINER (spectrum3dGui.mainWindow), TRUE);
 #endif
+
+#ifdef GTK3
+	for (i = 0; i < 4; i++) {
+		pVBox[i] = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+		}
+	pHBox[0] = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+	for (i = 1; i < 12; i++) {
+		pHBox[i] = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+		}
+	pHBox[12] = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+#elif defined GTK2
 	for (i = 0; i < 4; i++) {
 		pVBox[i] = gtk_vbox_new(FALSE, 0);
 		}
@@ -211,6 +239,7 @@ int main(int argc, char *argv[])
 		pHBox[i] = gtk_hbox_new(FALSE, 0);
 		}
 	pHBox[12] = gtk_hbox_new(TRUE, 0);
+#endif
 	
 	gtk_container_add(GTK_CONTAINER(spectrum3dGui.mainWindow), pVBox[1]); 
 	gtk_box_pack_start(GTK_BOX(pVBox[1]), pHBox[0], FALSE, FALSE, 0);
@@ -312,7 +341,7 @@ int main(int argc, char *argv[])
 	menuItem = gtk_menu_item_new_with_label("Shortcuts"); 
 	g_signal_connect(G_OBJECT(menuItem), "activate", G_CALLBACK(onShortcuts), (GtkWidget*) spectrum3dGui.mainWindow);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuItem);
-#ifdef HAVE_LIBUTOUCH_GEIS
+#ifdef HAVE_LIBGEIS
 	menuItem = gtk_menu_item_new_with_label("Gestures Shortcuts");
 	g_signal_connect(G_OBJECT(menuItem), "activate", G_CALLBACK(onGesturesShortcuts), (GtkWidget*) spectrum3dGui.mainWindow);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuItem);
@@ -375,7 +404,11 @@ int main(int argc, char *argv[])
 	g_signal_connect(G_OBJECT(widget), "toggled", G_CALLBACK(set_analyse_in_rt), &spectrum3dGui);
 
 /* separator */
+#ifdef GTK3
+	widget = gtk_separator_new(GTK_ORIENTATION_VERTICAL);
+#elif defined GTK2
 	widget = gtk_vseparator_new();
+#endif
 	gtk_box_pack_start(GTK_BOX(pHBox[1]), widget, FALSE, FALSE, 5);
 	
 /* "Play/Pause" button */
@@ -404,7 +437,11 @@ int main(int argc, char *argv[])
 	g_signal_connect(G_OBJECT(spectrum3dGui.record), "clicked", G_CALLBACK(record_window), NULL);
 
 /* separator */
+#ifdef GTK3
+	widget = gtk_separator_new(GTK_ORIENTATION_VERTICAL);
+#elif defined GTK2
 	widget = gtk_vseparator_new();
+#endif	
 	gtk_box_pack_start(GTK_BOX(pHBox[1]), widget, FALSE, FALSE, 5);
 
 /* JACK check button */
@@ -417,7 +454,11 @@ int main(int argc, char *argv[])
 	g_signal_connect(G_OBJECT(widget), "toggled", G_CALLBACK(use_jack), &spectrum3dGui);
 
 /* separator */
+#ifdef GTK3
+	widget = gtk_separator_new(GTK_ORIENTATION_VERTICAL);
+#elif defined GTK2
 	widget = gtk_vseparator_new();
+#endif	
 	gtk_box_pack_start(GTK_BOX(pHBox[1]), widget, FALSE, FALSE, 5);
 
 /* Button to open the Filter and Equalizer window */
@@ -438,7 +479,11 @@ int main(int argc, char *argv[])
 	gtk_box_pack_start(GTK_BOX(pVBox[1]), pHBox[5], FALSE, FALSE, 2);
 
 /* Progress & seek scale */
+#ifdef GTK3
+	scaleSeek = gtk_scale_new_with_range (GTK_ORIENTATION_HORIZONTAL, 0.0, 100.0, 1);
+#elif defined GTK2
 	scaleSeek = gtk_hscale_new_with_range (0.0, 100.0, 1);
+#endif
 	gtk_scale_set_draw_value (GTK_SCALE (scaleSeek), FALSE);
 	//gtk_scale_set_value_pos (GTK_SCALE (pScaleSeek), GTK_POS_TOP);
 	gtk_range_set_value (GTK_RANGE (scaleSeek), 0);
@@ -486,12 +531,12 @@ int main(int argc, char *argv[])
 			}
 #endif
 
-		gtk_widget_add_events (spectrum3dGui.mainWindow, GDK_KEY_PRESS_MASK | GDK_KEY_RELEASE_MASK | GDK_BUTTON_PRESS_MASK | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK);
 		g_signal_connect (spectrum3dGui.mainWindow, "key-press-event", G_CALLBACK (on_key_press), &spectrum3dGui);
 		g_signal_connect (spectrum3dGui.mainWindow, "key-release-event", G_CALLBACK (on_key_release), &spectrum3dGui);
 		g_signal_connect (spectrum3dGui.mainWindow, "motion-notify-event", G_CALLBACK (on_mouse_motion), NULL);
 		g_signal_connect (spectrum3dGui.mainWindow, "scroll-event", G_CALLBACK (on_mouse_scroll), NULL);
 		g_signal_connect (G_OBJECT (spectrum3dGui.drawing_area), "configure_event", G_CALLBACK (configure_event), NULL);
+		gtk_widget_add_events (spectrum3dGui.mainWindow, gtk_widget_get_events (spectrum3dGui.mainWindow) | GDK_KEY_PRESS_MASK | GDK_KEY_RELEASE_MASK | GDK_POINTER_MOTION_MASK | GDK_SCROLL_MASK);
 	}
 	else {
 		create_external_window_drawing_area(&spectrum3dGui);
@@ -501,7 +546,11 @@ int main(int argc, char *argv[])
 	frame = gtk_frame_new("Start value of display (in Hz)");
 	gtk_widget_set_tooltip_text (frame, "The lower displayed frequency (in herz)");
 	spectrum3dGui.adjustStart = gtk_adjustment_new(0, 0, 9000, ((gdouble)hzStep * (gdouble)zoomFactor), (((gdouble)hzStep * (gdouble)zoomFactor) * 10), 0);
+#ifdef GTK3
+	pScaleStart = gtk_scale_new(GTK_ORIENTATION_HORIZONTAL, GTK_ADJUSTMENT(spectrum3dGui.adjustStart));
+#elif defined GTK2
 	pScaleStart = gtk_hscale_new(GTK_ADJUSTMENT(spectrum3dGui.adjustStart));
+#endif
 	gtk_scale_set_digits (GTK_SCALE(pScaleStart), 0);
 	gtk_scale_set_value_pos(GTK_SCALE(pScaleStart), GTK_POS_RIGHT);
 	gtk_box_pack_start(GTK_BOX(pVBox[1]), pHBox[11], FALSE, FALSE, 0);
@@ -515,7 +564,11 @@ int main(int argc, char *argv[])
 	frame = gtk_frame_new("Range of display (in Hz)");
 	gtk_widget_set_tooltip_text (frame, "The range of the displayed frequency (in herz)");
 	spectrum3dGui.adjustBands = gtk_adjustment_new(1000, 20, 1000, 10, 50, 0);
+#ifdef GTK3
+	spectrum3dGui.scaleBands = gtk_scale_new(GTK_ORIENTATION_HORIZONTAL, GTK_ADJUSTMENT(spectrum3dGui.adjustBands));
+#elif defined GTK2
 	spectrum3dGui.scaleBands = gtk_hscale_new(GTK_ADJUSTMENT(spectrum3dGui.adjustBands));
+#endif
 	gtk_scale_set_digits (GTK_SCALE(spectrum3dGui.scaleBands), 0);
 	gtk_scale_set_value_pos(GTK_SCALE(spectrum3dGui.scaleBands), GTK_POS_RIGHT);
 	gtk_container_add(GTK_CONTAINER(frame), spectrum3dGui.scaleBands);
@@ -556,7 +609,7 @@ int main(int argc, char *argv[])
 	gtk_box_pack_start(GTK_BOX(pHBox[11]), frame, FALSE, FALSE, 10);
 	filename = g_build_filename (G_DIR_SEPARATOR_S, DATADIR, "icons", "gain.png", NULL);
 	image = gtk_image_new_from_file(filename);
-	
+
 	spectrum3dGui.scaleGain = gtk_scale_button_new (GTK_ICON_SIZE_LARGE_TOOLBAR, 0, 1, 0.01, NULL);
 	gtk_button_set_image(GTK_BUTTON(spectrum3dGui.scaleGain),image);
 	//gtk_button_set_label (GTK_BUTTON(spectrum3dGui.scaleGain), "GAIN");
@@ -566,10 +619,11 @@ int main(int argc, char *argv[])
 	//gtk_scale_set_value_pos(GTK_SCALE(pScaleGain), GTK_POS_RIGHT);
 	gtk_widget_set_tooltip_text (spectrum3dGui.scaleGain, "Adjust the displayed level of the intensity of the sound");
 	gtk_scale_button_set_value(GTK_SCALE_BUTTON(spectrum3dGui.scaleGain), 0.2);
+	// FIXME error message here with the previous line : gtk_image_set_from_stock: assertion `GTK_IS_IMAGE (image)' failed; it could be a bug in Gtk
 	//g_object_set (pScaleGain, "update-policy", GTK_UPDATE_DISCONTINUOUS, NULL);
 	g_signal_connect(G_OBJECT(spectrum3dGui.scaleGain), "value-changed", G_CALLBACK(change_gain), NULL);
 
-#ifdef HAVE_LIBUTOUCH_GEIS
+#ifdef HAVE_LIBGEIS
 	setupGeis();
 #endif
 
@@ -583,7 +637,7 @@ int main(int argc, char *argv[])
 
 /* Quit everything */
 
-#ifdef HAVE_LIBUTOUCH_GEIS
+#ifdef HAVE_LIBGEIS
 	geisQuit();
 #endif
 	on_stop();
