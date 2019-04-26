@@ -17,7 +17,7 @@
 #ifndef DEF_GSTREAMER
 #define DEF_GSTREAMER
 
-gboolean showEqualizerWindow, analyse_rt, jack, loading, recording;
+gboolean analyse_rt, jack, loading, recording;
 gchar *selected_file, *tmpPath;
 gint64 pos, len;
 int AUDIOFREQ, pose, spect_bands, playing, hzStep, frame_number_counter, bandsNumber; 

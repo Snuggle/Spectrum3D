@@ -51,10 +51,11 @@ PreferenceGLFloat preferenceGLFloat[7] = {
 	{&spectrum3d.zStep, 0.01, 0.01, 0.03, "spectrum3d.zStep"}
 	};
 
-int sizeofPrefGbool = 2;
-PreferenceGbool preferenceGbool[2] = {
+int sizeofPrefGbool = 3;
+PreferenceGbool preferenceGbool[3] = {
 	{&spectrum3d.realtime, FALSE, 0, 1, "spectrum3d.realtime"}, 
-	{&spectrum3d.enableTouch, TRUE, 0, 1, "spectrum3d.enableTouch"}
+	{&spectrum3d.enableTouch, TRUE, 0, 1, "spectrum3d.enableTouch"},
+	{&externalWindow, FALSE, 0, 1, "spectrum3d.externalWindow"}
 	};
 
 int sizeofPrefString = 1;

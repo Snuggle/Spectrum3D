@@ -1,9 +1,8 @@
 SPECTRUM 3D: 3D AUDIO SPECTRUM ANALYSER IN REAL TIME
 
-Spectrum 3D displays a 3D audio spectrogram in real time; the source can be either the microphone or an audio file; it is also possible to record a file and to have it analysed; so analysis can be done done on the fly (harmonics are displayed while the audio file is being played), or before the file is being played (in that case, the analysis of the whole will be performed and displayed, then the file can be played afterwards). It is compatible with jack (jack-audio-connection-kit). Optionally, it supports multitouch gestures from touchscreen and touchpad. Optionally also, the audio stream can be run in realtime even if Jack is not used. It is build with the Gstreamer, SDL or Gtkglext, OpenGl, GTK+-2.0 and uTouch-Geis free libraries and is under GPL license. It is written for Ubuntu but works for other Linux distributions except for the multitouch capabilities (the uTouch library is written for Ubuntu). 
+Spectrum 3D displays a 3D audio spectrogram in real time; the source can be either the microphone or an audio file; it is also possible to record a file and to have it analysed; so analysis can be done done on the fly (harmonics are displayed while the audio file is being played), or before the file is being played (in that case, the analysis of the whole will be performed and displayed, then the file can be played afterwards). It is compatible with jack (jack-audio-connection-kit). Optionally, it supports multitouch gestures from touchscreen and touchpad. Optionally also, the audio stream can be run in realtime even if Jack is not used. It is build with the Gstreamer, SDL (or Gtkglext), OpenGl, GTK+-2.0 and uTouch-Geis free libraries and is under GPL license. It is written for Ubuntu but works for other Linux distributions except for the multitouch capabilities (the uTouch library is written for Ubuntu). 
 
-Spectrum3d can be compiled against GTK2 or GTK3.
-The display can be either in the same window (using GtlGlExt) or in an other window than the command interface (using SDL). You should decide this before compiling since the dependencies are different.
+Spectrum3d can be compiled against GTK2 or GTK3. It can use either SDL or GTKGLEXT libraries as OpenGL extension. For this, SDL is used by default. GTKGLEXT is a more logical choice but GTKGLEXT for GTK3 is still in development; it will probably the default when a stable version is released. However, GTKGLEXT can be used already in Spectrum3d, including the development version (GTKGLEXT3 for GTK3), but this has to be specifically enabled at the time of compiling.
 
 *******************
 |  INSTALLATION:  |
@@ -16,9 +15,10 @@ FOR UBUNTU from 10.10 : All dependencies are available in the Ubuntu repositorie
 		- gcc, pkg-config, automake;
 		- libgtk-2.0-dev or libgtk-3.0-dev;
 		- libgstreamer0.10-dev;
-	For DISPLAY : you have choice between SDL or GtkGlExt; using GtkGlExt will put everything in one window with better integration; using SDL will create a separate window for display; using SDL will install much more dependencies; the display of harmonics itself will look exactly the same regardless of the library that is used. 
-		- EITHER : libgtkglext1-dev for Gtk2 or libgtkglext for Gtk3 (this version is in developpment and should be compiled from source (see documentation) but is already supported in Spectrum3d); note that GtkGlExt version has to match Gtk version;
-		- OR : lidsdl1.2-dev (libsdl_ttf is no longer necessary since version 2.0.1);
+	For DISPLAY (OpenGL extension): SDL is used by default; GtkGlExt can be used instead and its version should match the GTK version (GTKGLEXT1 for GTK2, GTKGLEXT3 for GTK3); however, GTKGLEXT3 is still in development; the development version should be installed then (see later); the display of harmonics itself will look exactly the same regardless of the library that is used. 
+		- EITHER : lidsdl1.2-dev; this should be the default choice;
+		- OR : libgtkglext1-dev for Gtk2 or libgtkglext for Gtk3 (this version is in developpment and should be compiled from source (see documentation) but is already supported in Spectrum3d); note that GtkGlExt version should match Gtk version;
+
 
 		- gstreamer0.10-plugins-bad, gstreamer0.10-plugins-bad-multiverse, gstreamer0.10-plugins-ugly et gstreamer0.10-plugins-ugly-multiverse (for reading files such as mp3);
 
@@ -51,15 +51,11 @@ FOR OTHER DISTRIBUTIONS :
 
 		$ ./configure --disable-gtk3
 
-	IMPORTANT NOTE for DISPLAY (OpenGl support):
-	You have choice between SDL or GtkGlExt libraries; using GtkGlExt will put everything in one window with better integration (everything is Gtk); using SDL will create a separate window for display and install much more dependencies; the display itself will look exactly the same regardless of the library that is used.
-	If GtkGlExt is not installed, SDL will be used instead. If GtkGlExt is installed, it will be used by default instead of SDL; you can override this and have SDL used by typing :
+	NOTE for DISPLAY (OpenGL extension):
+	SDL is used by default and a error message will be delivered if it is not found. However you can choose to use GTKGLEXT library instead of SDL (GTKGLEXT for GTK2, GTKGLEXT3 for GTK3). Since the GTKGLEXT3 version (appropriate for GTK3) is still in development, use of GTKGLEXT is not yet the default choice and this has to be specifically enabled at the time of compilation. However the GTKGLEXT3 version (for GTK3) is already supported in Spectrum3d (see documentation or www.spectrum3d.sourceforge.net to install it). The display itself will look exactly the same regardless of the library that is used.
+	If you want GTKGLEXT to be used instead of SDL, type:
 
-		$ ./configure --enable-libsdl
-
-	or
-
-		$ ./configure --disable-gtkglext
+		$ ./configure --enable-gtkglext
 
 	NOTE for JACK and MULTITOUCH SUPPORT:
 	If Jack library is found, JACK support will be enabled. Also, if libbamf and libutouch-geis version 2 libraries are found, MULTITOUCH support will be enabled. If those libraries are not installed, JACK and MULTITOUCH support won't be enabled. However, if you have those libraries installed but don't want those features enabled, you have to type '--disable-jack' or '--disable-geis' after 'configure' ('--enable-jack=no' and '--enable-geis=no' also works).
@@ -71,7 +67,7 @@ will deactivate JACK and MULTITOUCH support if those libraries are installed.
 
 	You can combine many arguments. For example :
 
-		$ ./configure --disable-gtk3 --enable-libsdl --disable-jack
+		$ ./configure --disable-gtk3 --enable-gtkglext --disable-jack
 
 	If you want Spectrum3d to be installed in another directory than the default one ('/usr/local/bin'), you can add it at 'configure' step according to the 'Autoconf' standards. For example : 
 
@@ -134,6 +130,7 @@ From the menu :
 		- the number of displayed frames, the biggest this value is, the 'deeper' the image will go and the more cpu will be used;
 		- the interval of time (in milliseconds) between each refreshing of the display; the smallest this value will be, the nicer the display will look, but the more demanding it will be on the cpu; every change in this will require Spectrum3d to be restarted to be effective;
 		- the color of the display (when analyse in real-time is selected);
+		- whether you want the display in the same window as the GUI or in a separate window;
 		- whether you want that the actual display is saved as preset;
 		- the interval of time (in milliseconds) between each new analysis of the spectral data; as for display, the smallest this value will be, the more demanding it will be on the cpu; this value should match the interval of time between 2 displays for better display but this is not mandatory;
 		- whether you want Spectrum3d to run in realtime mode (when JACK is not used); if so, you can choose between SCHED_RR or SCHED_FIFO policies, and set the priority; please see important note at the end of this file.

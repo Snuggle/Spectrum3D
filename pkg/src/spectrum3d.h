@@ -5,10 +5,14 @@
 /* Spectrum3dGui structure declares elements that are part the the Gtk GUI of Spectrum3D and have to be passed to another function */    
 typedef struct 
 {
+	GtkWidget *mainWindow;
+	
 	gboolean textScale;
 	gboolean lineScale;
 	gboolean pointer;
 	
+	GtkWidget *checkMenuTestSound;
+	GtkWidget *dialogTestSound;
 	GtkWidget *radio2D;
 	GtkWidget *radio3D;
 	GtkWidget *radio3Dflat;
@@ -29,6 +33,8 @@ typedef struct
 	GtkWidget *cbRange;
 	GtkWidget *scaleGain;
 	GtkWidget *scaleBands;
+
+	GtkWidget *effectsWindow;
 #ifdef GTK3
 	GtkAdjustment *adjustBands, *adjustStart;
 #elif GTK2

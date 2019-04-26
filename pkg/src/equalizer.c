@@ -19,9 +19,11 @@
 #include <string.h>
 #include <gtk/gtk.h>
 #include <gst/gst.h>
+#include <GL/gl.h>
+#include <GL/glu.h>
 
 #include "config.h"
-
+#include "spectrum3d.h"
 #include "equalizer.h"
 
 #define NBANDS 10
@@ -34,11 +36,11 @@ gdouble bw;
 gdouble gain;
 
 /* Quit main window and eveything */
-static void on_window_destroy (GObject * object, GtkWidget *effectsWindow)
+/*void effects_window_hide (GtkWidget *widget, Spectrum3dGui *spectrum3dGui)
 {	
-	showEqualizerWindow = FALSE;
-	gtk_widget_destroy(effectsWindow);
-}
+	spectrum3dGui->showEqualizerWindow = FALSE;
+	gtk_widget_hide(widget);
+}*/
 
 static void 
 on_gain_changed (GtkRange * range, gpointer user_data) // change gain of equalizer
@@ -200,7 +202,7 @@ void change_filter_upper_value(GtkWidget *widget, gpointer data){
 
 void cb_filter_type_changed(GtkComboBox *combo, gpointer data)
 {
-// audiochebband's "mode" property : 0 is band-reject, 1 is band-pass filter
+// "mode" property of audiochebband element: 0 is band-reject, 1 is band-pass filter
 	g_object_set (G_OBJECT (BP_BRfilter), "mode", (gint)gtk_combo_box_get_active(GTK_COMBO_BOX(combo)), NULL);
 	onCheckBandPass(NULL, NULL);
 }
@@ -216,9 +218,28 @@ void change_filter_ripple(GtkWidget *widget, gpointer data){
 }
 
 /* Filter and equalizer window */
-void effects_window()
+void show_effects_window(GtkWidget *widget, Spectrum3dGui *spectrum3dGui)
 {
-if (showEqualizerWindow == FALSE){ // show window if window is hidden
+	if (gtk_widget_get_visible(spectrum3dGui->effectsWindow)){
+		printf("hide effects window\n");
+		gtk_widget_hide(spectrum3dGui->effectsWindow);
+		return;
+		}
+	else if (gtk_widget_get_visible(spectrum3dGui->effectsWindow) == FALSE){
+		printf("show effects window\n");
+		gtk_widget_show_all (spectrum3dGui->effectsWindow);
+		return;
+		}
+}	
+
+gboolean delete_event(GtkWidget *widget, Spectrum3dGui *spectrum3dGui){
+	//printf("delete-event\n");
+	gtk_widget_hide(widget);
+	return TRUE;	
+}
+
+void effects_window(Spectrum3dGui *spectrum3dGui){
+	printf("create effects window\n");
 	int i = 0;
 	GtkWidget *vbox[4], *hbox[11], *button, *checkBandPass, *frame;
 
@@ -228,20 +249,22 @@ if (showEqualizerWindow == FALSE){ // show window if window is hidden
 	GtkObject *adjustment;
 #endif
 			
-	effectsWindow = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-	gtk_window_set_title(GTK_WINDOW(effectsWindow), "Spectrum3d : BP/BR filter and equalizer");
-	g_signal_connect (G_OBJECT (effectsWindow), "destroy", G_CALLBACK (on_window_destroy), effectsWindow);
+	spectrum3dGui->effectsWindow = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+	gtk_window_set_title(GTK_WINDOW(spectrum3dGui->effectsWindow), "Spectrum3d : BP/BR filter and equalizer");
+	//gtk_widget_hide_on_delete (spectrum3dGui->effectsWindow);
+	//g_signal_connect (G_OBJECT (spectrum3dGui->effectsWindow), "destroy", G_CALLBACK (destroy), NULL);
+	g_signal_connect (G_OBJECT (spectrum3dGui->effectsWindow), "delete-event", G_CALLBACK (delete_event), NULL);
+	
 	vbox[0] = gtk_vbox_new (FALSE, 6);
 	hbox[0] = gtk_hbox_new(TRUE, 0);
 	hbox[1] = gtk_hbox_new(TRUE, 0);
 	hbox[2] = gtk_hbox_new(FALSE, 0);			
 
-	gtk_container_add(GTK_CONTAINER(effectsWindow), vbox[0]);
+	gtk_container_add(GTK_CONTAINER(spectrum3dGui->effectsWindow), vbox[0]);
 	gtk_box_pack_start(GTK_BOX(vbox[0]), hbox[0], TRUE, TRUE, 0);
 
 /* Combo box to choose the type of filter : band-pass (BP) or band-reject (BR) */
 	frame = gtk_frame_new("Type of filter");
-	///////// gtk_combo_box_new_text() before
 	comboFilter = gtk_combo_box_text_new();
 	gtk_container_add(GTK_CONTAINER(frame), comboFilter);
 	gtk_box_pack_start(GTK_BOX(hbox[0]), frame, FALSE, FALSE, 0);
@@ -385,13 +408,7 @@ NULL);
 	gtk_box_pack_start(GTK_BOX(vbox[0]), hbox[2], FALSE, FALSE, 0);
 	g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(reset_equalizer), NULL);
 	
-	showEqualizerWindow = TRUE;
-  	gtk_widget_show_all (effectsWindow);
-}
-else { // hide window if window is showed
-	showEqualizerWindow = FALSE;
-	gtk_widget_hide(effectsWindow);
-	}
+	//gtk_widget_show_all(spectrum3dGui->effectsWindow);
 }
 
 

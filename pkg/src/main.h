@@ -2,7 +2,7 @@
 #ifndef DEFINE_MAIN
 #define DEFINE_MAIN
 
-gboolean analyse_rt, jack, newEvent;
+gboolean analyse_rt, jack, newEvent, externalWindow;
 int playing, pose, zoomFactor, hzStep;
 static GtkWidget *mainWindow;
 GtkWidget *timeLabel, *scaleSeek;
@@ -24,7 +24,7 @@ enum ColorType
 ColorType colorType;
 
 void onPreferences(GtkWidget* widget, gpointer data);
-void test_sound_window(GtkWidget *widget, gpointer *data);
+void menu_check_test_sound(GtkWidget *widget, Spectrum3dGui *spectrum3dGui);
 void change_perspective(GtkWidget *widget, gpointer data);
 void check_menu_text(GtkWidget *widget, gpointer data);
 void check_menu_lines(GtkWidget *widget, gpointer data);
@@ -52,7 +52,8 @@ void playFromSource(gchar *message);
 void on_stop();
 void record_window();
 void use_jack(GtkWidget *check, gpointer data);
-void effects_window();
+void effects_window(Spectrum3dGui *spectrum3dGui);
+void show_effects_window(GtkWidget *widget, Spectrum3dGui *spectrum3dGui);
 void on_seek (GtkRange *range, gchar *data);
 void cb_range_changed(GtkWidget *combo, gpointer data);
 void change_adjust(GtkWidget *pWidget, gpointer data);

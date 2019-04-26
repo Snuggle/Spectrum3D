@@ -17,7 +17,7 @@
 #ifndef DEFINE_MENU
 #define DEFINE_MENU
 
-gboolean newEvent;
+gboolean newEvent, externalWindow;
 char prefPath[100], policyName[20];
 GLfloat z, X, Y, Z, AngleH, AngleV, AngleZ; 
 FILE *rcFile;
@@ -37,6 +37,7 @@ enum ColorType
 };
 ColorType colorType;
 
+void menu_check_test_sound(GtkWidget *widget, Spectrum3dGui *spectrum3dGui);
 void playTestSound(GtkWidget *pWidget, gpointer data);
 void change_freq_test_sound(GtkWidget *widget, gpointer data);
 void change_volume_test_sound(GtkWidget *pWidget, gpointer data);

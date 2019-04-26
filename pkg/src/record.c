@@ -24,8 +24,6 @@
 
 #include "record.h"
 
-//GtkWidget *playButton, *recButton;
-
 void record_window() {
 	GtkWidget *hbox[2], *recordWindow, *button, *image, *content_area;
 

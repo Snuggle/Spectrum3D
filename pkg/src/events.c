@@ -32,7 +32,6 @@
 #include "events.h"
 
 gboolean a_keyPressed = FALSE, g_keyPressed = FALSE, q_keyPressed = FALSE, shift_keyPressed = FALSE, control_keyPressed = FALSE;
-int counter;
 gdouble oldXPos = 0, oldYPos = 0;
 
 gboolean on_mouse_scroll (GtkWidget *window, GdkEventScroll *event, gpointer data){
@@ -98,6 +97,24 @@ gboolean on_mouse_motion (GtkWidget *window, GdkEventMotion *event, gpointer dat
 				}
 			if (event->y < oldYPos){
 				Y+=0.006;
+				}
+			oldYPos = event->y;
+		newEvent = TRUE;
+			}
+		else if (event->state == GDK_BUTTON2_MASK){
+			//printf("mouse motion\n");
+			if (event->x > oldXPos){
+				AngleZ-=0.4;
+				}
+			if (event->x < oldXPos){
+				AngleZ+=0.4;
+				}
+			oldXPos = event->x;
+			if (event->y > oldYPos){
+				Z+=0.01;
+				}
+			if (event->y < oldYPos){
+				Z-=0.01;
 				}
 			oldYPos = event->y;
 		newEvent = TRUE;

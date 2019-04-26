@@ -39,7 +39,6 @@ static GstTaskPool *pool;
 #define NBANDS 10
 
 void initGstreamer(){
-	gst_init (NULL, NULL);	
 	equalizer = gst_element_factory_make ("equalizer-nbands", "equalizer-nbands");
 	g_assert (equalizer);
 	g_object_set (G_OBJECT (equalizer), "num-bands", NBANDS, NULL);
@@ -206,7 +205,7 @@ int checkJackActive(){
 		result = 1;
 		}
 	else if (src_client == NULL) {
-		printf("*** --> OK, JACK is not running\n");
+		printf("*** --> OK (ERROR MESSAGE IS NORMAL HERE!)\n");
 		}
 #endif
 
@@ -389,9 +388,7 @@ else if (playing == 0) {
 		equalizer3 = gst_element_factory_make ("equalizer-nbands", "equalizer-nbands3");
 		g_assert (equalizer3);
 		g_object_set (G_OBJECT (equalizer3), "num-bands", NBANDS, NULL);
-		if (showEqualizerWindow){
-			getBand();
-			}
+		getBand();
 		BP_BRfilter = gst_element_factory_make ("audiochebband", "BP_BRfilter");
 		g_assert (BP_BRfilter);
 		g_object_set (G_OBJECT (BP_BRfilter), "lower-frequency", BPlowerFreq, "upper-frequency", BPupperFreq, NULL);

@@ -181,7 +181,12 @@ top_srcdir = @top_srcdir@
 svgicondir = $(datadir)/icons
 dist_svgicon_DATA = spectrum3d.svg
 icondir = $(datadir)/icons
-dist_icon_DATA = microphone.png \
+dist_icon_DATA = stop.png \
+		stop_grey.png \
+		microphone.png \
+		microphone_grey.png \
+		file.png \
+		file_grey.png \
 		qjackctl.png \
 		equalizer.png \
 		gain.png

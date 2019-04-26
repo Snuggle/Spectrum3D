@@ -2,6 +2,7 @@
 #ifndef DEFINE_PREFERENCES
 #define DEFINE_PREFERENCES
 
+gboolean externalWindow;
 gchar policyName[20];
 FILE *rcFile;
 

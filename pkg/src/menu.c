@@ -31,7 +31,7 @@ void onPreferences(GtkWidget* widget, Spectrum3dGui *spectrum3dGui)
 	gboolean bState;
 	int i = 0;
 	gchar *sTabLabel[3];
-	GtkWidget *pPreferences, *pNotebook, *pTabLabel, *label, *spinFrames, *spinZStep, *spinDisplayInterval, *spinSpectrumInterval, *comboColor, *pCheckRealtime, *pComboPolicy, *pSpinPriority, *pCheckPreset, *pCheckEnableTouch, *pFrame, *content_area;
+	GtkWidget *pPreferences, *pNotebook, *pTabLabel, *label, *spinFrames, *spinZStep, *spinDisplayInterval, *spinSpectrumInterval, *comboColor, *pCheckRealtime, *pComboPolicy, *pSpinPriority, *pCheckPreset, *pCheckEnableTouch, *pFrame, *content_area, *radio[2], *entry;
 	GtkWidget *pVBox[3];
 	for (i = 0; i < 3; i++) {
 		pVBox[i] = gtk_vbox_new(FALSE, 4);
@@ -105,6 +105,24 @@ void onPreferences(GtkWidget* widget, Spectrum3dGui *spectrum3dGui)
 	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(comboColor), "RAINBOW");
 	gtk_combo_box_set_active(GTK_COMBO_BOX(comboColor), 0);
 
+	/* Radio button to choose wheter the display is within the UI or in another window */
+	pFrame = gtk_frame_new("Display window :");
+	gtk_widget_set_tooltip_text (pFrame, "Choose the window where harmonics will be displayed (same or different window than the graphical user interface");
+	gtk_box_pack_start(GTK_BOX(pVBox[0]), pFrame, TRUE, TRUE, 0);
+	gtk_container_add(GTK_CONTAINER(pFrame), pHBox[5]);
+	radio[0] = gtk_radio_button_new_with_label (NULL, "all in one window");
+	gtk_widget_set_tooltip_text (radio[0], "Harmonics will be displayed in the same window than the graphical user interface");
+   	//entry = gtk_entry_new ();
+   	//gtk_container_add (GTK_CONTAINER (radio[0]), entry);
+	radio[1] = gtk_radio_button_new_with_label_from_widget (GTK_RADIO_BUTTON (radio[0]),
+                                                         "external window");
+	gtk_widget_set_tooltip_text (radio[1], "Harmonics will be displayed in another window than the graphical user interface");
+	if (externalWindow)
+		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(radio[1]), TRUE);
+	gtk_box_pack_start (GTK_BOX (pHBox[5]), radio[0], TRUE, TRUE, 0);
+	gtk_box_pack_start (GTK_BOX (pHBox[5]), radio[1], TRUE, TRUE, 0);
+	
+	
 	/* Check button to save the current position as 'Preset' */
 	pCheckPreset = gtk_check_button_new_with_label("Save current position as preset");
 	gtk_widget_set_tooltip_text (pCheckPreset, "Save the current position of display as preset");
@@ -159,12 +177,14 @@ void onPreferences(GtkWidget* widget, Spectrum3dGui *spectrum3dGui)
 	gtk_box_pack_start(GTK_BOX(pHBox[15]), pFrame, FALSE, FALSE, 0);
 	gtk_spin_button_set_value (GTK_SPIN_BUTTON(pSpinPriority), spectrum3d.priority);
 
-#ifdef HAVE_LIBUTOUCH_GEIS
+
 ///////////////////////// 3d Notebook : "Touch" //////////////////////
 	
 	sTabLabel[2] = g_strdup_printf("Touch");
 	pTabLabel = gtk_label_new(sTabLabel[2]);
+#ifdef HAVE_LIBUTOUCH_GEIS
 	gtk_notebook_append_page(GTK_NOTEBOOK(pNotebook), pVBox[2], pTabLabel);
+#endif
 	g_free(sTabLabel[2]);
 
 	pCheckEnableTouch = gtk_check_button_new_with_label("Enable Touch");
@@ -175,7 +195,6 @@ void onPreferences(GtkWidget* widget, Spectrum3dGui *spectrum3dGui)
 	if (spectrum3d.enableTouch) {
 		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(pCheckEnableTouch), TRUE);
 		}
-#endif
 
 //////////////////////// End of the Notebooks //////////////////////////
 
@@ -193,19 +212,27 @@ void onPreferences(GtkWidget* widget, Spectrum3dGui *spectrum3dGui)
 		{
 		case GTK_RESPONSE_OK:
 			// get new spectrum3d.zStep & spectrum3d.frames values and reinitialise z with those new values
-			/// spectrum3d.zStep = gtk_spin_button_get_value_as_float(GTK_SPIN_BUTTON(spinZStep)); GTK3
 			spectrum3d.zStep = gtk_spin_button_get_value(GTK_SPIN_BUTTON(spinZStep));
 			spectrum3d.frames = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(spinFrames));	
 			spectrum3d.previousFrames = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(spinFrames));
 			z = (float)spectrum3d.frames * spectrum3d.zStep;
+
 			// get new spectrum3d.interval_display value, then stop & and restart timeout that calls display_spectro() with the new time interval value
 			spectrum3d.interval_display = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(spinDisplayInterval));	
-			guint intervalDisplaySpectro = (guint)spectrum3d.interval_display; // since the time interval is a guint, spectrum3d.interval_rt has to be casted; 
+			// since the time interval is a guint, spectrum3d.interval_rt has to be casted; 
+			guint intervalDisplaySpectro = (guint)spectrum3d.interval_display; 
+			// remove timeout display_spectro timeout and start a new one with the new spectrum3d.timeoutExpose interval
 			g_source_remove(spectrum3d.timeoutExpose);
 			spectrum3d.timeoutExpose = g_timeout_add (intervalDisplaySpectro, (GSourceFunc)display_spectro, spectrum3dGui);
+
 			// get other values
 			colorType = gtk_combo_box_get_active(GTK_COMBO_BOX(comboColor));
 				 // ColorType enum is detailed in menu.h
+			if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(radio[1])))
+				externalWindow = TRUE;
+			else if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(radio[0])))
+				externalWindow = FALSE;
+
 			bState = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(pCheckPreset));
 				if (bState) {
 					spectrum3d.presetX = X;
@@ -231,36 +258,43 @@ void onPreferences(GtkWidget* widget, Spectrum3dGui *spectrum3dGui)
 	gtk_widget_destroy(pPreferences);	
 }
 
-void test_sound_window_destroy(GtkDialog *dialog, gint response_id, gpointer user_data) {
+void test_sound_window_destroy(GtkDialog *dialog, gpointer user_data) {
 	if (loopTestSound != NULL){
-		g_main_loop_quit(loopTestSound);
+		playTestSound(NULL, NULL);
+		//g_main_loop_quit(loopTestSound);
 		}
 	gtk_widget_destroy(GTK_WIDGET(dialog));
 }
 
-void test_sound_window(GtkWidget *pWidget, gpointer *data){
-	GtkWidget *dialog, *widget, *hbox, *content_area;
+void set_check_menu_test_sound(GtkWidget *widget, Spectrum3dGui *spectrum3dGui){
+	gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM(spectrum3dGui->checkMenuTestSound), FALSE);
+}
+
+void test_sound_window(Spectrum3dGui *spectrum3dGui){
+	GtkWidget *dialog, *widget, *vbox, *hbox[2], *content_area;
 #ifdef GTK3
 	GtkAdjustment *adjustment;
 #elif defined GTK2
 	GtkObject *adjustment;
 #endif
-	dialog = gtk_dialog_new_with_buttons ("Test sound", NULL,
-			GTK_DIALOG_DESTROY_WITH_PARENT,
-			GTK_STOCK_CLOSE, GTK_RESPONSE_CLOSE,
-			NULL);
-	hbox = gtk_hbox_new (FALSE, 15);
+	spectrum3dGui->dialogTestSound = gtk_dialog_new();
+	gtk_window_set_title(GTK_WINDOW(spectrum3dGui->dialogTestSound), "Play Test Sound");
+	g_signal_connect (G_OBJECT (spectrum3dGui->dialogTestSound), "destroy", G_CALLBACK (set_check_menu_test_sound), spectrum3dGui);
+	hbox[0] = gtk_hbox_new (FALSE, 15);
+	hbox[1] = gtk_hbox_new (FALSE, 0);
+	vbox = gtk_vbox_new (FALSE, 15);
 	
-	gtk_widget_set_tooltip_text (dialog, "Play a pure sine wave sound");
+	gtk_widget_set_tooltip_text (spectrum3dGui->dialogTestSound, "Play a pure sine wave sound");
 	widget = gtk_button_new_with_label("Play/Pause");
 	gtk_widget_set_tooltip_text (widget, "Play/Pause a pure sine wave sound");
-	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, FALSE, 4);	
+	gtk_box_pack_start(GTK_BOX(hbox[0]), widget, FALSE, FALSE, 4);	
+	gtk_box_pack_start(GTK_BOX(vbox), hbox[0], FALSE, FALSE, 4);	
 	g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(playTestSound), NULL);
 
 	adjustment = gtk_adjustment_new(440, 1, 20000, 1, 100, 0);
 	widget = gtk_spin_button_new(GTK_ADJUSTMENT(adjustment), 1, 0);
 	gtk_widget_set_tooltip_text (widget, "Select frequency (in Herz) of the sine wave test sound");
-	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, FALSE, 4);
+	gtk_box_pack_start(GTK_BOX(hbox[0]), widget, FALSE, FALSE, 4);
 	g_signal_connect (G_OBJECT (widget), "value_changed", G_CALLBACK (change_freq_test_sound),
 NULL);
 
@@ -268,20 +302,35 @@ NULL);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, FALSE, 0);
 	
 	widget = gtk_volume_button_new ();
-	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, FALSE, 4);
+	gtk_box_pack_start(GTK_BOX(hbox[0]), widget, FALSE, FALSE, 4);
 	gtk_scale_button_set_value(GTK_SCALE_BUTTON(widget), 0.8);
 	g_signal_connect(G_OBJECT(widget), "value-changed", G_CALLBACK(change_volume_test_sound), NULL);
+
+	widget = gtk_button_new_with_label("Close");
+	gtk_widget_set_tooltip_text (widget, "Close test Sound window");
+	gtk_box_pack_start(GTK_BOX(hbox[1]), widget, TRUE, FALSE, 4);	
+	gtk_box_pack_start(GTK_BOX(vbox), hbox[1], FALSE, FALSE, 4);	
+	g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(set_check_menu_test_sound), spectrum3dGui);
+
 #ifdef GTK3
-	content_area = gtk_dialog_get_content_area (GTK_DIALOG (dialog));
-	gtk_container_add (GTK_CONTAINER (content_area), hbox);
+	content_area = gtk_dialog_get_content_area (GTK_DIALOG (spectrum3dGui->dialogTestSound));
+	gtk_container_add (GTK_CONTAINER (content_area), vbox);
 #elif defined GTK2
-	gtk_container_add(GTK_CONTAINER(GTK_DIALOG(dialog)->vbox), hbox);
-
+	gtk_container_add(GTK_CONTAINER(GTK_DIALOG(spectrum3dGui->dialogTestSound)->vbox), vbox);
 #endif
-	gtk_widget_show_all (dialog);
-
-	g_signal_connect (G_OBJECT (dialog), "response", G_CALLBACK (test_sound_window_destroy), NULL);
+	gtk_widget_show_all (spectrum3dGui->dialogTestSound);
 }
+
+void menu_check_test_sound(GtkWidget *widget, Spectrum3dGui *spectrum3dGui){
+	printf("check menu test sound\n");
+	if (gtk_check_menu_item_get_active (GTK_CHECK_MENU_ITEM(spectrum3dGui->checkMenuTestSound))){
+		test_sound_window(spectrum3dGui);
+		}
+	else if (!gtk_check_menu_item_get_active (GTK_CHECK_MENU_ITEM(spectrum3dGui->checkMenuTestSound))){
+		test_sound_window_destroy(GTK_DIALOG(spectrum3dGui->dialogTestSound), NULL);
+		}
+}
+
 
 /* Keyboard and Mouse shortcuts menu */
 void onShortcuts (GtkWidget* widget, gpointer data)

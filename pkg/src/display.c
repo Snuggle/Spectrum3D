@@ -27,9 +27,7 @@
 
 #ifdef HAVE_LIBSDL
     #include <SDL/SDL.h>
-#endif
-
-#if defined GTKGLEXT3 || defined GTKGLEXT1
+#elif defined GTKGLEXT3 || defined GTKGLEXT1
     #include <gtk/gtkgl.h>
 #endif
 
@@ -63,7 +61,6 @@ void init_display_values(Spectrum3dGui *spectrum3dGui){
 
 /* Initialise OpenGL if GTKGLEXT is used */
 gboolean configure_event (GtkWidget *widget, GdkEventConfigure *event, gpointer data){
-
 	GtkAllocation allocation;
 	GLfloat w;   GLfloat h;
 
@@ -73,6 +70,10 @@ gboolean configure_event (GtkWidget *widget, GdkEventConfigure *event, gpointer 
 	spectrum3d.width = (int)w;
 	spectrum3d.height = (int)h;
 	//printf("h = %d, w = %d\n", spectrum3d.width, spectrum3d.height);
+#ifdef HAVE_LIBSDL
+	SDL_SetVideoMode((int)w, (int)h, 24, SDL_OPENGL | SDL_GL_DOUBLEBUFFER | SDL_RESIZABLE);
+#endif
+
 #ifdef GTKGLEXT3
 	if (!gtk_widget_begin_gl (widget))
     		return FALSE;
@@ -104,6 +105,7 @@ gboolean configure_event (GtkWidget *widget, GdkEventConfigure *event, gpointer 
 #elif defined GTKGLEXT1
 	gdk_gl_drawable_gl_end (gldrawable);
 #endif
+
   	newEvent = TRUE;
 	return TRUE;
 }
@@ -139,7 +141,7 @@ gboolean compareGLfloat(GLfloat value1, GLfloat value2, GLfloat precision)
 /* Draw the spectrogram */
 gboolean display_spectro(Spectrum3dGui *spectrum3dGui){
 
-/* The opengl initializing functions when gtkglext is used, for gtkglext1 and gtkglext3 */
+/* The opengl initializing functions when gtkglext is used */
 #ifdef GTKGLEXT3
 	if (!gtk_widget_begin_gl (spectrum3dGui->drawing_area))
     		return FALSE;	
@@ -216,11 +218,9 @@ gboolean display_spectro(Spectrum3dGui *spectrum3dGui){
 							storedFreq = ii;
 							}
 						k = (k/zoomFactor) * showGain;
-						//if (i <= y_2d) {
-							glColor3f(10 * k, 0, 0); 
-							glVertex2f(l, i);
-							glVertex2f(l + x_2d/spectrum3d.frames, i);
-						//	} 
+						glColor3f(10 * k, 0, 0); 
+						glVertex2f(l, i);
+						glVertex2f(l + x_2d/spectrum3d.frames, i); 
 						i += q;
 						}
 					l += x_2d/spectrum3d.frames;
@@ -275,17 +275,14 @@ gboolean display_spectro(Spectrum3dGui *spectrum3dGui){
 							storedIntensity = (40 * k/zoomFactor) - 80; // this value has to be divided by the zoomFactor first; since the spec_data are multiplied by 40 and 80 added, the oposite should be done now to get the initial intensity value in dB;
 							}
 						k = (k/zoomFactor) * showGain;
-						//if (i <= x) {
-							if (source == SOUND_FILE && analyse_rt == FALSE){
-								int mult = 18;
-								glColor3f((mult/2) * k, k * mult, 1/(k * mult)); 
-								}
-							else {
-								glColor3f((10 * k *cr) , (10 * k *cg), (10 * k * cb)); 
-								}
-							//glVertex3f( i, k ,l);
-							glVertex3f( i, k/(YcoordFactor), l - ((k/5) * ZcoordFactor));
-							//}
+						if (source == SOUND_FILE && analyse_rt == FALSE){
+							int mult = 18;
+							glColor3f((mult/2) * k, k * mult, 1/(k * mult)); 
+							}
+						else {
+							glColor3f((10 * k *cr) , (10 * k *cg), (10 * k * cb)); 
+							}
+						glVertex3f( i, k/(YcoordFactor), l - ((k/5) * ZcoordFactor));
 						i += q;
 						}
 					glEnd();
@@ -320,7 +317,7 @@ gboolean display_spectro(Spectrum3dGui *spectrum3dGui){
 	
 	}
 
-/* The 'swap buffer' or end gl functions, depending on the use of gtkglext1, gtkglext3 or sdl */
+/* The call to 'swap buffer' or 'end gl' function, depending on the use of gtkglext1, gtkglext3 or sdl */
 #ifdef GTKGLEXT3
 	gtk_widget_end_gl (spectrum3dGui->drawing_area, TRUE);
 #elif defined GTKGLEXT1

@@ -19,6 +19,7 @@
 #include <string.h>
 #include <gst/gst.h>
 #include <gtk/gtk.h>
+#include <gdk/gdkx.h>
 #include <GL/gl.h>
 #include <GL/glu.h>
 
@@ -78,6 +79,73 @@ void quit_spectrum3d(){
 	gtk_main_quit();
 }
 
+void create_external_window_drawing_area(Spectrum3dGui *spectrum3dGui){
+	GtkWidget *window;
+	window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+	gtk_window_set_title(GTK_WINDOW(window), PACKAGE_NAME);
+	gtk_window_set_default_size (GTK_WINDOW(window), (gint)spectrum3d.width, (gint)spectrum3d.height);
+	g_signal_connect (G_OBJECT (window), "destroy", G_CALLBACK (quit_spectrum3d), NULL);
+	gtk_widget_set_events (window, GDK_KEY_PRESS_MASK | GDK_KEY_RELEASE_MASK | GDK_BUTTON_PRESS_MASK | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK);
+	gtk_widget_realize(window);
+	spectrum3dGui->drawing_area = gtk_drawing_area_new ();
+	 
+	gtk_widget_realize(spectrum3dGui->drawing_area);
+	//gtk_box_pack_start (GTK_BOX (vBox), spectrum3dGui->drawing_area, TRUE, TRUE, 0);
+
+#if defined (GTKGLEXT3) || defined (GTKGLEXT1)
+	GdkGLConfig *glconfig = gdk_gl_config_new_by_mode (GDK_GL_MODE_RGB    |
+					GDK_GL_MODE_DEPTH  |
+					GDK_GL_MODE_DOUBLE);
+	  if (glconfig == NULL)
+	    {
+	      g_print ("\n*** Cannot find the double-buffered visual.\n");
+	      g_print ("\n*** Trying single-buffered visual.\n");
+
+	      /* Try single-buffered visual */
+	      glconfig = gdk_gl_config_new_by_mode (GDK_GL_MODE_RGB   |
+						    GDK_GL_MODE_DEPTH);
+	      if (glconfig == NULL)
+		{
+		  g_print ("*** No appropriate OpenGL-capable visual found.\n");
+		  exit (1);
+		}
+	    }
+	/* Set OpenGL-capability to the widget */
+  	gtk_widget_set_gl_capability (spectrum3dGui->drawing_area,
+				glconfig,
+				NULL,
+				TRUE,
+				GDK_GL_RGBA_TYPE);
+#endif
+	
+gtk_container_add(GTK_CONTAINER(window), spectrum3dGui->drawing_area);
+
+#ifdef HAVE_LIBSDL 
+	/* Hack to get SDL to use GTK window */
+	{ char SDL_windowhack[32];
+		sprintf(SDL_windowhack,"SDL_WINDOWID=%ld",
+			GDK_WINDOW_XID(gtk_widget_get_window(spectrum3dGui->drawing_area)));
+			// GDK_WINDOW_XID( spectrum3dGui.drawing_area->window))); pour GTK2??
+		putenv(SDL_windowhack);
+	printf("%s\n", SDL_windowhack);
+	}
+
+	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+		fprintf(stderr, "Unable to init SDL: %s\n", SDL_GetError());
+		exit(1);
+		}
+#endif
+	
+	g_signal_connect (window, "key-press-event", G_CALLBACK (on_key_press), spectrum3dGui);
+	g_signal_connect (window, "key-release-event", G_CALLBACK (on_key_release), spectrum3dGui);
+	g_signal_connect (window, "motion-notify-event", G_CALLBACK (on_mouse_motion), NULL);
+	g_signal_connect (window, "scroll-event", G_CALLBACK (on_mouse_scroll), NULL);
+	g_signal_connect (G_OBJECT (spectrum3dGui->drawing_area), "configure_event", G_CALLBACK (configure_event), NULL);
+	//SDL_EnableKeyRepeat(10, 10);
+
+	gtk_widget_show_all(window);
+}
+
 int main(int argc, char *argv[])
 {
 	printf("%s \nPlease report any bug to %s\n", PACKAGE_STRING, PACKAGE_BUGREPORT);	
@@ -122,28 +190,18 @@ int main(int argc, char *argv[])
 	    }
 #endif
 
-#ifdef HAVE_LIBSDL 
-/* SDL */
-	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-		fprintf(stderr, "Unable to init SDL: %s\n", SDL_GetError());
-		exit(1);
-		}
-	configure_SDL_gl_window (spectrum3d.width, spectrum3d.height);
-	SDL_WM_SetCaption(PACKAGE_NAME, NULL);
-	SDL_EnableKeyRepeat(10, 10);
-#endif
-	
 	initGstreamer();
 	init_audio_values();
 	init_display_values(&spectrum3dGui);
 	
-	mainWindow = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-	gtk_widget_set_size_request (mainWindow, 700, initialWindowHeight);
-	gtk_window_set_title(GTK_WINDOW(mainWindow), PACKAGE_NAME);
-	g_signal_connect (G_OBJECT (mainWindow), "destroy", G_CALLBACK (quit_spectrum3d), NULL);
+	spectrum3dGui.mainWindow = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+	gtk_widget_set_size_request (spectrum3dGui.mainWindow, 700, initialWindowHeight);
+	gtk_widget_realize(spectrum3dGui.mainWindow);
+	gtk_window_set_title(GTK_WINDOW(spectrum3dGui.mainWindow), PACKAGE_NAME);
+	g_signal_connect (G_OBJECT (spectrum3dGui.mainWindow), "destroy", G_CALLBACK (quit_spectrum3d), NULL);
 
 #ifdef GTK3
-	gtk_container_set_reallocate_redraws (GTK_CONTAINER (mainWindow), TRUE);
+	gtk_container_set_reallocate_redraws (GTK_CONTAINER (spectrum3dGui.mainWindow), TRUE);
 #endif
 	for (i = 0; i < 4; i++) {
 		pVBox[i] = gtk_vbox_new(FALSE, 0);
@@ -154,7 +212,7 @@ int main(int argc, char *argv[])
 		}
 	pHBox[12] = gtk_hbox_new(TRUE, 0);
 	
-	gtk_container_add(GTK_CONTAINER(mainWindow), pVBox[1]); 
+	gtk_container_add(GTK_CONTAINER(spectrum3dGui.mainWindow), pVBox[1]); 
 	gtk_box_pack_start(GTK_BOX(pVBox[1]), pHBox[0], FALSE, FALSE, 0);
 		
 /* Menu */
@@ -182,9 +240,9 @@ int main(int argc, char *argv[])
 	gtk_menu_shell_append(GTK_MENU_SHELL(menuBar), menuItem);
 
 		submenu = gtk_menu_new();// 'Play test sound' sub-submenu
-		menuItem = gtk_menu_item_new_with_label("Play test sound");
-		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuItem);
-		g_signal_connect(G_OBJECT(menuItem), "activate", G_CALLBACK(test_sound_window), NULL);
+		spectrum3dGui.checkMenuTestSound = gtk_check_menu_item_new_with_label("Test Sound");
+		gtk_menu_shell_append(GTK_MENU_SHELL(menu), spectrum3dGui.checkMenuTestSound);
+		g_signal_connect(G_OBJECT(spectrum3dGui.checkMenuTestSound), "activate", G_CALLBACK(menu_check_test_sound), &spectrum3dGui);
 
 	menu = gtk_menu_new(); // 'View' submenu
 	menuItem = gtk_menu_item_new_with_label("View");
@@ -230,7 +288,7 @@ int main(int argc, char *argv[])
 			g_signal_connect(G_OBJECT(spectrum3dGui.checkMenuPointer), "activate", G_CALLBACK(check_menu_pointer), &spectrum3dGui);
 			gtk_menu_shell_append(GTK_MENU_SHELL(submenu), spectrum3dGui.checkMenuPointer);
 
-	submenu = gtk_menu_new();// 'Change/reset view' sub-submenu
+		submenu = gtk_menu_new();// 'Change/reset view' sub-submenu
 		menuItem = gtk_menu_item_new_with_label("Change/reset view");
 		gtk_menu_item_set_submenu (GTK_MENU_ITEM (menuItem), submenu);
 		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuItem);	
@@ -252,18 +310,18 @@ int main(int argc, char *argv[])
 
 	menu = gtk_menu_new(); // 'Help...' submenu
 	menuItem = gtk_menu_item_new_with_label("Shortcuts"); 
-	g_signal_connect(G_OBJECT(menuItem), "activate", G_CALLBACK(onShortcuts), (GtkWidget*) mainWindow);
+	g_signal_connect(G_OBJECT(menuItem), "activate", G_CALLBACK(onShortcuts), (GtkWidget*) spectrum3dGui.mainWindow);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuItem);
 #ifdef HAVE_LIBUTOUCH_GEIS
 	menuItem = gtk_menu_item_new_with_label("Gestures Shortcuts");
-	g_signal_connect(G_OBJECT(menuItem), "activate", G_CALLBACK(onGesturesShortcuts), (GtkWidget*) mainWindow);
+	g_signal_connect(G_OBJECT(menuItem), "activate", G_CALLBACK(onGesturesShortcuts), (GtkWidget*) spectrum3dGui.mainWindow);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuItem);
 #endif 
 	menuItem = gtk_menu_item_new_with_label("About...");
-	g_signal_connect(G_OBJECT(menuItem), "activate", G_CALLBACK(onAbout), (GtkWidget*) mainWindow);
+	g_signal_connect(G_OBJECT(menuItem), "activate", G_CALLBACK(onAbout), (GtkWidget*) spectrum3dGui.mainWindow);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuItem);
 	menuItem = gtk_menu_item_new_with_label("Quick start");
-	g_signal_connect(G_OBJECT(menuItem), "activate", G_CALLBACK(onQuickStart), (GtkWidget*) mainWindow);
+	g_signal_connect(G_OBJECT(menuItem), "activate", G_CALLBACK(onQuickStart), (GtkWidget*) spectrum3dGui.mainWindow);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuItem);
 	menuItem = gtk_menu_item_new_with_label("Help");
 	gtk_menu_item_set_submenu(GTK_MENU_ITEM(menuItem), menu);
@@ -272,7 +330,8 @@ int main(int argc, char *argv[])
 
 /* SourceButtons to set type of source (none, audio file, microphone) */
 	spectrum3dGui.stop = gtk_button_new();
-	image = gtk_image_new_from_stock (GTK_STOCK_STOP, GTK_ICON_SIZE_LARGE_TOOLBAR);
+	filename = g_build_filename (G_DIR_SEPARATOR_S, DATADIR, "icons", "stop.png", NULL);
+	image = gtk_image_new_from_file(filename);
 	gtk_button_set_image(GTK_BUTTON(spectrum3dGui.stop),image);
 	gdk_color_parse ("gold",&color);
 	gtk_widget_set_name(spectrum3dGui.stop, "stop");
@@ -283,10 +342,9 @@ int main(int argc, char *argv[])
 	gtk_box_pack_start(GTK_BOX(pHBox[1]), spectrum3dGui.stop, FALSE, TRUE, 2);
 	g_signal_connect(G_OBJECT(spectrum3dGui.stop), "clicked", G_CALLBACK(change_source_button), &spectrum3dGui);
 
-	filename = g_build_filename (G_DIR_SEPARATOR_S, DATADIR, "icons", "microphone.png", NULL);
+	filename = g_build_filename (G_DIR_SEPARATOR_S, DATADIR, "icons", "microphone_grey.png", NULL);
 	image = gtk_image_new_from_file(filename);
 	spectrum3dGui.mic = gtk_button_new();
-	gtk_button_set_relief (GTK_BUTTON(spectrum3dGui.mic), GTK_RELIEF_NONE);
 	gtk_button_set_image (GTK_BUTTON(spectrum3dGui.mic), image);
 	gtk_widget_set_name(spectrum3dGui.mic, "mic");
 	gtk_widget_set_tooltip_text (spectrum3dGui.mic, "Source is microphone; select this to record something and then load it");
@@ -294,12 +352,12 @@ int main(int argc, char *argv[])
 	g_signal_connect(G_OBJECT(spectrum3dGui.mic), "clicked", G_CALLBACK(change_source_button), &spectrum3dGui);
 
 	spectrum3dGui.file = gtk_button_new();
-	gtk_button_set_relief (GTK_BUTTON(spectrum3dGui.file), GTK_RELIEF_NONE);
-	image = gtk_image_new_from_stock (GTK_STOCK_OPEN, GTK_ICON_SIZE_LARGE_TOOLBAR);
+	filename = g_build_filename (G_DIR_SEPARATOR_S, DATADIR, "icons", "file_grey.png", NULL);
+	image = gtk_image_new_from_file(filename);
 	gtk_button_set_image(GTK_BUTTON(spectrum3dGui.file),image);
 	gtk_widget_set_name(spectrum3dGui.file, "file");
 	gtk_widget_set_tooltip_text (spectrum3dGui.file, "Source is an audio file");
-	gtk_box_pack_start(GTK_BOX(pHBox[1]), spectrum3dGui.file, FALSE, TRUE, 2);
+	gtk_box_pack_start(GTK_BOX(pHBox[1]), spectrum3dGui.file, FALSE, FALSE, 2);
 	g_signal_connect(G_OBJECT(spectrum3dGui.file), "clicked", G_CALLBACK(change_source_button), &spectrum3dGui);
 
 	spectrum3dGui.reload = gtk_button_new();
@@ -363,13 +421,16 @@ int main(int argc, char *argv[])
 	gtk_box_pack_start(GTK_BOX(pHBox[1]), widget, FALSE, FALSE, 5);
 
 /* Button to open the Filter and Equalizer window */
+	// create effectsWindow first without showing it
+	effects_window(&spectrum3dGui);
+	// then create a button that will call its display when clicked
 	filename = g_build_filename (G_DIR_SEPARATOR_S, DATADIR, "icons", "equalizer.png", NULL);
 	image = gtk_image_new_from_file(filename);
 	widget = gtk_button_new();  
 	gtk_button_set_image (GTK_BUTTON(widget), image);
 	gtk_widget_set_tooltip_text (widget, "Show/Hide the filter and equalizer window");
 	gtk_box_pack_start(GTK_BOX(pHBox[1]), widget, FALSE, FALSE, 0);
-	g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(effects_window), NULL);
+	g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(show_effects_window), &spectrum3dGui);
 
 /* Time label */
 	label=gtk_label_new("Time : ");
@@ -388,31 +449,53 @@ int main(int argc, char *argv[])
 	timeLabel=gtk_label_new("           0:00 / 0:00           ");
 	gtk_box_pack_start(GTK_BOX(pHBox[5]), timeLabel, FALSE, FALSE, 0);
 
+/* Create drawing area */
+	if (externalWindow == FALSE){
+		/* Resize spectrum3dGui.mainWindow to contain drawing_area; using gtk_window_set_defaut() allows to shrink the window (gtk_widget_set_size_request() does not allow to shrink the window below the requested size); */
+		gtk_window_set_default_size (GTK_WINDOW(spectrum3dGui.mainWindow), (gint)spectrum3d.width, initialWindowHeight + (gint)spectrum3d.height);
+		
+		//gtk_widget_realize(spectrum3dGui.mainWindow);
+
+		spectrum3dGui.drawing_area = gtk_drawing_area_new ();
+		
 #if defined (GTKGLEXT3) || defined (GTKGLEXT1)
+		/* Set OpenGL-capability to the widget */
+	  	gtk_widget_set_gl_capability (spectrum3dGui.drawing_area,
+					glconfig,
+					NULL,
+					TRUE,
+					GDK_GL_RGBA_TYPE);		
+#endif	
+		
+		/* drawing_area has to be put in vBox AFTER the call to gtk_widget_set_gl_capability() (if GtkGlExt is used) and BEFORE the call to the sdl-gtk hack (if sdl is used)*/ 
+		gtk_box_pack_start (GTK_BOX (pVBox[1]), spectrum3dGui.drawing_area, TRUE, TRUE, 0);	
+		
+#ifdef HAVE_LIBSDL 
+		/* Hack to get SDL to use GTK window */
+		{ char SDL_windowhack[32];
+			sprintf(SDL_windowhack,"SDL_WINDOWID=%ld",
+				GDK_WINDOW_XID(gtk_widget_get_window(spectrum3dGui.drawing_area)));
+				// GDK_WINDOW_XID( spectrum3dGui.drawing_area->window))); pour GTK2??
+			putenv(SDL_windowhack);
+		printf("%s\n", SDL_windowhack);
+		}
 
-	/* Resize mainWindow to contain drawing_area; using gtk_window_set_defaut() allows to shrink the window (gtk_widget_set_size_request() does not allow to shrink the window below the requested size); */
-	gtk_window_set_default_size (GTK_WINDOW(mainWindow), (gint)spectrum3d.width, initialWindowHeight + (gint)spectrum3d.height);
-
-	/* Drawing area for the display */
-	spectrum3dGui.drawing_area = gtk_drawing_area_new ();
-  
-  	/* Set OpenGL-capability to the widget */
-  	gtk_widget_set_gl_capability (spectrum3dGui.drawing_area,
-				glconfig,
-				NULL,
-				TRUE,
-				GDK_GL_RGBA_TYPE);
-	gtk_widget_set_events (spectrum3dGui.drawing_area, GDK_KEY_PRESS_MASK | GDK_KEY_RELEASE_MASK | GDK_BUTTON_PRESS_MASK | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK);
-
-	gtk_box_pack_start (GTK_BOX (pVBox[1]), spectrum3dGui.drawing_area, TRUE, TRUE, 0);
-
-	g_signal_connect (G_OBJECT (spectrum3dGui.drawing_area), "configure_event", G_CALLBACK (configure_event), NULL);
-	g_signal_connect (mainWindow, "key-press-event", G_CALLBACK (on_key_press), &spectrum3dGui);
-	g_signal_connect (mainWindow, "key-release-event", G_CALLBACK (on_key_release), &spectrum3dGui);
-	g_signal_connect (spectrum3dGui.drawing_area, "motion-notify-event", G_CALLBACK (on_mouse_motion), NULL);
-	g_signal_connect (spectrum3dGui.drawing_area, "scroll-event", G_CALLBACK (on_mouse_scroll), NULL);
-	spectrum3d.timeoutExpose = g_timeout_add (intervalDisplaySpectro, (GSourceFunc)display_spectro, &spectrum3dGui);
+		if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+			fprintf(stderr, "Unable to init SDL: %s\n", SDL_GetError());
+			exit(1);
+			}
 #endif
+
+		gtk_widget_add_events (spectrum3dGui.mainWindow, GDK_KEY_PRESS_MASK | GDK_KEY_RELEASE_MASK | GDK_BUTTON_PRESS_MASK | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK);
+		g_signal_connect (spectrum3dGui.mainWindow, "key-press-event", G_CALLBACK (on_key_press), &spectrum3dGui);
+		g_signal_connect (spectrum3dGui.mainWindow, "key-release-event", G_CALLBACK (on_key_release), &spectrum3dGui);
+		g_signal_connect (spectrum3dGui.mainWindow, "motion-notify-event", G_CALLBACK (on_mouse_motion), NULL);
+		g_signal_connect (spectrum3dGui.mainWindow, "scroll-event", G_CALLBACK (on_mouse_scroll), NULL);
+		g_signal_connect (G_OBJECT (spectrum3dGui.drawing_area), "configure_event", G_CALLBACK (configure_event), NULL);
+	}
+	else {
+		create_external_window_drawing_area(&spectrum3dGui);
+		}	
 
 /* Starting value of the display */
 	frame = gtk_frame_new("Start value of display (in Hz)");
@@ -490,11 +573,11 @@ int main(int argc, char *argv[])
 	setupGeis();
 #endif
 
-	gtk_widget_show_all (mainWindow);
-#ifdef HAVE_LIBSDL
-	timeoutEvent = g_timeout_add (100, (GSourceFunc)sdl_event, &spectrum3dGui);
+	gtk_widget_show_all (spectrum3dGui.mainWindow);
+
+	//timeoutEvent = g_timeout_add (100, (GSourceFunc)sdl_event, &spectrum3dGui);
 	spectrum3d.timeoutExpose = g_timeout_add (intervalDisplaySpectro, (GSourceFunc)display_spectro, &spectrum3dGui);
-#endif
+
 	printf("Showing Gtk GUI\n");
 	gtk_main ();
 
@@ -506,7 +589,7 @@ int main(int argc, char *argv[])
 	on_stop();
 	g_source_remove(spectrum3d.timeoutExpose);
 #ifdef HAVE_LIBSDL
-	g_source_remove(timeoutEvent);
+	//g_source_remove(timeoutEvent);
 	SDL_Quit();
 #endif
 

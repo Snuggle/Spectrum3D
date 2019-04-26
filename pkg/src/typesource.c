@@ -263,6 +263,11 @@ void load_audio_file(){
 /* Source buttons that behave almost like radio buttons; the typseSource is chosen; everything is stopped with the call to set_source_to_none, then the typeSource is chosen, even if the typeSource remains the same  */
 void change_source_button (GtkWidget *widget, Spectrum3dGui *spectrum3dGui){
 	GdkColor color;
+	gchar *filename;
+	GtkWidget *image;
+#ifdef GTK3
+	GdkRGBA rgba;
+#endif
 
 	// stop everything before changing type source or loading a new audio file
 	set_source_to_none();
@@ -270,54 +275,103 @@ void change_source_button (GtkWidget *widget, Spectrum3dGui *spectrum3dGui){
 	// get name of the button
 	const gchar *buttonName = gtk_widget_get_name (widget);
 	
-	// get the name of each button and compare it to the name of the clicked button; if it is different, set the button inactive; if it is the same, set the button active;
+	// get the name of each button and compare it to the name of the clicked button; if it is different, set the button inactive (i.e. the icon is grey instead of its normal color, and the background is also grey); if it is the same, set the button active (i.e. the icon has its noral color and the background is orange; note that changing background color does not always work due to a bug (see later)); 
 	
 	// STOP BUTTON : stops everything
 	const gchar *stopButton = gtk_widget_get_name (spectrum3dGui->stop);
 	if (strcmp(stopButton, buttonName) == 0){
-		gtk_button_set_relief (GTK_BUTTON(widget), GTK_RELIEF_NORMAL);
-		gdk_color_parse ("gold",&color);
+		filename = g_build_filename (G_DIR_SEPARATOR_S, DATADIR, "icons", "stop.png", NULL);
+		image = gtk_image_new_from_file(filename);
+		gtk_button_set_image(GTK_BUTTON(widget),image);
+#ifdef GTK3
+		gdk_rgba_parse (&rgba, "orange");
+		gtk_widget_override_background_color(widget, GTK_STATE_FLAG_NORMAL, &rgba);
+		gtk_widget_override_background_color(widget, GTK_STATE_FLAG_PRELIGHT, &rgba);
+		// gtk_widget_override_background_color() is not always honored; this is a known bug in GTK3 (Bug 656461)
+#elif defined (GTK2)
+		gdk_color_parse ("orange",&color);
 		gtk_widget_modify_bg(GTK_WIDGET(widget), GTK_STATE_NORMAL, &color);
 		gtk_widget_modify_bg(GTK_WIDGET(widget), GTK_STATE_PRELIGHT, &color);
+#endif
 		}
 	else {
-		gtk_button_set_relief (GTK_BUTTON(spectrum3dGui->stop), GTK_RELIEF_NONE);
+		filename = g_build_filename (G_DIR_SEPARATOR_S, DATADIR, "icons", "stop_grey.png", NULL);
+		image = gtk_image_new_from_file(filename);
+		gtk_button_set_image(GTK_BUTTON(spectrum3dGui->stop),image);
+#ifdef GTK3
+		gdk_rgba_parse (&rgba, "grey");
+		gtk_widget_override_background_color(GTK_WIDGET(spectrum3dGui->stop), GTK_STATE_FLAG_NORMAL, &rgba);
+		gtk_widget_override_background_color(GTK_WIDGET(spectrum3dGui->stop), GTK_STATE_PRELIGHT, &rgba);
+#elif defined (GTK2)
 		gdk_color_parse ("grey",&color);
 		gtk_widget_modify_bg(GTK_WIDGET(spectrum3dGui->stop), GTK_STATE_NORMAL, &color);
 		gtk_widget_modify_bg(GTK_WIDGET(spectrum3dGui->stop), GTK_STATE_PRELIGHT, &color);
+#endif
 		}
 
 	// MICROPHONE BUTTON
 	const gchar *micButton = gtk_widget_get_name (spectrum3dGui->mic);
 	if (strcmp(micButton, buttonName) == 0){
-		gtk_button_set_relief (GTK_BUTTON(widget), GTK_RELIEF_NORMAL);
-		gdk_color_parse ("gold",&color);
+		filename = g_build_filename (G_DIR_SEPARATOR_S, DATADIR, "icons", "microphone.png", NULL);
+	image = gtk_image_new_from_file(filename);
+	gtk_button_set_image(GTK_BUTTON(widget),image);
+#ifdef GTK3
+		gdk_rgba_parse (&rgba, "orange");
+		gtk_widget_override_background_color(widget, GTK_STATE_FLAG_NORMAL, &rgba);
+		gtk_widget_override_background_color(widget, GTK_STATE_FLAG_PRELIGHT, &rgba);
+#elif defined (GTK2)
+		gdk_color_parse ("orange",&color);
 		gtk_widget_modify_bg(GTK_WIDGET(widget), GTK_STATE_NORMAL, &color);
 		gtk_widget_modify_bg(GTK_WIDGET(widget), GTK_STATE_PRELIGHT, &color);
+#endif
 		typeSource = MIC;
 		}
 	else {
-		gtk_button_set_relief (GTK_BUTTON(spectrum3dGui->mic), GTK_RELIEF_NONE);
+		filename = g_build_filename (G_DIR_SEPARATOR_S, DATADIR, "icons", "microphone_grey.png", NULL);
+	image = gtk_image_new_from_file(filename);
+	gtk_button_set_image(GTK_BUTTON(spectrum3dGui->mic),image);
+#ifdef GTK3
+		gdk_rgba_parse (&rgba, "grey");
+		gtk_widget_override_background_color(GTK_WIDGET(spectrum3dGui->mic), GTK_STATE_FLAG_NORMAL, &rgba);
+		gtk_widget_override_background_color(GTK_WIDGET(spectrum3dGui->mic), GTK_STATE_PRELIGHT, &rgba);
+#elif defined (GTK2)
 		gdk_color_parse ("grey",&color);
 		gtk_widget_modify_bg(GTK_WIDGET(spectrum3dGui->mic), GTK_STATE_NORMAL, &color);
 		gtk_widget_modify_bg(GTK_WIDGET(spectrum3dGui->mic), GTK_STATE_PRELIGHT, &color);
+#endif
 		}
 
-	// FILE BUTTON : a file will be analysed, either in real-time (harmonics analysed and displayed at the same time) or preloaded (harmonics analysed first, then displayed, then the file can be played;
+	// FILE BUTTON 
 	const gchar *fileButton = gtk_widget_get_name (spectrum3dGui->file);
 	if (strcmp(fileButton, buttonName) == 0){
-		gtk_button_set_relief (GTK_BUTTON(widget), GTK_RELIEF_NORMAL);
-		gdk_color_parse ("gold",&color);
+		filename = g_build_filename (G_DIR_SEPARATOR_S, DATADIR, "icons", "file.png", NULL);
+	image = gtk_image_new_from_file(filename);
+	gtk_button_set_image(GTK_BUTTON(widget),image);
+#ifdef GTK3
+		gdk_rgba_parse (&rgba, "orange");
+		gtk_widget_override_background_color(GTK_WIDGET(widget), GTK_STATE_NORMAL, &rgba);
+		gtk_widget_override_background_color(GTK_WIDGET(widget), GTK_STATE_PRELIGHT, &rgba);
+#elif defined (GTK2)
+		gdk_color_parse ("orange",&color);
 		gtk_widget_modify_bg(GTK_WIDGET(widget), GTK_STATE_NORMAL, &color);
 		gtk_widget_modify_bg(GTK_WIDGET(widget), GTK_STATE_PRELIGHT, &color);
+#endif
 		typeSource = AUDIO_FILE;
 		select_audio_file();
 		}
 	else {
-		gtk_button_set_relief (GTK_BUTTON(spectrum3dGui->file), GTK_RELIEF_NONE);
+		filename = g_build_filename (G_DIR_SEPARATOR_S, DATADIR, "icons", "file_grey.png", NULL);
+	image = gtk_image_new_from_file(filename);
+	gtk_button_set_image(GTK_BUTTON(spectrum3dGui->file),image);
+		#ifdef GTK3
+		gdk_rgba_parse (&rgba, "grey");
+		gtk_widget_override_background_color(GTK_WIDGET(spectrum3dGui->file), GTK_STATE_NORMAL, &rgba);
+		gtk_widget_override_background_color(GTK_WIDGET(spectrum3dGui->file), GTK_STATE_PRELIGHT, &rgba);
+#elif defined (GTK2)
 		gdk_color_parse ("grey",&color);
 		gtk_widget_modify_bg(GTK_WIDGET(spectrum3dGui->file), GTK_STATE_NORMAL, &color);
 		gtk_widget_modify_bg(GTK_WIDGET(spectrum3dGui->file), GTK_STATE_PRELIGHT, &color);
+#endif
 		}
 
 }
