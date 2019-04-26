@@ -18,9 +18,6 @@
 /* Define to 1 if you have the `SDL' library (-lSDL). */
 #undef HAVE_LIBSDL
 
-/* Define to 1 if you have the `SDL_ttf' library (-lSDL_ttf). */
-#undef HAVE_LIBSDL_TTF
-
 /* Define to 1 if you have the `utouch-geis' library version 2 (advanced API)
    (-lutouch-geis). */
 #undef HAVE_LIBUTOUCH_GEIS

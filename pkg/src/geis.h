@@ -17,13 +17,12 @@
 #ifndef DEFINE_GEIS
 #define DEFINE_GEIS
 
-int playing, fd, change;
-float X, Y, Z; 
-float AngleH, AngleV, AngleZ;
+gboolean timeoutTouch, enableTouch, event, newEvent;
+int playing, fd;
+GLfloat X, Y, Z, AngleH, AngleV, AngleZ;
 GeisStatus status;
 Geis geis;
 GeisSubscription subscription;
-void sdlWindow();
 
 int geisGesture(); 
 

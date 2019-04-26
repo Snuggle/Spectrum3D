@@ -4,6 +4,12 @@
 svgicondir = $(datadir)/icons
 dist_svgicon_DATA = spectrum3d.svg
 
+icondir = $(datadir)/icons
+dist_icon_DATA = microphone.png \
+		qjackctl.png \
+		equalizer.png \
+		gain.png
+
 gtk_update_icon_cache = gtk-update-icon-cache -f -t $(svgicondir)
 
 install-data-hook: update-icon-cache
@@ -25,13 +31,6 @@ Applicationsdir = $(datadir)/applications
 Applications_DATA = $(desktop_files)
 
 DISTCLEANFILES = $(desktop_files)
-
-#font file
-fontsdir = $(datadir)/fonts
-dist_fonts_DATA = FreeSans.ttf 
-
-home_fontsdir = $(HOME)/.$(PACKAGE)/fonts
-dist_home_fonts_DATA = FreeSans.ttf
 
 
 

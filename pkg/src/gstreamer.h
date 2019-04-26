@@ -14,14 +14,18 @@
     along with Spectrum3D.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef DEFINE_ONCLICK
-#define DEFINE_ONCLICK
+#ifndef DEF_GSTREAMER
+#define DEF_GSTREAMER
 
-gboolean pointer, newEvent, jack, loading, analyse_rt;
-int AUDIOFREQ, playing, pose, zoom, zoomFactor, textScale, lineScale, bandsNumber, hzStep;
-float showGain;
-GLfloat x, z, X, Y, Z, AngleH, AngleV, AngleZ;
+gboolean showEqualizerWindow, realtime, analyse_rt, jack, loading, recording;
+gchar *selected_file, *tmpPath;
+gint64 pos, len;
+int AUDIOFREQ, pose, spect_bands, playing, hzStep, frame_number_counter, bandsNumber; 
+gfloat BPlowerFreq, BPupperFreq;
 GLfloat spec_data[405][11030];
+GMainLoop *loop, *loopTestSound;
+
+GtkWidget *scaleSeek;
 
 typedef enum TypeSource TypeSource;
 enum TypeSource
@@ -30,22 +34,22 @@ enum TypeSource
 };
 TypeSource typeSource;
 
-typedef enum ViewType ViewType;
-enum ViewType
+typedef enum Source Source;
+enum Source
 {
-	THREE_D, THREE_D_FLAT, TWO_D
+	NO, MICRO, SOUND_FILE
 };
-ViewType viewType;
+Source source; 
 
-GtkObject *adjust_bands, *adjust_start;
-GtkWidget *pScaleBands, *pComboRange, *spectroWindow;
-GMainLoop *loop;
-GstElement *pipeline;
+GstElement *pipeline, *equalizer, *equalizer2, *equalizer3, *BP_BRfilter, *playbin;
 
-void setPlayButtonIcon();
-void getTextDisplayLabel();
-void onReset();
-void displaySpectro();
-void change_adjust_start();
+void setPlayButtonIcon ();
+void error_message_window(gchar *message);
+void getBand();
+gboolean message_handler (GstBus * bus, GstMessage * message, gpointer data);
+GstTaskPool * test_rt_pool_new ();
 
 #endif
+
+
+

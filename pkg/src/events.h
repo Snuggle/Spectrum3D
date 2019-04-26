@@ -17,16 +17,22 @@
 #ifndef DEFINE_EVENTS
 #define DEFINE_EVENTS
 
-gboolean enableTouch, changeViewParameter;
-int zoom, result, bandsNumber, change;
-float gain, X, Y, Z, AngleH, AngleV, AngleZ;
-GLfloat x, YscaleX, flatViewY, flatViewHeight;
+gboolean newEvent;
+int bandsNumber;
+GLfloat x, X, Y, Z, AngleH, AngleV, AngleZ, y_2d, Xpointer, Ypointer;
 
-void sdlWindow();
-void onStop();
+typedef enum ViewType ViewType;
+enum ViewType
+{
+	THREE_D, THREE_D_FLAT, TWO_D
+	/* 
+	THREE_D : the 3D view
+	TWO_D : the 2D view
+	THREE_D_FLAT : a mix between the previous (a 3D that has been somehow 'flatened');
+	*/
+};
+ViewType viewType;
 
-/*#ifdef GEIS
-int geisGesture();
-#endif*/
+void quit_spectrum3d();
 
 #endif

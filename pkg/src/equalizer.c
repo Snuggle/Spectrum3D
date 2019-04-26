@@ -37,8 +37,7 @@ gdouble gain;
 static void on_window_destroy (GObject * object, GtkWidget *effectsWindow)
 {	
 	showEqualizerWindow = FALSE;
-	gtk_button_set_label (GTK_BUTTON(buttonEqualizer), "Show Equalizer\n Window");
-	gtk_widget_hide(effectsWindow);
+	gtk_widget_destroy(effectsWindow);
 }
 
 static void 
@@ -374,10 +373,8 @@ NULL);
 	
 	showEqualizerWindow = TRUE;
   	gtk_widget_show_all (effectsWindow);
-	gtk_button_set_label (GTK_BUTTON(buttonEqualizer), "Hide Filter & \nEqualizer Window");
 }
 else { // hide window if window is showed
-	gtk_button_set_label (GTK_BUTTON(buttonEqualizer), "Show Filter & \nEqualizer Window");
 	showEqualizerWindow = FALSE;
 	gtk_widget_hide(effectsWindow);
 	}

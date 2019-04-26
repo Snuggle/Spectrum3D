@@ -17,14 +17,20 @@
 #ifndef DEFINE_DISPLAY
 #define DEFINE_DISPLAY
 
-gboolean flatView, changeViewParameter, pointer, useCopyPixels;
-int pose, firstPass3D, zoom, zoomFactor, textScale, lineScale, width, f, change, result, widthFrame, bandsNumber, storedFreq, flatviewDefinition;
-float showGain, z, X, Y, Z, storedIntensity, PROPORTION; 
-float AngleH, AngleV, AngleZ;
-GLfloat x, flatViewHeight, YscaleX, flatViewY;
-GLfloat prec[805][10005];
+gboolean pointer, analyse_rt, showPosition, newEvent;
+int pose, firstPass3D, zoom, zoomFactor, textScale, lineScale, bandsNumber, storedFreq, hzStep, playing;
+guint spect_bands;
+float showGain, storedIntensity;
+GLfloat AngleH, AngleV, AngleZ, z, X, Y, Z, x, x_2d, y_2d, Xpointer, Ypointer;
+GLfloat spec_data[405][11030];
 const GValue *magnitudes;
-char fontPreference[100];
+
+typedef enum Source Source;
+enum Source
+{
+	NO, MICRO, SOUND_FILE
+};
+Source source; 
 
 typedef enum ColorType ColorType;
 enum ColorType
@@ -36,22 +42,20 @@ ColorType colorType;
 typedef enum ViewType ViewType;
 enum ViewType
 {
-	THREE_D, THREE_D_FLAT, FLAT
-	/* THREE_D : the 3D view
-	FLAT : the 'FlatView'
-	THREE_D_FLAT : a mix between the previous (a 3D that has been somehow 'flatened');*/
+	THREE_D, THREE_D_FLAT, TWO_D
+	/* 
+	THREE_D : the 3D view
+	TWO_D : the 2D view
+	THREE_D_FLAT : a mix between the previous (a 3D that has been somehow 'flatened');
+	*/
 };
 ViewType viewType;
 
-#define RESIZE width/1200
-#define WIDTH_WINDOW 1200 * RESIZE
-#define HEIGHT_WINDOW 600
-
-TTF_Font *font;
-
-int sdlEvent();
 void drawScale();
 void RenderText();
 void drawPointer();
 
 #endif
+
+
+

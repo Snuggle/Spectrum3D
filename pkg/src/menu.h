@@ -17,14 +17,12 @@
 #ifndef DEFINE_MENU
 #define DEFINE_MENU
 
-gboolean useCopyPixels;
-char fontPreference[100], prefPath[100];
-char policyName[20];
-int width, presetWidth, priority, interval, flatviewDefinition;
 gboolean realtime, enableTouch;
-float X, Y, Z, AngleH, AngleV, AngleZ, presetX, presetY, presetZ, presetAngleH, presetAngleV, presetAngleZ; 
-static GtkWidget *mainWindow;
-FILE* pref, *rcFile;
+char prefPath[100], policyName[20];
+int priority;
+GLfloat z, X, Y, Z, AngleH, AngleV, AngleZ; 
+FILE *rcFile;
+GMainLoop *loopTestSound;
 
 enum {
     ACTION_COLUMN,
@@ -40,7 +38,9 @@ enum ColorType
 };
 ColorType colorType;
 
-
-void change_adjust(GtkWidget *pWidget, gpointer data);
+void playTestSound(GtkWidget *pWidget, gpointer data);
+void change_freq_test_sound(GtkWidget *widget, gpointer data);
+void change_volume_test_sound(GtkWidget *pWidget, gpointer data);
+gboolean display_spectro();
 
 #endif

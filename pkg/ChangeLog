@@ -1,9 +1,15 @@
-
-2011-12-22  Bernard Victor Delvaux  <nadaeck@hotmail.com>
-    Version : Spectrum3d-1.1.1 :
-    * mainwindow.c : some code regarding jack have been put between #ifdef/#endif;
-    * configure.ac : --disable-jack and --disable-geis that were not working have been fixed thanks to Valentino Dell'Aica's help;
-    * src/Makefile.am : config.h has been removed from 'spectrum3d_SOURCES' since it is already created from config.h.in in configure.ac;
+2012-01-27 Bernard Victor Delvaux  <nadaeck@hotmail.com>
+    Version : Spectrum3d-2.0.0 :
+    * general changes : sound file can now be preloaded (ie analysed and displayed) before beeing played, or can still be analysed and displayed while playing (as it was already before); also sound can be recorded and loaded as an audio_file; the sdl-gl window can now be resized at any size on the fly;
+    * main.c : SDL window is now built at the start of Spectrum3d and destroyed when Spectrum3d quits, as well as callback for managing events in sdl window and callback to display harmonics; SDL window can now be resized on the fly at any size;
+    * main.c : many changes regarding the Gtk user interface : some buttons have been added, some were changed, some were removed and several have been moved to menu;
+    * display : display_spectro() and display_paused_spectro() have been merged in one function;
+    * gstreamer.c : in playFromSource(), the different parts have been merged in one part; 
+    * typesource.c : created to manage the type of audio source, including the selection of an audio file and its preloading;
+    * events.c : events are managed with SDL_PollEvent only; resize and scroll events have been added; key events have been changed somehow;
+    * menu.c : many things from the GUI were moved here including perspective (i.e. 2D or 3D), scale commands (text, lines, pointer), and other;
+    * preferences.c : many unnecessary item have been removed;
+    * spectrum3d.h : created to host Spectrum3d-specific structures;
 
 2011-10-13  Bernard Victor Delvaux  <nadaeck@hotmail.com>
     Version : Spectrum3d-1.1.0 :

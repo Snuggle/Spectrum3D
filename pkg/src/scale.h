@@ -17,19 +17,16 @@
 #ifndef DEFINE_SCALE
 #define DEFINE_SCALE
 
-gboolean flatView;
-int zoom, zoomFactor, width, widthFrame, hzStep, bandsNumber, storedFreq;
-GLfloat x, flatViewHeight;
-float gain, yPanel, z, storedIntensity;
-GLfloat YscaleX, flatViewY;
- 
-TTF_Font *font;
-#define RESIZE width/1200
+int zoom, zoomFactor, hzStep, bandsNumber, storedFreq;
+GLfloat x, x_2d, y_2d;
+gint64 pos, len;
+float X, Y, Z, AngleH, AngleV, AngleZ, gain, z, storedIntensity;
+GLfloat Xpointer, Ypointer;
 
 typedef enum ViewType ViewType;
 enum ViewType
 {
-	THREE_D, THREE_D_FLAT, FLAT
+	THREE_D, THREE_D_FLAT, TWO_D
 };
 ViewType viewType;
 

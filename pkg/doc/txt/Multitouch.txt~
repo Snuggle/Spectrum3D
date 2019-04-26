@@ -1,6 +1,6 @@
 MULTITOUCH SUPPORT FOR SPECTRUM 3D
 
-Multitouch support in Spectrum3d is provided by the uTouch-geis API (Geis2).
+Multitouch support in Spectrum3d is still experimental for now. It is provided by the uTouch-geis API (Geis2).
 
 Where to get general information about multitouch?
 --------------------------------------------------

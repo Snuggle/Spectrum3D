@@ -33,9 +33,9 @@ NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
 subdir = data
-DIST_COMMON = $(dist_fonts_DATA) $(dist_home_fonts_DATA) \
-	$(dist_svgicon_DATA) $(srcdir)/Makefile.am \
-	$(srcdir)/Makefile.in $(srcdir)/spectrum3d.desktop.in
+DIST_COMMON = $(dist_icon_DATA) $(dist_svgicon_DATA) \
+	$(srcdir)/Makefile.am $(srcdir)/Makefile.in \
+	$(srcdir)/spectrum3d.desktop.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
@@ -68,10 +68,8 @@ am__base_list = \
   sed '$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;s/\n/ /g' | \
   sed '$$!N;$$!N;$$!N;$$!N;s/\n/ /g'
 am__installdirs = "$(DESTDIR)$(Applicationsdir)" \
-	"$(DESTDIR)$(fontsdir)" "$(DESTDIR)$(home_fontsdir)" \
-	"$(DESTDIR)$(svgicondir)"
-DATA = $(Applications_DATA) $(dist_fonts_DATA) $(dist_home_fonts_DATA) \
-	$(dist_svgicon_DATA)
+	"$(DESTDIR)$(icondir)" "$(DESTDIR)$(svgicondir)"
+DATA = $(Applications_DATA) $(dist_icon_DATA) $(dist_svgicon_DATA)
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
@@ -176,6 +174,12 @@ top_srcdir = @top_srcdir@
 #icon file
 svgicondir = $(datadir)/icons
 dist_svgicon_DATA = spectrum3d.svg
+icondir = $(datadir)/icons
+dist_icon_DATA = microphone.png \
+		qjackctl.png \
+		equalizer.png \
+		gain.png
+
 gtk_update_icon_cache = gtk-update-icon-cache -f -t $(svgicondir)
 
 #desktop file
@@ -184,12 +188,6 @@ desktop_files = $(desktop_in_files:.desktop.in=.desktop)
 Applicationsdir = $(datadir)/applications
 Applications_DATA = $(desktop_files)
 DISTCLEANFILES = $(desktop_files)
-
-#font file
-fontsdir = $(datadir)/fonts
-dist_fonts_DATA = FreeSans.ttf 
-home_fontsdir = $(HOME)/.$(PACKAGE)/fonts
-dist_home_fonts_DATA = FreeSans.ttf
 all: all-am
 
 .SUFFIXES:
@@ -245,46 +243,26 @@ uninstall-ApplicationsDATA:
 	test -n "$$files" || exit 0; \
 	echo " ( cd '$(DESTDIR)$(Applicationsdir)' && rm -f" $$files ")"; \
 	cd "$(DESTDIR)$(Applicationsdir)" && rm -f $$files
-install-dist_fontsDATA: $(dist_fonts_DATA)
+install-dist_iconDATA: $(dist_icon_DATA)
 	@$(NORMAL_INSTALL)
-	test -z "$(fontsdir)" || $(MKDIR_P) "$(DESTDIR)$(fontsdir)"
-	@list='$(dist_fonts_DATA)'; test -n "$(fontsdir)" || list=; \
+	test -z "$(icondir)" || $(MKDIR_P) "$(DESTDIR)$(icondir)"
+	@list='$(dist_icon_DATA)'; test -n "$(icondir)" || list=; \
 	for p in $$list; do \
 	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
 	  echo "$$d$$p"; \
 	done | $(am__base_list) | \
 	while read files; do \
-	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(fontsdir)'"; \
-	  $(INSTALL_DATA) $$files "$(DESTDIR)$(fontsdir)" || exit $$?; \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(icondir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(icondir)" || exit $$?; \
 	done
 
-uninstall-dist_fontsDATA:
+uninstall-dist_iconDATA:
 	@$(NORMAL_UNINSTALL)
-	@list='$(dist_fonts_DATA)'; test -n "$(fontsdir)" || list=; \
+	@list='$(dist_icon_DATA)'; test -n "$(icondir)" || list=; \
 	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
 	test -n "$$files" || exit 0; \
-	echo " ( cd '$(DESTDIR)$(fontsdir)' && rm -f" $$files ")"; \
-	cd "$(DESTDIR)$(fontsdir)" && rm -f $$files
-install-dist_home_fontsDATA: $(dist_home_fonts_DATA)
-	@$(NORMAL_INSTALL)
-	test -z "$(home_fontsdir)" || $(MKDIR_P) "$(DESTDIR)$(home_fontsdir)"
-	@list='$(dist_home_fonts_DATA)'; test -n "$(home_fontsdir)" || list=; \
-	for p in $$list; do \
-	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
-	  echo "$$d$$p"; \
-	done | $(am__base_list) | \
-	while read files; do \
-	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(home_fontsdir)'"; \
-	  $(INSTALL_DATA) $$files "$(DESTDIR)$(home_fontsdir)" || exit $$?; \
-	done
-
-uninstall-dist_home_fontsDATA:
-	@$(NORMAL_UNINSTALL)
-	@list='$(dist_home_fonts_DATA)'; test -n "$(home_fontsdir)" || list=; \
-	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
-	test -n "$$files" || exit 0; \
-	echo " ( cd '$(DESTDIR)$(home_fontsdir)' && rm -f" $$files ")"; \
-	cd "$(DESTDIR)$(home_fontsdir)" && rm -f $$files
+	echo " ( cd '$(DESTDIR)$(icondir)' && rm -f" $$files ")"; \
+	cd "$(DESTDIR)$(icondir)" && rm -f $$files
 install-dist_svgiconDATA: $(dist_svgicon_DATA)
 	@$(NORMAL_INSTALL)
 	test -z "$(svgicondir)" || $(MKDIR_P) "$(DESTDIR)$(svgicondir)"
@@ -346,7 +324,7 @@ check-am: all-am
 check: check-am
 all-am: Makefile $(DATA)
 installdirs:
-	for dir in "$(DESTDIR)$(Applicationsdir)" "$(DESTDIR)$(fontsdir)" "$(DESTDIR)$(home_fontsdir)" "$(DESTDIR)$(svgicondir)"; do \
+	for dir in "$(DESTDIR)$(Applicationsdir)" "$(DESTDIR)$(icondir)" "$(DESTDIR)$(svgicondir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-am
@@ -395,8 +373,8 @@ info: info-am
 
 info-am:
 
-install-data-am: install-ApplicationsDATA install-dist_fontsDATA \
-	install-dist_home_fontsDATA install-dist_svgiconDATA
+install-data-am: install-ApplicationsDATA install-dist_iconDATA \
+	install-dist_svgiconDATA
 	@$(NORMAL_INSTALL)
 	$(MAKE) $(AM_MAKEFLAGS) install-data-hook
 install-dvi: install-dvi-am
@@ -441,8 +419,8 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-ApplicationsDATA uninstall-dist_fontsDATA \
-	uninstall-dist_home_fontsDATA uninstall-dist_svgiconDATA
+uninstall-am: uninstall-ApplicationsDATA uninstall-dist_iconDATA \
+	uninstall-dist_svgiconDATA
 	@$(NORMAL_INSTALL)
 	$(MAKE) $(AM_MAKEFLAGS) uninstall-hook
 .MAKE: install-am install-data-am install-strip uninstall-am
@@ -450,16 +428,15 @@ uninstall-am: uninstall-ApplicationsDATA uninstall-dist_fontsDATA \
 .PHONY: all all-am check check-am clean clean-generic distclean \
 	distclean-generic distdir dvi dvi-am html html-am info info-am \
 	install install-ApplicationsDATA install-am install-data \
-	install-data-am install-data-hook install-dist_fontsDATA \
-	install-dist_home_fontsDATA install-dist_svgiconDATA \
-	install-dvi install-dvi-am install-exec install-exec-am \
-	install-html install-html-am install-info install-info-am \
-	install-man install-pdf install-pdf-am install-ps \
-	install-ps-am install-strip installcheck installcheck-am \
-	installdirs maintainer-clean maintainer-clean-generic \
-	mostlyclean mostlyclean-generic pdf pdf-am ps ps-am uninstall \
-	uninstall-ApplicationsDATA uninstall-am \
-	uninstall-dist_fontsDATA uninstall-dist_home_fontsDATA \
+	install-data-am install-data-hook install-dist_iconDATA \
+	install-dist_svgiconDATA install-dvi install-dvi-am \
+	install-exec install-exec-am install-html install-html-am \
+	install-info install-info-am install-man install-pdf \
+	install-pdf-am install-ps install-ps-am install-strip \
+	installcheck installcheck-am installdirs maintainer-clean \
+	maintainer-clean-generic mostlyclean mostlyclean-generic pdf \
+	pdf-am ps ps-am uninstall uninstall-ApplicationsDATA \
+	uninstall-am uninstall-dist_iconDATA \
 	uninstall-dist_svgiconDATA uninstall-hook
 
 

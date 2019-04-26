@@ -4,7 +4,7 @@
 ############### INITIALIZE EVERYTHING ######################
 
 AC_INIT([Spectrum3d],
-	[1.1.1],
+	[2.0.1],
 	[nadaeck@hotmail.com], 
 	[spectrum3d])
 AC_CONFIG_SRCDIR([Makefile.am])
@@ -37,24 +37,26 @@ PKG_CHECK_MODULES([GTK], [gtk+-2.0], [
 				CFLAGS="$CFLAGS $GTK_CFLAGS"
    				LIBS="$LIBS $GTK_LIBS"
 				], [AC_MSG_ERROR([GTK (gtk+-2.0) library (libgtk) is required])])
+
 # Check and link for GSTREAMER-0.10
 PKG_CHECK_MODULES([GSTREAMER], [gstreamer-0.10], [
 				CFLAGS="$CFLAGS $GSTREAMER_CFLAGS"
    				LIBS="$LIBS $GSTREAMER_LIBS"
 				], [AC_MSG_ERROR([GSTREAMER (gstreamer-0.10) library (libgstreamer) is required])])
-#Check and link for SDL, SDL_ttf and OpenGL
+
+#Check and link for SDL and OpenGL
 AC_CHECK_LIB([SDL], [SDL_Init], [],
 	[AC_MSG_ERROR([SDL library (libsdl) is required for this program])])
-AC_CHECK_LIB([SDL_ttf], [TTF_Init], [],
-	[AC_MSG_ERROR([SDL_ttf library (libsdl-ttf) is required for this program])])
 AC_CHECK_LIB([GL], [glClear], [],
 	[AC_MSG_ERROR([OpenGL(GL) library is required for this program])])
 AC_CHECK_LIB([GLU], [gluBeginCurve], [],
 	[AC_MSG_ERROR([OpenGL(GLU) library is required for this program])])
+
 # Check and link for JACK (if jacklib is present and if this option is not disabled)
 AS_IF([test "x$enable_jack" != "xno"], [
   AC_CHECK_LIB([jack], [jack_client_open], [], [jack=0])],
 	[jack=0])
+
 # Check and link for MULTITOUCH (if libbamf and libutouch-geis are present and if this option is not disabled)
 # Check first for LIBBAMF; if it is there, check for LIBUTOUCH-GEIS version 2; if it is there, check if LIBUTOUCH-GEIS version is > 2.0.11
 AS_IF([test "x$enable_geis" != "xno"], [
@@ -87,7 +89,7 @@ AC_CONFIG_FILES([Makefile
 AC_OUTPUT
 
 mkdir -p $HOME/.$PACKAGE
-mkdir -p $HOME/.$PACKAGE/fonts
+
 
 ################### PRINT CONFIG MESSAGE ######################
 

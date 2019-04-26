@@ -22,6 +22,8 @@ the utouch-geis-2.0.10 at https://launchpad.net/canonical-multitouch/utouch-geis
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <GL/gl.h>
+#include <GL/glu.h>
 #include <geis/geis.h>
 #include <libbamf/bamf-matcher.h>
 
@@ -67,10 +69,15 @@ void setupGeis()
 
 	geis_get_configuration(geis, GEIS_CONFIGURATION_FD, &fd);
 #endif
+
+	if (enableTouch){
+		timeoutTouch = g_timeout_add (50, (GSourceFunc) geisGesture, NULL);
+		}		
 }
 
 void geisQuit()
 {
+	g_source_remove(timeoutTouch);
 	geis_subscription_delete(subscription);
   	geis_delete(geis);
 }
@@ -142,8 +149,7 @@ dump_device_event(GeisEvent event)
 }*/
 
 
-int 
-dump_gesture_event(GeisEvent event)
+gboolean dump_gesture_event(GeisEvent event)
 {
 	GeisSize i;
 	GeisTouchSet touchset;
@@ -228,10 +234,11 @@ dump_gesture_event(GeisEvent event)
     }
   }
 if (drag == 1 || pinch == 1 || rotate == 1){
-	return 1;
+	newEvent = TRUE;
+	return TRUE;
 	}
 else {
-	return 0;
+	return FALSE;
 	}
 }
 
@@ -279,8 +286,8 @@ gboolean geisGesture()
 		case GEIS_EVENT_GESTURE_BEGIN:
 		case GEIS_EVENT_GESTURE_UPDATE:
 		case GEIS_EVENT_GESTURE_END:
-			if (strcmp(windowName, PACKAGE_NAME) == 0) {
-		    		change = dump_gesture_event(eventGeis);
+			if (strcmp(windowName, PACKAGE_NAME) == 0 || strcmp(windowName, PACKAGE) == 0) {
+		    		event = dump_gesture_event(eventGeis);
 				}
 			break;
 		default:
@@ -289,13 +296,6 @@ gboolean geisGesture()
 	geis_event_delete(eventGeis);
 	status = geis_next_event(geis, &eventGeis);
 	}
-    
-/*if (result == 1){
-	return 1;
-	}
-else {
-	return 0;
-	}*/
 return TRUE;
 }
 

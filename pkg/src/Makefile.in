@@ -47,9 +47,10 @@ CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
 am_spectrum3d_OBJECTS = display.$(OBJEXT) events.$(OBJEXT) \
-	equalizer.$(OBJEXT) geis.$(OBJEXT) main.$(OBJEXT) \
-	mainwindow.$(OBJEXT) menu.$(OBJEXT) onclick.$(OBJEXT) \
-	preferences.$(OBJEXT) scale.$(OBJEXT) testrtpool.$(OBJEXT)
+	equalizer.$(OBJEXT) geis.$(OBJEXT) gstreamer.$(OBJEXT) \
+	main.$(OBJEXT) menu.$(OBJEXT) onclick.$(OBJEXT) \
+	preferences.$(OBJEXT) record.$(OBJEXT) scale.$(OBJEXT) \
+	testrtpool.$(OBJEXT) typesource.$(OBJEXT)
 spectrum3d_OBJECTS = $(am_spectrum3d_OBJECTS)
 spectrum3d_LDADD = $(LDADD)
 DEFAULT_INCLUDES = -I.@am__isrc@
@@ -167,7 +168,8 @@ top_srcdir = @top_srcdir@
 
 #spectrum3d_CFLAGS = $(GSTREAMER_CFLAGS) $(GTK_CFLAGS) $(BAMF_CFLAGS)
 #spectrum3d_LDADD = $(GSTREAMER_LIBS) $(GTK_LIBS) $(BAMF_LIBS)
-spectrum3d_SOURCES = display.c events.c equalizer.c geis.c main.c mainwindow.c menu.c onclick.c preferences.c scale.c testrtpool.c display.h equalizer.h events.h geis.h main.h mainwindow.h menu.h onclick.h preferences.h scale.h testrtpool.h
+spectrum3d_SOURCES = display.c events.c equalizer.c geis.c gstreamer.c main.c menu.c onclick.c preferences.c record.c scale.c testrtpool.c typesource.c display.h equalizer.h events.h geis.h gstreamer.h main.h menu.h onclick.h preferences.h record.h scale.h spectrum3d.h testrtpool.h typesource.h
+AM_CPPFLAGS = -DDATADIR='"$(datadir)"'
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
@@ -271,13 +273,15 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/equalizer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/events.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/geis.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gstreamer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/main.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mainwindow.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/menu.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/onclick.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/preferences.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/record.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/scale.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testrtpool.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/typesource.Po@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
