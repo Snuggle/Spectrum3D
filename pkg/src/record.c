@@ -57,7 +57,7 @@ void record_window() {
 #endif			
 
 	button = gtk_button_new();
-	filename = g_build_filename (G_DIR_SEPARATOR_S, DATADIR, "icons", "gtk-media-record.png", NULL);
+	filename = g_build_filename (G_DIR_SEPARATOR_S, DATADIR, "icons", "spectrum3d-record.png", NULL);
 	image = gtk_image_new_from_file(filename);
 	//image = gtk_image_new_from_stock (GTK_STOCK_MEDIA_RECORD, GTK_ICON_SIZE_BUTTON);
 	gtk_button_set_image(GTK_BUTTON(button),image);
@@ -65,7 +65,7 @@ void record_window() {
 	g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(playFromSource), NULL);
 	
 	button = gtk_button_new();
-	filename = g_build_filename (G_DIR_SEPARATOR_S, DATADIR, "icons", "gtk-media-stop.png", NULL);
+	filename = g_build_filename (G_DIR_SEPARATOR_S, DATADIR, "icons", "spectrum3d-stop.png", NULL);
 	image = gtk_image_new_from_file(filename);
 	//image = gtk_image_new_from_stock (GTK_STOCK_MEDIA_STOP, GTK_ICON_SIZE_BUTTON);
 	gtk_button_set_image(GTK_BUTTON(button),image);

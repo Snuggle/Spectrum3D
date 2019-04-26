@@ -25,10 +25,10 @@
 
 #include "config.h"
 
-#ifdef HAVE_LIBSDL
+#if defined HAVE_LIBSDL2
+    #include <SDL2/SDL.h>
+#elif defined HAVE_LIBSDL
     #include <SDL/SDL.h>
-#elif defined GTKGLEXT3 || defined GTKGLEXT1
-    #include <gtk/gtkgl.h>
 #endif
 
 #include "spectrum3d.h"
@@ -41,6 +41,25 @@ GLfloat cr = 0, cb = 1, cg = 0; // color value for opengl vertex
 GLfloat k = 0; // this is used for to get the mean value of spect_data, when zoom_factor is != 1 
 GLfloat i = 0, l = 0, q = 0; // factors used to calculate position of the vertex 
 GLfloat YcoordFactor = 1, ZcoordFactor = 0; //factors used to get the value of the pointer 
+
+#if defined HAVE_LIBSDL2
+    SDL_Window *SDLwindow=NULL;
+#endif
+
+void init_SDL(){
+	printf("init_SDL\n");
+	if (SDL_Init(SDL_INIT_VIDEO) != 0) {
+			fprintf(stderr, "Unable to init SDL: %s\n", SDL_GetError());
+			exit(1);
+			}
+	atexit(SDL_Quit);
+
+#if defined HAVE_LIBSDL
+    SDL_EnableKeyRepeat(10, 10);
+#endif
+
+	//configure_SDL_gl_window (spectrum3d.width, spectrum3d.height);
+}
 
 /* Initialise several display values */
 void init_display_values(Spectrum3dGui *spectrum3dGui){
@@ -71,7 +90,7 @@ gboolean configure_event (GtkWidget *widget, GdkEventConfigure *event, gpointer 
 	spectrum3d.height = (int)h;
 	//printf("h = %d, w = %d\n", spectrum3d.width, spectrum3d.height);
 #ifdef HAVE_LIBSDL
-	SDL_SetVideoMode((int)w, (int)h, 24, SDL_OPENGL | SDL_GL_DOUBLEBUFFER | SDL_RESIZABLE);
+	//SDL_SetVideoMode((int)w, (int)h, 24, SDL_OPENGL | SDL_GL_DOUBLEBUFFER | SDL_RESIZABLE);
 #endif
 
 #ifdef GTKGLEXT3
@@ -110,12 +129,40 @@ gboolean configure_event (GtkWidget *widget, GdkEventConfigure *event, gpointer 
 	return TRUE;
 }
 
-/* Initialise SDL window and OpenGL, if SDL is used */
-#ifdef HAVE_LIBSDL
+/* Initialise SDL window and OpenGL */
+
 gboolean configure_SDL_gl_window (int width, int height)
 {
 	printf("Initialize SDL-GL window\n");
+#if defined HAVE_LIBSDL2 
+    if (SDLwindow == NULL){   
+	SDLwindow = SDL_CreateWindow(
+        "Spectrum3d",                  // window title
+        SDL_WINDOWPOS_UNDEFINED,           // initial x position
+        SDL_WINDOWPOS_UNDEFINED,           // initial y position
+        width,                               // width, in pixels
+        height,                               // height, in pixels
+        SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE               // flags - see below
+    );
+	if (SDLwindow == NULL) {
+        // In the case that the window could not be made...
+        printf("Could not create window: %s\n", SDL_GetError());
+        return 1;
+    }
+
+
+	SDL_GLContext glcontext = SDL_GL_CreateContext(SDLwindow);
+	if (glcontext == NULL) {
+        // In the case that the window could not be made...
+        printf("Could not create window: %s\n", SDL_GetError());
+        return 1;
+    }
+    }
+
+#elif defined HAVE_LIBSDL
 	SDL_SetVideoMode(width, height, 24, SDL_OPENGL | SDL_GL_DOUBLEBUFFER | SDL_RESIZABLE);
+#endif
+
 
 	glLoadIdentity();
 	glViewport (0, 0, width, height);
@@ -130,7 +177,7 @@ gboolean configure_SDL_gl_window (int width, int height)
 		
 	return TRUE;
 }
-#endif
+
 
 /* function that allows to compare two floats */
 gboolean compareGLfloat(GLfloat value1, GLfloat value2, GLfloat precision)
@@ -330,9 +377,14 @@ gboolean display_spectro(Spectrum3dGui *spectrum3dGui){
 		glFlush ();
 
 	gdk_gl_drawable_gl_end (gldrawable);
+#endif
+
+#if defined HAVE_LIBSDL2
+	SDL_GL_SwapWindow(SDLwindow);
 #elif defined HAVE_LIBSDL
 	SDL_GL_SwapBuffers();
 #endif
+
 
 	return TRUE;	
 }

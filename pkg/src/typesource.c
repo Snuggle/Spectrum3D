@@ -315,19 +315,19 @@ void change_source_button (GtkWidget *widget, GtkWidget *button){
 
 	if (strcmp(gtk_widget_get_name(widget), "mic") == 0){
 		typeSource = MIC;
-		filename = g_build_filename (G_DIR_SEPARATOR_S, DATADIR, "icons", "microphone.png", NULL);
+		filename = g_build_filename (G_DIR_SEPARATOR_S, DATADIR, "icons", "spectrum3d-microphone.png", NULL);
 		image = gtk_image_new_from_file(filename);
 		gtk_button_set_image (GTK_BUTTON(widget), image);
-		filename = g_build_filename (G_DIR_SEPARATOR_S, DATADIR, "icons", "file_grey.png", NULL);
+		filename = g_build_filename (G_DIR_SEPARATOR_S, DATADIR, "icons", "spectrum3d-file_grey.png", NULL);
 		image = gtk_image_new_from_file(filename);
 		gtk_button_set_image (GTK_BUTTON(button), image);
 		}
 	else {
 		typeSource = AUDIO_FILE;
-		filename = g_build_filename (G_DIR_SEPARATOR_S, DATADIR, "icons", "microphone_grey.png", NULL);
+		filename = g_build_filename (G_DIR_SEPARATOR_S, DATADIR, "icons", "spectrum3d-microphone_grey.png", NULL);
 		image = gtk_image_new_from_file(filename);
 		gtk_button_set_image (GTK_BUTTON(button), image);
-		filename = g_build_filename (G_DIR_SEPARATOR_S, DATADIR, "icons", "file.png", NULL);
+		filename = g_build_filename (G_DIR_SEPARATOR_S, DATADIR, "icons", "spectrum3d-file.png", NULL);
 		image = gtk_image_new_from_file(filename);
 		gtk_button_set_image (GTK_BUTTON(widget), image);
 		select_audio_file();

@@ -189,15 +189,15 @@ static gboolean cb_print_position (GstElement *pipeline){
 		
 		/* Print the time in stringPos and stringLen variables, then make them shorter (cut the '.' and then 10 numbers behind the dot) */
 		gchar stringPos[45];
-		g_sprintf(stringPos, "%" GST_TIME_FORMAT "\r", GST_TIME_ARGS (pos));
+		g_snprintf(stringPos, sizeof(stringPos), "%" GST_TIME_FORMAT "\r", GST_TIME_ARGS (pos));
 		stringPos[strlen(stringPos)-11] = 0;
 		
 		gchar stringLen[45];
-		g_sprintf(stringLen, "%" GST_TIME_FORMAT "\r", GST_TIME_ARGS (len));
+		g_snprintf(stringLen, sizeof(stringLen), "%" GST_TIME_FORMAT "\r", GST_TIME_ARGS (len));
 		stringLen[strlen(stringLen)-11] = 0;
 		
 		/* Print the result in the main window */
-		g_sprintf(positionLabel, "      %s / %s      ", stringPos, stringLen);
+		g_snprintf(positionLabel, sizeof(positionLabel), "      %s / %s      ", stringPos, stringLen);
 		show_position(positionLabel);
 		}
 	return TRUE;					
@@ -326,7 +326,7 @@ else if (playing == 0) {
 				g_print ("JACK server not running\n");
 				}
 		    	else {
-				g_sprintf (message, "jack_client_open() failed, status = 0x%2.0x\n", status);
+				g_snprintf (message, sizeof(message), "jack_client_open() failed, status = 0x%2.0x\n", status);
 				error_message_window(message);
 		      		g_print("jack_client_open() failed, status = 0x%2.0x\n", status);
 				}
@@ -339,7 +339,7 @@ else if (playing == 0) {
 				g_print ("JACK server not running\n");
 				}
 			else {
-				g_sprintf (message, "jack_client_open() failed, status = 0x%2.0x\n", status);
+				g_snprintf (message, sizeof(message), "jack_client_open() failed, status = 0x%2.0x\n", status);
 				error_message_window(message);
 			      	g_print ("jack_client_open() failed, status = 0x%2.0x\n", status);
 				}

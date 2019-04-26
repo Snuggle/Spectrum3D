@@ -5,18 +5,18 @@ svgicondir = $(datadir)/icons
 dist_svgicon_DATA = spectrum3d.svg
 
 icondir = $(datadir)/icons
-dist_icon_DATA = gtk-refresh.png \
-		gtk-media-play-ltr.png \
-		gtk-media-pause.png \
-		gtk-media-stop.png \
-		gtk-media-record.png \
-		microphone.png \
-		microphone_grey.png \
-		file.png \
-		file_grey.png \
-		qjackctl.png \
-		equalizer.png \
-		gain.png\
+dist_icon_DATA = spectrum3d-refresh.png \
+		spectrum3d-play.png \
+		spectrum3d-pause.png \
+		spectrum3d-stop.png \
+		spectrum3d-record.png \
+		spectrum3d-microphone.png \
+		spectrum3d-microphone_grey.png \
+		spectrum3d-file.png \
+		spectrum3d-file_grey.png \
+		spectrum3d-qjackctl.png \
+		spectrum3d-equalizer.png \
+		spectrum3d-gain.png\
 		spectrum3d.png
 
 gtk_update_icon_cache = gtk-update-icon-cache -f -t $(svgicondir)

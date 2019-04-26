@@ -174,11 +174,11 @@ void print_rc_file(){
 		}
 }
 
-/* Check if retrieved values from preferences file are within their nomal range */ 
+/* Check if retrieved values from preferences file are within their normal range */ 
 void compare_values(){
 	int i = 0;
 	gboolean error = FALSE, match = FALSE;
-	printf("Checking values retrieved from rc file for consistency ");
+	printf("Checking values retrieved from rc file for consistency\n");
 
 	for (i = 0; i < sizeofPrefInt; i++){
 		if (*preferenceInt[i].var < preferenceInt[i].min || *preferenceInt[i].var > preferenceInt[i].max){ 

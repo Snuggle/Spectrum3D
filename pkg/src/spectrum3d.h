@@ -22,12 +22,12 @@ typedef struct
 	GtkWidget *checkMenuLines;
 	GtkWidget *checkMenuText;
 	GtkWidget *checkMenuPointer;
-	//GtkWidget *reset;
-	//GtkWidget *front;
+	GtkWidget *reset;
+	GtkWidget *front;
 
-	//GtkWidget *stop;
-	//GtkWidget *file;
-	//GtkWidget *mic;
+	GtkWidget *stop;
+	GtkWidget *file;
+	GtkWidget *mic;
 	GtkWidget *reload;
 	GtkWidget *record;
 

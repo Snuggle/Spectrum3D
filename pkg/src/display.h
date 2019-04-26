@@ -56,6 +56,7 @@ void drawPointer();
 void drawPointerText();
 void drawScale();
 void RenderText();
+gboolean configure_SDL_gl_window (int width, int height);
 
 #endif
 

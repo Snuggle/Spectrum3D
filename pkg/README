@@ -15,10 +15,8 @@ FOR UBUNTU from 10.10 : All dependencies are available in the Ubuntu repositorie
 		- gcc, pkg-config, automake;
 		- libgtk-2.0-dev or libgtk-3.0-dev;
 		- libgstreamer0.10-dev or libgstreamer1.0-dev;
-	For DISPLAY (OpenGL extension): SDL is used by default; GtkGlExt can be used instead and its version should match the GTK version (GTKGLEXT1 for GTK2, GTKGLEXT3 for GTK3); however, GTKGLEXT3 is still in development; the development version should be installed then (see later); the display of harmonics itself will look exactly the same regardless of the library that is used. 
-		- EITHER : lidsdl1.2-dev; this should be the default choice;
-		- OR : libgtkglext1-dev for Gtk2 or libgtkglext for Gtk3 (this version is in developpment and should be compiled from source (see documentation) but is already supported in Spectrum3d); note that GtkGlExt version should match Gtk version;
-
+		- libsdl2-dev or lidsdl1.2-dev;
+		
 
 		- gstreamer0.10-plugins-bad, gstreamer0.10-plugins-bad-multiverse, gstreamer0.10-plugins-ugly et gstreamer0.10-plugins-ugly-multiverse (for reading files such as mp3);
 
@@ -51,12 +49,16 @@ FOR OTHER DISTRIBUTIONS :
 
 		$ ./configure --disable-gtk3
 
-	NOTE for DISPLAY (OpenGL extension):
-	SDL is used by default and a error message will be delivered if it is not found. However you can choose to use GTKGLEXT library instead of SDL (GTKGLEXT for GTK2, GTKGLEXT3 for GTK3). Since the GTKGLEXT3 version (appropriate for GTK3) is still in development, use of GTKGLEXT is not yet the default choice and this has to be specifically enabled at the time of compilation. However the GTKGLEXT3 version (for GTK3) is already supported in Spectrum3d (see documentation or www.spectrum3d.sourceforge.net to install it). The display itself will look exactly the same regardless of the library that is used.
-	If you want GTKGLEXT to be used instead of SDL, type:
+	NOTE for SDL VERSION :
+	Both SDL1 and SDL2 are supported; if SDL2 is installed, it will be used by default but you can override this by forcing the use of SDL1 by typing :
 
-		$ ./configure --enable-gtkglext
+		$ ./configure --enable-sdl 
 
+	or 
+
+		$ ./configure --disable-sdl2
+
+	
 	NOTE for JACK and MULTITOUCH SUPPORT:
 	If Jack library is found, JACK support will be enabled. Also, if libbamf and libutouch-geis version 2 libraries are found, MULTITOUCH support will be enabled. If those libraries are not installed, JACK and MULTITOUCH support won't be enabled. However, if you have those libraries installed but don't want those features enabled, you have to type '--disable-jack' or '--disable-geis' after 'configure' ('--enable-jack=no' and '--enable-geis=no' also works).
 	For example :	

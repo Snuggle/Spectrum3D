@@ -118,7 +118,7 @@ void onPreferences(GtkWidget* widget, Spectrum3dGui *spectrum3dGui)
 	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(comboColor), "RAINBOW");
 	gtk_combo_box_set_active(GTK_COMBO_BOX(comboColor), 2);
 
-	/* Radio button to choose wheter the display is within the UI or in another window */
+	/* Radio button to choose wheter the display is within the UI or in another window - DISABLED in Spectrum3d-2.6 */
 	pFrame = gtk_frame_new("Display window :");
 	gtk_widget_set_tooltip_text (pFrame, "Choose the window where harmonics will be displayed (same or different window than the graphical user interface");
 	gtk_box_pack_start(GTK_BOX(pVBox[0]), pFrame, TRUE, TRUE, 0);
@@ -132,8 +132,8 @@ void onPreferences(GtkWidget* widget, Spectrum3dGui *spectrum3dGui)
 	gtk_widget_set_tooltip_text (radio[1], "Harmonics will be displayed in another window than the graphical user interface");
 	if (externalWindow)
 		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(radio[1]), TRUE);
-	gtk_box_pack_start (GTK_BOX (pHBox[5]), radio[0], TRUE, TRUE, 0);
-	gtk_box_pack_start (GTK_BOX (pHBox[5]), radio[1], TRUE, TRUE, 0);
+	//gtk_box_pack_start (GTK_BOX (pHBox[5]), radio[0], TRUE, TRUE, 0);
+	//gtk_box_pack_start (GTK_BOX (pHBox[5]), radio[1], TRUE, TRUE, 0);
 	
 	
 	/* Check button to save the current position as 'Preset' */

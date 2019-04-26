@@ -4,7 +4,7 @@
 ############### INITIALIZE EVERYTHING ######################
 
 AC_INIT([Spectrum3d],
-	[2.5.0],
+	[2.6.0],
 	[nadaeck@hotmail.com], 
 	[spectrum3d],
 	[spectrum3d.sourceforge.net])
@@ -25,15 +25,18 @@ AC_ARG_ENABLE([jack],
 AC_ARG_ENABLE([geis],
 		AS_HELP_STRING([--disable-geis],
 		[Disable multitouch support]))
-AC_ARG_ENABLE([gtkglext],
-		AS_HELP_STRING([--enable-gtkglext],
-		[Enable gtkglext support (instead of libsdl)]))
 AC_ARG_ENABLE([gtk3],
 		AS_HELP_STRING([--disable-gtk3],
 		[Disable Gtk-3.0 (use Gtk-2.0 instead)]))
 AC_ARG_ENABLE([gtk2],
 		AS_HELP_STRING([--enable-gtk2],
 		[Enable gtk2 support (instead of gtk3]))
+AC_ARG_ENABLE([sdl2],
+		AS_HELP_STRING([--disable-sdl2],
+		[Disable SDL2 (use SDL1.2 instead)]))
+AC_ARG_ENABLE([sdl],
+		AS_HELP_STRING([--enable-sdl],
+		[Enable SDL1.2 (instead of SDL2]))
 
 ################# CHECK FOR LIBRAIRIES ######################
 
@@ -44,6 +47,7 @@ geis=1
 gtk=0
 gtkglext=0
 gstreamer=0
+sdl=1
 
 # Check and link for GTK3
 AS_IF([test "x$enable_gtk3" != "xno" && test "x$enable_gtk2" != "xyes"], [
@@ -81,11 +85,22 @@ AS_IF([test "$gtk" == "0"], [
 		], [AC_MSG_ERROR([GTK library (libgtk-2.0 or libgtk-3.0) is required])])
   	], [])
 
-#Check and link for SDL and OpenGL
-AS_IF([test "x$enable_gtkglext" != "xyes" ], [
-  AC_CHECK_LIB([SDL], [SDL_Init], [],
-	[AC_MSG_ERROR([SDL library (libsdl) is required for this program])])],
+#Check and link for SDL
+AS_IF([test "x$enable_sdl2" != "xno" && test "x$enable_sdl" != "xyes"], [
+    AC_CHECK_LIB([SDL2], [SDL_Init], [],[])],
 	[])
+
+AS_IF([test "x$enable_sdl2" != "xno" && test "x$enable_sdl" != "xyes"], [
+    AC_CHECK_LIB([SDL2], [SDL_Init], [
+	sdl=2
+	],[])],
+	[])
+
+AS_IF([test "$sdl" == "1"], [
+    AC_CHECK_LIB([SDL], [SDL_Init], [],[AC_MSG_ERROR([SDL library (libsdl) is required for this program])])],
+	[])
+    
+#Check and link for OpenGL
 AC_CHECK_LIB([GL], [glClear], [],
 	[AC_MSG_ERROR([OpenGL(GL) library is required for this program])])
 AC_CHECK_LIB([GLU], [gluBeginCurve], [],
@@ -143,8 +158,7 @@ mkdir -p $HOME/.$PACKAGE
 
 
 ################### PRINT CONFIG MESSAGE ######################
-AS_ECHO()
-AC_MSG_NOTICE([If you want to use gtkglext, its version should match the gtk version (gtkglext-1.0 for gtk-2.0, gtkglext-3.0 for gtk-3.0)])
+
 AS_ECHO()
 AC_MSG_NOTICE([     ******************************************])
 AS_IF([test "$gstreamer" == "1"], 
@@ -153,15 +167,12 @@ AS_IF([test "$gstreamer" == "1"],
 AS_IF([test "$gtk" == "2"], 
 	[AC_MSG_NOTICE([     *  GTK version .................GTK-2.0  *])],
 	[AC_MSG_NOTICE([     *  GTK version .................GTK-3.0  *])])
-AS_IF([test "$gtkglext" == "1"], 
-	[AC_MSG_NOTICE([     *  OpenGL support..............GTKGLEXT  *])],
-	[AC_MSG_NOTICE([     *  OpenGL support...................SDL  *])])
+AS_IF([test "$sdl" == "2"], 
+	[AC_MSG_NOTICE([     *  SDL version.....................SDL2  *])],
+	[AC_MSG_NOTICE([     *  SDL version...................SDL1.2  *])])
 AS_IF([test "$jack" != "0"], 
 	[AC_MSG_NOTICE([     *  JACK support.....................YES  *])],
 	[AC_MSG_NOTICE([     *  JACK support......................NO  *])])
-AS_IF([test "$geis" != "0"], 
-	[AC_MSG_NOTICE([     *  MULTITOUCH support...............YES  *])],
-	[AC_MSG_NOTICE([     *  MULTITOUCH support................NO   *])])
 AC_MSG_NOTICE([     ******************************************])
 AS_ECHO()
 

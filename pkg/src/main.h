@@ -63,6 +63,7 @@ gchar* format_value_start (GtkScale *scale, gdouble value);
 gchar* format_value_bands (GtkScale *scale, gdouble value);
 gboolean change_gain(GtkRange *range, GtkScrollType scroll, gdouble value, gpointer user_data);
 gboolean display_spectro(GtkWidget *drawing_area);
+void init_SDL();
 
 gboolean configure_SDL_gl_window (int width, int height);
 void sdl_event();
