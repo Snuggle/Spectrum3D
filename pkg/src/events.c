@@ -221,10 +221,12 @@ gboolean on_key_press (GtkWidget * window, GdkEventKey*	event, Spectrum3dGui *sp
 				gtk_menu_item_activate(GTK_MENU_ITEM(spectrum3dGui->checkMenuPointer));
 				break;
 			case GDK_KEY_r :
-				gtk_menu_item_activate(GTK_MENU_ITEM(spectrum3dGui->reset));
+				reset_view();
+				//gtk_menu_item_activate(GTK_MENU_ITEM(spectrum3dGui->reset));
 				break;
 			case GDK_KEY_o :
-				gtk_menu_item_activate(GTK_MENU_ITEM(spectrum3dGui->front));
+				front_view();
+				//gtk_menu_item_activate(GTK_MENU_ITEM(spectrum3dGui->front));
 				break;
 			case GDK_KEY_d :
 				if (viewType == THREE_D){

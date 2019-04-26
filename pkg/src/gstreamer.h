@@ -41,7 +41,7 @@ enum Source
 };
 Source source; 
 
-GstElement *pipeline, *equalizer, *equalizer2, *equalizer3, *BP_BRfilter, *playbin;
+GstElement *pipeline, *equalizer, *equalizer2, *equalizer3, *BP_BRfilter, *playbin, *capsfilter;
 
 void show_position(gchar *positionLabel);
 void setPlayButtonIcon ();

@@ -33,6 +33,7 @@
 /* Get the type of view (3D, 3D flat or 2D) */
 void change_perspective(GtkWidget *widget, gpointer data)
 {  
+	
 	GSList *list;
     	const gchar *label;
 	
@@ -40,27 +41,26 @@ void change_perspective(GtkWidget *widget, gpointer data)
 
 	while(list) {
 		if(gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(widget))) {
-			/// label = gtk_label_get_label(GTK_LABEL(GTK_BIN(widget)->child));
 			label = gtk_menu_item_get_label(GTK_MENU_ITEM(widget));
 			list = NULL;
+
+			if (strcmp(label, "2D (D)") == 0) {
+				viewType = TWO_D;
+				}
+			else {
+				if (strcmp(label, "3D (D)") == 0){
+					viewType = THREE_D;
+					}
+				else {
+					viewType = THREE_D_FLAT;
+					}
+				}
+			newEvent = TRUE;
 		}
 		else {
 			list = g_slist_next(list);
 		}
-	}
-
-	if (strcmp(label, "2D (D)") == 0) {
-		viewType = TWO_D;
-		}
-	else {
-		if (strcmp(label, "3D (D)") == 0){
-			viewType = THREE_D;
-			}
-		else {
-			viewType = THREE_D_FLAT;
-			}
-		}
-	newEvent = TRUE;
+	}	
 }
 
 /* Check button to set if JACK is used or not */

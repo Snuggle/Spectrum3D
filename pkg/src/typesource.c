@@ -134,8 +134,8 @@ void select_audio_file()
 	fileSelection = gtk_file_chooser_dialog_new("Select File",
 			NULL,
 			GTK_FILE_CHOOSER_ACTION_OPEN,
-			GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-			GTK_STOCK_OPEN, GTK_RESPONSE_OK,
+			"_CANCEL", GTK_RESPONSE_CANCEL,
+			"_OPEN", GTK_RESPONSE_OK,
 			NULL);
 	gtk_window_set_modal(GTK_WINDOW(fileSelection), TRUE);
 	gtk_file_chooser_set_current_folder (GTK_FILE_CHOOSER (fileSelection), g_get_home_dir());
@@ -235,7 +235,7 @@ void show_progression() {
 	gtk_progress_bar_set_orientation(GTK_PROGRESS_BAR(progress), GTK_PROGRESS_LEFT_TO_RIGHT);
 #endif
 	gtk_box_pack_start(GTK_BOX(vbox), progress, TRUE, FALSE, 0);
-	button = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
+	button = gtk_button_new_with_label("CANCEL");
 	gtk_box_pack_start(GTK_BOX(vbox), button, FALSE, TRUE, 0);
 	gtk_widget_show_all(progressWindow);
 
@@ -245,7 +245,7 @@ void show_progression() {
 
 /* Load the audio file : get its lenght, allocate memory for it, analyse the spectrum and display it; 'fileType' depends on the type of type sent : either a file recorded with spectrum3d, or a preexisting file ('file') */
 void load_audio_file(gchar *fileType){
-	DEBUG("load audio file : %s\n", fileType);
+	DEBUG("load_audio_file : %s\n", fileType);
 	GstElement *playbin, *pipelineLength;
 	
 	if (selected_file == NULL){
@@ -257,10 +257,15 @@ void load_audio_file(gchar *fileType){
 	frame_number_counter = 0; // (re)initialize frame_number_counter
 	
 	/* get lenght of the file : if the file is recorded by spectrum3d ('fileType' == "rec"), the timer length will be used; if a preexisting file is loaded ('fileType' == "file"), a 'playbin' pipeline is created with the file and its length is retrieved */
-	if (g_strcmp0(fileType, "rec") == 0) {
+
+/* NEW : it seems better to use simply typeSource; if typeSource is AUDIO_FILE, it means preexisiting audio file; if typeSource is MIC, it necesseraly means recorded file. Furthermore this supress the bug when nalayze_rt is unchecked after an initial file rt_analyse */
+/* or even newer : flacenc is replaced by wavenc : then duration can be easily retrived like for any other audio file */
+	//if (g_strcmp0(fileType, "rec") == 0) {
+	/*if (typeSource == MIC){
 		length = (int)(g_timer_elapsed (timer, NULL));
 			}
-	else if (g_strcmp0(fileType, "file") == 0) {
+	//else if (g_strcmp0(fileType, "file") == 0) {
+	else if (typeSource = AUDIO_FILE){*/
 		load_loop = g_main_loop_new(NULL, FALSE);
 	#ifdef GSTREAMER1
 				playbin = gst_element_factory_make ("playbin", NULL);
@@ -273,7 +278,7 @@ void load_audio_file(gchar *fileType){
 		gst_element_set_state (playbin, GST_STATE_PAUSED);
 		g_main_loop_run (load_loop);
 		gst_element_set_state (playbin, GST_STATE_NULL);
-		}
+		//}
 	
 	/* Calculate time interval between frames according to the lenght of the file; we will use a number of 'frames' = 200 to have everything displayed on the same screen */ 
 
@@ -290,119 +295,43 @@ void load_audio_file(gchar *fileType){
 } 
 
 /* Source buttons that behave almost like radio buttons; the typseSource is chosen; everything is stopped with the call to set_source_to_none, then the typeSource is chosen, even if the typeSource remains the same  */
-void change_source_button (GtkWidget *widget, Spectrum3dGui *spectrum3dGui){
-	GdkColor color;
+void change_source_button (GtkWidget *widget, GtkWidget *button){
+	
+	DEBUG("change_source_button : ");
 	gchar *filename;
 	GtkWidget *image;
-#ifdef GTK3
-	GdkRGBA rgba;
-#endif
 
 	// stop everything before changing type source or loading a new audio file
 	set_source_to_none();
 
-	// get name of the button
-	const gchar *buttonName = gtk_widget_get_name (widget);
-	
-	// get the name of each button and compare it to the name of the clicked button; if it is different, set the button inactive (i.e. the icon is grey instead of its normal color, and the background is also grey); if it is the same, set the button active (i.e. the icon has its noral color and the background is orange; note that changing background color does not always work due to a bug (see later)); 
-	
-	// STOP BUTTON : stops everything
-	const gchar *stopButton = gtk_widget_get_name (spectrum3dGui->stop);
-	if (strcmp(stopButton, buttonName) == 0){
-		filename = g_build_filename (G_DIR_SEPARATOR_S, DATADIR, "icons", "stop.png", NULL);
-		image = gtk_image_new_from_file(filename);
-		gtk_button_set_image(GTK_BUTTON(widget),image);
-#ifdef GTK3
-		gdk_rgba_parse (&rgba, "orange");
-		gtk_widget_override_background_color(widget, GTK_STATE_FLAG_NORMAL, &rgba);
-		gtk_widget_override_background_color(widget, GTK_STATE_FLAG_PRELIGHT, &rgba);
-		// gtk_widget_override_background_color() is not always honored; this is a known bug in GTK3 (Bug 656461)
-#elif defined (GTK2)
-		gdk_color_parse ("orange",&color);
-		gtk_widget_modify_bg(GTK_WIDGET(widget), GTK_STATE_NORMAL, &color);
-		gtk_widget_modify_bg(GTK_WIDGET(widget), GTK_STATE_PRELIGHT, &color);
-#endif
-		}
-	else {
-		filename = g_build_filename (G_DIR_SEPARATOR_S, DATADIR, "icons", "stop_grey.png", NULL);
-		image = gtk_image_new_from_file(filename);
-		gtk_button_set_image(GTK_BUTTON(spectrum3dGui->stop),image);
-#ifdef GTK3
-		gdk_rgba_parse (&rgba, "grey");
-		gtk_widget_override_background_color(GTK_WIDGET(spectrum3dGui->stop), GTK_STATE_FLAG_NORMAL, &rgba);
-		gtk_widget_override_background_color(GTK_WIDGET(spectrum3dGui->stop), GTK_STATE_PRELIGHT, &rgba);
-#elif defined (GTK2)
-		gdk_color_parse ("grey",&color);
-		gtk_widget_modify_bg(GTK_WIDGET(spectrum3dGui->stop), GTK_STATE_NORMAL, &color);
-		gtk_widget_modify_bg(GTK_WIDGET(spectrum3dGui->stop), GTK_STATE_PRELIGHT, &color);
-#endif
-		}
+	//const gchar *buttonName = gtk_widget_get_name (widget);
 
-	// MICROPHONE BUTTON
-	const gchar *micButton = gtk_widget_get_name (spectrum3dGui->mic);
-	if (strcmp(micButton, buttonName) == 0){
-		filename = g_build_filename (G_DIR_SEPARATOR_S, DATADIR, "icons", "microphone.png", NULL);
-	image = gtk_image_new_from_file(filename);
-	gtk_button_set_image(GTK_BUTTON(widget),image);
-#ifdef GTK3
-		gdk_rgba_parse (&rgba, "orange");
-		gtk_widget_override_background_color(widget, GTK_STATE_FLAG_NORMAL, &rgba);
-		gtk_widget_override_background_color(widget, GTK_STATE_FLAG_PRELIGHT, &rgba);
-#elif defined (GTK2)
-		gdk_color_parse ("orange",&color);
-		gtk_widget_modify_bg(GTK_WIDGET(widget), GTK_STATE_NORMAL, &color);
-		gtk_widget_modify_bg(GTK_WIDGET(widget), GTK_STATE_PRELIGHT, &color);
-#endif
+	// stop pipeline if running
+	on_stop();
+	// reinitialize spec_data (spectrum values)	
+	memset(spec_data, 0, sizeof(spec_data));
+	// set typeSource to NONE
+	typeSource = NONE;
+
+	if (strcmp(gtk_widget_get_name(widget), "mic") == 0){
 		typeSource = MIC;
+		filename = g_build_filename (G_DIR_SEPARATOR_S, DATADIR, "icons", "microphone.png", NULL);
+		image = gtk_image_new_from_file(filename);
+		gtk_button_set_image (GTK_BUTTON(widget), image);
+		filename = g_build_filename (G_DIR_SEPARATOR_S, DATADIR, "icons", "file_grey.png", NULL);
+		image = gtk_image_new_from_file(filename);
+		gtk_button_set_image (GTK_BUTTON(button), image);
 		}
 	else {
-		filename = g_build_filename (G_DIR_SEPARATOR_S, DATADIR, "icons", "microphone_grey.png", NULL);
-	image = gtk_image_new_from_file(filename);
-	gtk_button_set_image(GTK_BUTTON(spectrum3dGui->mic),image);
-#ifdef GTK3
-		gdk_rgba_parse (&rgba, "grey");
-		gtk_widget_override_background_color(GTK_WIDGET(spectrum3dGui->mic), GTK_STATE_FLAG_NORMAL, &rgba);
-		gtk_widget_override_background_color(GTK_WIDGET(spectrum3dGui->mic), GTK_STATE_PRELIGHT, &rgba);
-#elif defined (GTK2)
-		gdk_color_parse ("grey",&color);
-		gtk_widget_modify_bg(GTK_WIDGET(spectrum3dGui->mic), GTK_STATE_NORMAL, &color);
-		gtk_widget_modify_bg(GTK_WIDGET(spectrum3dGui->mic), GTK_STATE_PRELIGHT, &color);
-#endif
-		}
-
-	// FILE BUTTON 
-	const gchar *fileButton = gtk_widget_get_name (spectrum3dGui->file);
-	if (strcmp(fileButton, buttonName) == 0){
-		filename = g_build_filename (G_DIR_SEPARATOR_S, DATADIR, "icons", "file.png", NULL);
-	image = gtk_image_new_from_file(filename);
-	gtk_button_set_image(GTK_BUTTON(widget),image);
-#ifdef GTK3
-		gdk_rgba_parse (&rgba, "orange");
-		gtk_widget_override_background_color(GTK_WIDGET(widget), GTK_STATE_NORMAL, &rgba);
-		gtk_widget_override_background_color(GTK_WIDGET(widget), GTK_STATE_PRELIGHT, &rgba);
-#elif defined (GTK2)
-		gdk_color_parse ("orange",&color);
-		gtk_widget_modify_bg(GTK_WIDGET(widget), GTK_STATE_NORMAL, &color);
-		gtk_widget_modify_bg(GTK_WIDGET(widget), GTK_STATE_PRELIGHT, &color);
-#endif
 		typeSource = AUDIO_FILE;
+		filename = g_build_filename (G_DIR_SEPARATOR_S, DATADIR, "icons", "microphone_grey.png", NULL);
+		image = gtk_image_new_from_file(filename);
+		gtk_button_set_image (GTK_BUTTON(button), image);
+		filename = g_build_filename (G_DIR_SEPARATOR_S, DATADIR, "icons", "file.png", NULL);
+		image = gtk_image_new_from_file(filename);
+		gtk_button_set_image (GTK_BUTTON(widget), image);
 		select_audio_file();
 		}
-	else {
-		filename = g_build_filename (G_DIR_SEPARATOR_S, DATADIR, "icons", "file_grey.png", NULL);
-	image = gtk_image_new_from_file(filename);
-	gtk_button_set_image(GTK_BUTTON(spectrum3dGui->file),image);
-		#ifdef GTK3
-		gdk_rgba_parse (&rgba, "grey");
-		gtk_widget_override_background_color(GTK_WIDGET(spectrum3dGui->file), GTK_STATE_NORMAL, &rgba);
-		gtk_widget_override_background_color(GTK_WIDGET(spectrum3dGui->file), GTK_STATE_PRELIGHT, &rgba);
-#elif defined (GTK2)
-		gdk_color_parse ("grey",&color);
-		gtk_widget_modify_bg(GTK_WIDGET(spectrum3dGui->file), GTK_STATE_NORMAL, &color);
-		gtk_widget_modify_bg(GTK_WIDGET(spectrum3dGui->file), GTK_STATE_PRELIGHT, &color);
-#endif
-		}
-
 }
 
 

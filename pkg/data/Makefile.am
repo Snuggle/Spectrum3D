@@ -5,8 +5,11 @@ svgicondir = $(datadir)/icons
 dist_svgicon_DATA = spectrum3d.svg
 
 icondir = $(datadir)/icons
-dist_icon_DATA = stop.png \
-		stop_grey.png \
+dist_icon_DATA = gtk-refresh.png \
+		gtk-media-play-ltr.png \
+		gtk-media-pause.png \
+		gtk-media-stop.png \
+		gtk-media-record.png \
 		microphone.png \
 		microphone_grey.png \
 		file.png \

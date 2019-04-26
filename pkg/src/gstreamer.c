@@ -59,13 +59,13 @@ void init_audio_values(){
 	playing = 0;
 	pose = 0;
 	analyse_rt = TRUE;
-	typeSource = NONE;
+	typeSource = MIC;
 	spect_bands = 11025; // number of spectral bands analysed by thre 'spectrum' element of gstreamer
 	AUDIOFREQ = 44100; // Sampling rate
 	bandsNumber = 1000; // number of bands displayed on the screen
 	hzStep = (AUDIOFREQ/2) / spect_bands; // number of herz in 1 'band'
 	BPlowerFreq = 0; BPupperFreq = 40000; // limit of Band-Pass(BP) filters
-	tmpPath = g_build_filename (G_DIR_SEPARATOR_S, g_get_tmp_dir(), "spectrum3d.flac", NULL); // path of the recorded file (in the 'tmp' directory)
+	tmpPath = g_build_filename (G_DIR_SEPARATOR_S, g_get_tmp_dir(), "spectrum3d.wav", NULL); // path of the recorded file (in the 'tmp' directory)
 }
 
 static GstBusSyncReply
@@ -228,7 +228,7 @@ void playFromSource(GtkWidget *widget, gpointer *data){
 
 	printf("playFromSource\n");
 
-/* There are many possible combinations of elements, acording to the sourceButtons selected (Microphone, audio file or jack), the 'real-time' analyse of ths sound (i.e. from a file or from the microphone), of the 'loading' status (i.e. a file is beeing analysed without beeing played or displayed, and the 'record' status (i.e. a file is beeing recorded from the microphone; at the end of the recording, it will be loaded as an audio file; all these possibilities are combines to but end up finally in one of the three basic groups : microphone, audio file or jack; a new enumeration 'Source' is created for that; its possible values are the same than the typeSource possible values */
+/* There are many possible combinations of elements, acording to the sourceButtons selected (Microphone, audio file or jack), the 'real-time' analyse of the sound (i.e. from a file or from the microphone), of the 'loading' status (i.e. a file is beeing analysed without beeing played or displayed, and the 'record' status (i.e. a file is beeing recorded from the microphone; at the end of the recording, it will be loaded as an audio file; all these possibilities are combines to but end up finally in one of the three basic groups : microphone, audio file or jack; a new enumeration 'Source' is created for that; its possible values are the same than the typeSource possible values */
 
 	if (typeSource == AUDIO_FILE){
 		if (selected_file == NULL){
@@ -287,20 +287,11 @@ else if (playing == 0) {
 					
 	GstStateChangeReturn ret;
 	guint timeoutPrintPosition;
-	GstElement *src, *audioconvert, *audioconvert2, *audioconvert3, *spectrum, *flacenc, *sink;
+	GstElement *src, *audioconvert, *audioconvert2, *audioconvert3, *spectrum, *wavenc, *sink;
 	GstBus *bus, *busRT;
 	GstCaps *caps;
 	GstPad *audiopad;
 	guint64 interval;
-
-	if (loading){
-		interval = (guint64)spectrum3d.interval_loaded;
-		}
-	else {
-		interval = (guint64)spectrum3d.interval_rt;
-		}
-	playing = 1;
-	setPlayButtonIcon();
 
 /* Check if Jack is active while MIC or SOUND_FILE is selected as source; in that case, the pipeline is by-passed and a warning message is showed */
 	int jackActive = 0;
@@ -311,6 +302,16 @@ else if (playing == 0) {
 			return;
 			}
 		}
+
+	if (loading){
+		interval = (guint64)spectrum3d.interval_loaded;
+		}
+	else {
+		interval = (guint64)spectrum3d.interval_rt;
+		}
+	playing = 1;
+	setPlayButtonIcon(); 
+
 	/* create jack client if apropriate */
 #ifdef HAVE_LIBJACK
 	if (jack){
@@ -345,15 +346,12 @@ else if (playing == 0) {
 			}
 		}
 #endif
-	
-	if (!jack) {
-	  	pool = test_rt_pool_new (); // allows realtime without jack (if this option is selected)
-		}
 
 	loop = g_main_loop_new(NULL, FALSE);
 
 
 /* create pipeline ; create bus if source == MICRO */
+	DEBUG("Create pipeline\n");
   		if (source == MICRO) {
 			pipeline = gst_pipeline_new ("pipeline");
 			g_assert (pipeline);
@@ -367,6 +365,7 @@ else if (playing == 0) {
 			}
 
 /* create source element */
+	DEBUG("Create source element\n");
 		if (source == MICRO) {
 			if (jack){
 				src = gst_element_factory_make ("jackaudiosrc", NULL);
@@ -385,9 +384,11 @@ else if (playing == 0) {
 #endif
 			g_assert (playbin);
 			g_object_set (G_OBJECT (playbin), "uri", g_filename_to_uri(selected_file, NULL, NULL), NULL);
+			printf("Selected file = %s\n", g_filename_to_uri(selected_file, NULL, NULL));
 			}
 		
-/* create common elements : audioconvert, spectrum, equalizer and audiochebband */
+/* create common elements : audioconvert, spectrum, equalizer, audiochebband and wavenc */
+	DEBUG("Create common elements\n");
 		audioconvert = gst_element_factory_make ("audioconvert", NULL);
 		g_assert (audioconvert);
 		audioconvert2 = gst_element_factory_make ("audioconvert", NULL);
@@ -409,11 +410,13 @@ else if (playing == 0) {
 		getBand();
 		BP_BRfilter = gst_element_factory_make ("audiochebband", "BP_BRfilter");
 		g_assert (BP_BRfilter);
-		g_object_set (G_OBJECT (BP_BRfilter), "lower-frequency", BPlowerFreq, "upper-frequency", BPupperFreq, NULL);
-		flacenc = gst_element_factory_make ("flacenc", NULL);
-		g_assert (flacenc);
+		gfloat ripple = 100.0;
+		g_object_set (G_OBJECT (BP_BRfilter), "lower-frequency", BPlowerFreq, "upper-frequency", BPupperFreq, "ripple", ripple, NULL);
+		wavenc = gst_element_factory_make ("wavenc", NULL);
+		g_assert (wavenc);
 
 /* create sink element */
+	DEBUG("Create sink element\n");
 		if (source == MICRO) {
 			if (recording) { 
 				sink = gst_element_factory_make ("filesink", NULL);
@@ -445,52 +448,16 @@ else if (playing == 0) {
 		g_assert (sink);
 
 /* add elements to pipeline */
+	DEBUG("Add elements to pipeline\n");
 		if (source == MICRO){
-			gst_bin_add_many (GST_BIN (pipeline), src, NULL);
+			gst_bin_add (GST_BIN (pipeline), src);
 			}
-		else if (source == SOUND_FILE){
-			gst_bin_add_many (GST_BIN (pipeline), audioconvert, NULL);
-			}
-		gst_bin_add_many (GST_BIN (pipeline), equalizer, equalizer2, equalizer3, audioconvert2, BP_BRfilter, audioconvert3, spectrum, flacenc, sink, NULL);
+		gst_bin_add_many (GST_BIN (pipeline), audioconvert, equalizer, equalizer2, equalizer3, audioconvert2, BP_BRfilter, audioconvert3, spectrum, wavenc, sink, NULL);
 
 /* link elements */
-#ifdef GSTREAMER1
-	caps = gst_caps_new_simple ("audio/x-raw", "rate", G_TYPE_INT, AUDIOFREQ, NULL);
-#elif defined GSTREAMER0
-	caps = gst_caps_new_simple ("audio/x-raw-int", "rate", G_TYPE_INT, AUDIOFREQ, NULL);
-#endif
+	DEBUG("Link elements\n");
 		if (source == MICRO){
-			if (jack) {
-				if (!gst_element_link (src, equalizer)) {
-			    fprintf (stderr, "can't link elements \n");
-				exit (1);
-					}
-				}
-			else {
-#ifdef GSTREAMER1
-	if (!gst_element_link (src, equalizer))
-#elif defined GSTREAMER0
-	if (!gst_element_link_filtered (src, equalizer, caps)) 
-#endif
-				 {
-				    fprintf (stderr, "can't link elements 1\n");
-					exit (1);
-				}
-			    }
-			}
-		else if (source == SOUND_FILE){
-#ifdef GSTREAMER1
-	if (!gst_element_link (audioconvert, equalizer))
-#elif defined GSTREAMER0
-	if (!gst_element_link_filtered (audioconvert, equalizer, caps))
-#endif
-			{
-			    fprintf (stderr, "can't link elements 2\n");
-				exit (1);
-			    }
-			}
-		if (source == MICRO){
-			if (!gst_element_link_many (equalizer, equalizer2, equalizer3, audioconvert2, BP_BRfilter, audioconvert3, spectrum, flacenc, sink, NULL)) {
+			if (!gst_element_link_many (src, audioconvert, BP_BRfilter, audioconvert2, equalizer, equalizer2, equalizer3, spectrum, wavenc, sink, NULL)) {
 			    fprintf (stderr, "can't link elements\n");
 				exit (1);
 			    }
@@ -498,43 +465,37 @@ else if (playing == 0) {
 		else if (source == SOUND_FILE){
 			if(analyse_rt == FALSE && recording == FALSE && loading == FALSE) {
 			// if audio_file has been loaded, file should be played without the spectrum element since harmonic analysis has been done previously
-				if (!gst_element_link_many (equalizer, equalizer2, equalizer3, audioconvert2, BP_BRfilter, audioconvert3, sink, NULL)) {
+				if (!gst_element_link_many (audioconvert, equalizer, equalizer2, equalizer3, audioconvert2, BP_BRfilter, audioconvert3, sink, NULL)) {
 				    fprintf (stderr, "can't link elements\n");
 					exit (1);
 				    }
 				}
 			else {
-				if (!gst_element_link_many (equalizer, equalizer2, equalizer3, audioconvert2, BP_BRfilter, audioconvert3, spectrum, sink, NULL)) {
+				if (!gst_element_link_many (audioconvert, equalizer, equalizer2, equalizer3, audioconvert2, BP_BRfilter, audioconvert3, spectrum, sink, NULL)) {
 				    fprintf (stderr, "can't link elements\n");
 					exit (1);
 				    }
 				}
 			}
 
-/* if source == SOUND_FILE, add the playbin2 element to the pipeline */
+/* if source == SOUND_FILE, add the playbin element to the pipeline */
 		if (source == SOUND_FILE){
 			audiopad = gst_element_get_static_pad (audioconvert, "sink");
-			gst_element_add_pad (pipeline, gst_ghost_pad_new (NULL, audiopad));
+			gst_element_add_pad (pipeline, gst_ghost_pad_new ("sink", audiopad));
 			g_object_set(G_OBJECT(playbin), "audio-sink", pipeline, NULL);
 			gst_object_unref (audiopad);
 			}
 
-/* create bus if source is SOUND_FILE */
-		if (source == SOUND_FILE) {
-			bus = gst_pipeline_get_bus (GST_PIPELINE (playbin));
+/* create bus */
+		if (source == MICRO) {
+			bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
 			gst_bus_add_watch(bus, message_handler, NULL);
 			gst_object_unref(bus);
 			}
-
-/* if realtime is enabled */
-		if (spectrum3d.realtime && jack == FALSE) {
-			busRT = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
-#ifdef GSTREAMER1
-			gst_bus_set_sync_handler (busRT, (GstBusSyncHandler) sync_bus_handler, pipeline, NULL);
-#elif defined GSTREAMER0
-			gst_bus_set_sync_handler (busRT, (GstBusSyncHandler) sync_bus_handler, pipeline);
-#endif
-			gst_object_unref (busRT);
+		else if (source == SOUND_FILE) {
+			bus = gst_pipeline_get_bus (GST_PIPELINE (playbin));
+			gst_bus_add_watch(bus, message_handler, NULL);
+			gst_object_unref(bus);
 			}
 
 /* set state to PLAYING and start main loop */
@@ -565,13 +526,10 @@ else if (playing == 0) {
 			gst_element_set_state (playbin, GST_STATE_NULL);
 			}
 		printf ("Stop playing\n");
-	//}
 	playing = 0; pose = 0;
 	setPlayButtonIcon();
 	show_position("      0.00 / 0.00      ");
 	gtk_range_set_value(GTK_RANGE(scaleSeek), 0);
-	//pos = 0;
-	//show_playing_position();
 	}
 
 }

@@ -1,3 +1,14 @@
+2014-11-05 Bernard Victor Delvaux  <nadaeck@hotmail.com>
+    Version : Spectrum3d-2.5.0 :
+    * general changes : replacement of deprecated functions in GTK3; since "gtk_image_new_from_stock" is deprecated, new icons (from Gtk) has been added to the "data" directory and will be installed when installing Spectrum3d;
+    * general changes : functions allowing to enable realtime without Jack (including files tespool.c and testpool.h) have been removed since it was of no use and was the source of crash;
+    * main : "stop" button has been removed; "Microphone" is now the default audio source;
+    * onclick.c : bug that made crash Spectrumd3d when changing the perspective has been solved (in function "change_perspective");
+    * gstreamer.c : bug that made encoded files (such as .mp3 or .flac files) not readable after porting from Gstreamer-0.10 to Gstreamer-1.0 has been solved;
+    * gstreamer.c : bug that made audiochebband increasing backgrounf noise after porting from Gstreamer-0.10 to Gstreamer-1.0 has been solved;
+    * equalizer.c : audiochebband has been added a controle for poles and ripple;
+    * gstreamer.c  and typesource.c : flacenc is replaced by wavenc, that allows to retrieved easily the lenght of the recorded file;
+    
 2013-02-26 Bernard Victor Delvaux  <nadaeck@hotmail.com>
     Version : Spectrum3d-2.4.0 :
     * gstreamer.c : spectrum3d can now be compiled against gstreamer-1.0 or gstreamer-0.10;
@@ -24,7 +35,7 @@
     * general changes : Spectrum3d can now be compiled against gtk2 or gtk3;
     * general changes : Spectrum3d can now use GtkGlExt instead of Sdl for OpenGL support (Sdl is still available since GtkGlExt for Gtk3 is not yet released at the time of release of this version of Spectrum3d);
     * display.c : display loop will now pass 1000 times instead of much more as it was the case; 
-    * main.c and typesource.c : the relief of the source buttons have been changed since the background color conaot always be changed in Gtk3 by default on my system;  
+    * main.c and typesource.c : the relief of the source buttons have been changed since the background color cannot always be changed in Gtk3 by default on my system;  
 
 2012-01-27 Bernard Victor Delvaux  <nadaeck@hotmail.com>
     Version : Spectrum3d-2.0.0 :

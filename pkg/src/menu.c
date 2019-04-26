@@ -57,8 +57,8 @@ void onPreferences(GtkWidget* widget, Spectrum3dGui *spectrum3dGui)
         pPreferences = gtk_dialog_new_with_buttons("Preferences",
 			NULL,
 			GTK_DIALOG_MODAL,
-			GTK_STOCK_OK,GTK_RESPONSE_OK,
-			GTK_STOCK_CANCEL,GTK_RESPONSE_CANCEL,
+			"_OK",GTK_RESPONSE_OK,
+			"_CANCEL",GTK_RESPONSE_CANCEL,
 			NULL);
 	gtk_window_set_default_size(GTK_WINDOW(pPreferences), 300, 300);
 
@@ -116,7 +116,7 @@ void onPreferences(GtkWidget* widget, Spectrum3dGui *spectrum3dGui)
 	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(comboColor), "PURPLE");
 	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(comboColor), "RED");
 	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(comboColor), "RAINBOW");
-	gtk_combo_box_set_active(GTK_COMBO_BOX(comboColor), 0);
+	gtk_combo_box_set_active(GTK_COMBO_BOX(comboColor), 2);
 
 	/* Radio button to choose wheter the display is within the UI or in another window */
 	pFrame = gtk_frame_new("Display window :");
@@ -160,36 +160,6 @@ void onPreferences(GtkWidget* widget, Spectrum3dGui *spectrum3dGui)
 
 	label = gtk_label_new("WARNING : The lower the value is, the less\n cpu is 	used; ideally, this value should match the 'Interval \nbetween each spectrum display' value");	
 	gtk_box_pack_start(GTK_BOX(pVBox[1]), label, FALSE, FALSE, 0);
-
-	/* Realtime */
-	pCheckRealtime = gtk_check_button_new_with_label("Enable realtime \n(without Jack)");
-	gtk_box_pack_start(GTK_BOX(pHBox[15]), pCheckRealtime, TRUE, TRUE, 0);
-	gtk_box_pack_start(GTK_BOX(pVBox[1]), pHBox[15], TRUE, FALSE, 0);
-	if (spectrum3d.realtime) {
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(pCheckRealtime), TRUE);
-		}
-
-	pFrame = gtk_frame_new("Realtime Policy");
-	pComboPolicy = gtk_combo_box_text_new();
-	gtk_container_add(GTK_CONTAINER(pFrame), pComboPolicy);
-	gtk_widget_set_tooltip_text (pFrame, "Set the policy of realtime mode (when Jack is not used)");
-	gtk_box_pack_start(GTK_BOX(pHBox[15]), pFrame, TRUE, TRUE, 0);
-	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(pComboPolicy), "SCHED_RR");
-	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(pComboPolicy), "SCHED_FIFO");
-	if (strstr(policyName, "FIFO")){
-		gtk_combo_box_set_active(GTK_COMBO_BOX(pComboPolicy), 1);
-		}
-  	else {
-		gtk_combo_box_set_active(GTK_COMBO_BOX(pComboPolicy), 0);
-		}
-	
-	pFrame = gtk_frame_new("Priority");
-	pSpinPriority = gtk_spin_button_new_with_range(50, 80, 1);
-	gtk_widget_set_tooltip_text (pFrame, "Set the priority if realtime mode is used(whithout Jack)");
-	gtk_container_add(GTK_CONTAINER(pFrame), pSpinPriority);
-	gtk_box_pack_start(GTK_BOX(pHBox[15]), pFrame, FALSE, FALSE, 0);
-	gtk_spin_button_set_value (GTK_SPIN_BUTTON(pSpinPriority), spectrum3d.priority);
-
 
 ///////////////////////// 3d Notebook : "Touch" //////////////////////
 	
@@ -256,10 +226,8 @@ void onPreferences(GtkWidget* widget, Spectrum3dGui *spectrum3dGui)
 					spectrum3d.presetAngleZ = AngleZ;
 				}
 			spectrum3d.interval_rt = gtk_spin_button_get_value(GTK_SPIN_BUTTON(spinSpectrumInterval));
-			spectrum3d.realtime = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(pCheckRealtime));
 			gchar *string = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(pComboPolicy));
 			sprintf(policyName, "%s", string);
-			spectrum3d.priority = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(pSpinPriority));
 			spectrum3d.enableTouch = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(pCheckEnableTouch));
 			newEvent = TRUE;
 		break;
@@ -342,10 +310,10 @@ NULL);
 
 void menu_check_test_sound(GtkWidget *widget, Spectrum3dGui *spectrum3dGui){
 	printf("check menu test sound\n");
-	if (gtk_check_menu_item_get_active (GTK_CHECK_MENU_ITEM(spectrum3dGui->checkMenuTestSound))){
+	if (gtk_check_menu_item_get_active (GTK_CHECK_MENU_ITEM(widget))){
 		test_sound_window(spectrum3dGui);
 		}
-	else if (!gtk_check_menu_item_get_active (GTK_CHECK_MENU_ITEM(spectrum3dGui->checkMenuTestSound))){
+	else if (!gtk_check_menu_item_get_active (GTK_CHECK_MENU_ITEM(widget))){
 		test_sound_window_destroy(GTK_DIALOG(spectrum3dGui->dialogTestSound), NULL);
 		}
 }
@@ -366,7 +334,7 @@ void onShortcuts (GtkWidget* widget, gpointer data)
     	shortcutsWindow = gtk_dialog_new_with_buttons("Keyboard and mouse shortcuts",
 			NULL,
 			GTK_DIALOG_MODAL,
-			GTK_STOCK_OK,GTK_RESPONSE_OK,
+			"_OK",GTK_RESPONSE_OK,
 			NULL);
 	gtk_window_set_default_size(GTK_WINDOW(shortcutsWindow), 500, 160);
 	
@@ -452,7 +420,7 @@ void onGesturesShortcuts (GtkWidget* widget, gpointer data)
     	shortcutsWindow = gtk_dialog_new_with_buttons("Keyboard and mouse shortcuts",
 			NULL,
 			GTK_DIALOG_MODAL,
-			GTK_STOCK_OK,GTK_RESPONSE_OK,
+			"_OK",GTK_RESPONSE_OK,
 			NULL);
 	gtk_window_set_default_size(GTK_WINDOW(shortcutsWindow), 480, 240);
 	
@@ -517,7 +485,7 @@ void onQuickStart(GtkWidget* widget, gpointer data)
 	quickStartWindow = gtk_dialog_new_with_buttons("Spectrum3d : Quick Start",
 			NULL,
 			GTK_DIALOG_MODAL,
-			GTK_STOCK_OK,GTK_RESPONSE_OK,
+			"_OK",GTK_RESPONSE_OK,
 			NULL);
 	gtk_window_set_default_size(GTK_WINDOW(quickStartWindow), 500, 300);
 

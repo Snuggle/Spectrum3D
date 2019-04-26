@@ -56,8 +56,13 @@ GdkPixbuf *create_pixbuf(const gchar * filename)
 
 /* Sets the icon of 'playButton' as 'play' or 'pause' */
 void setPlayButtonIcon (){
-	GtkWidget *playImage = gtk_image_new_from_stock (GTK_STOCK_MEDIA_PLAY, GTK_ICON_SIZE_SMALL_TOOLBAR);
-	GtkWidget *pauseImage = gtk_image_new_from_stock (GTK_STOCK_MEDIA_PAUSE, GTK_ICON_SIZE_SMALL_TOOLBAR);
+	gchar *filename;
+	filename = g_build_filename (G_DIR_SEPARATOR_S, DATADIR, "icons", "gtk-media-play-ltr.png", NULL);
+	GtkWidget *playImage = gtk_image_new_from_file(filename);
+	filename = g_build_filename (G_DIR_SEPARATOR_S, DATADIR, "icons", "gtk-media-pause.png", NULL);
+	GtkWidget *pauseImage = gtk_image_new_from_file(filename);
+	//GtkWidget *playImage = gtk_image_new_from_stock (GTK_STOCK_MEDIA_PLAY, GTK_ICON_SIZE_SMALL_TOOLBAR);
+	//GtkWidget *pauseImage = gtk_image_new_from_stock (GTK_STOCK_MEDIA_PAUSE, GTK_ICON_SIZE_SMALL_TOOLBAR);
 	if (playing){
 		if (pose){
 			gtk_button_set_image(GTK_BUTTON(playButton),playImage);
@@ -164,19 +169,19 @@ int main(int argc, char *argv[])
 {
 	printf("%s \nPlease report any bug to %s\n", PACKAGE_STRING, PACKAGE_BUGREPORT);	
 	//printf("number of arg = %d, argv = %s\n", argc, argv[1]);
-	/*printf("argc = %d\n", argc);
+	printf("argc = %d\n", argc);
 	if (argv[1] != NULL) {
 		if (strstr (argv[1],"debug") != NULL) {
 		debug = TRUE;
 		printf("debug = TRUE\n");
 			}  
 		}
-	DEBUG("debug is true\n");*/
+	//DEBUG("debug is true\n");
 	gchar *filename;
 	int i = 0;
 	gint initialWindowHeight = 170;
 	guint timeoutEvent, intervalDisplaySpectro;
-	GtkWidget *pVBox[4], *pHBox[13], *menuBar, *menu, *submenu, *menuItem, *submenuItem, *button, *frame, *image, *label, *widget;
+	GtkWidget *pVBox[4], *pHBox[13], *menuBar, *menu, *submenu, *menuItem, *submenuItem, *frame, *image, *label, *widget, *sourceRadioButton, *sourceMic, *sourceFile;
 	GdkColor color;
 	Spectrum3dGui spectrum3dGui;
 	GSList *radio_menu_group;
@@ -330,15 +335,15 @@ int main(int argc, char *argv[])
 		gtk_menu_item_set_submenu (GTK_MENU_ITEM (menuItem), submenu);
 		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuItem);	
 			
-			spectrum3dGui.reset = gtk_menu_item_new_with_label("Reset view (R)");
-			gtk_widget_set_tooltip_text (spectrum3dGui.reset, "Reset the view as if Spectrum3d was just started");
-			g_signal_connect(G_OBJECT(spectrum3dGui.reset), "activate", G_CALLBACK(reset_view), spectrum3dGui.reset);
-			gtk_menu_shell_append(GTK_MENU_SHELL(submenu), spectrum3dGui.reset);
+			widget = gtk_menu_item_new_with_label("Reset view (R)"); // Reset to initial view
+			gtk_widget_set_tooltip_text (widget, "Reset the view as if Spectrum3d was just started");
+			g_signal_connect(G_OBJECT(widget), "activate", G_CALLBACK(reset_view), NULL);
+			gtk_menu_shell_append(GTK_MENU_SHELL(submenu), widget);
 
-			spectrum3dGui.front = gtk_menu_item_new_with_label("Front view (O)");
-			gtk_widget_set_tooltip_text (spectrum3dGui.front, "2D view showing frequency versus intensity of the sound; shows a snapshot of the harmonics at a given time");
-			g_signal_connect(G_OBJECT(spectrum3dGui.front), "activate", G_CALLBACK(front_view), spectrum3dGui.front);
-			gtk_menu_shell_append(GTK_MENU_SHELL(submenu), spectrum3dGui.front);
+			widget = gtk_menu_item_new_with_label("Front view (O)"); // Set to front view
+			gtk_widget_set_tooltip_text (widget, "2D view showing frequency versus intensity of the sound; shows a snapshot of the harmonics at a given time");
+			g_signal_connect(G_OBJECT(widget), "activate", G_CALLBACK(front_view), NULL);
+			gtk_menu_shell_append(GTK_MENU_SHELL(submenu), widget);
 
 			submenuItem = gtk_menu_item_new_with_label("Preset view");
 			gtk_widget_set_tooltip_text (submenuItem, "Set the view with the chosen preset values");
@@ -365,46 +370,40 @@ int main(int argc, char *argv[])
 	gtk_menu_shell_append(GTK_MENU_SHELL(menuBar), menuItem);
 	gtk_box_pack_start(GTK_BOX(pHBox[0]), menuBar, FALSE, TRUE, 0);
 
-/* SourceButtons to set type of source (none, audio file, microphone) */
-	spectrum3dGui.stop = gtk_button_new();
-	filename = g_build_filename (G_DIR_SEPARATOR_S, DATADIR, "icons", "stop.png", NULL);
+/* SourceButtons to set type of source (microphone or audio file) : NEW : no STOP button anymore */
+
+	sourceMic = gtk_button_new(); // Microphone button
+	filename = g_build_filename (G_DIR_SEPARATOR_S, DATADIR, "icons", "microphone.png", NULL);
 	image = gtk_image_new_from_file(filename);
-	gtk_button_set_image(GTK_BUTTON(spectrum3dGui.stop),image);
-	gdk_color_parse ("gold",&color);
-	gtk_widget_set_name(spectrum3dGui.stop, "stop");
-	gtk_widget_modify_bg(GTK_WIDGET(spectrum3dGui.stop), GTK_STATE_NORMAL, &color);
-	gtk_widget_modify_bg(GTK_WIDGET(spectrum3dGui.stop), GTK_STATE_PRELIGHT, &color);
-	gtk_widget_set_tooltip_text (spectrum3dGui.stop, "Stop playing everything; no source of playing");
+	gtk_button_set_image (GTK_BUTTON(sourceMic), image);
+	gtk_widget_set_name(sourceMic, "mic");
+	gtk_widget_set_tooltip_text (sourceMic, "Source is microphone; select this to record something and then load it");
 	gtk_box_pack_start(GTK_BOX(pVBox[1]), pHBox[1], FALSE, TRUE, 2);
-	gtk_box_pack_start(GTK_BOX(pHBox[1]), spectrum3dGui.stop, FALSE, TRUE, 2);
-	g_signal_connect(G_OBJECT(spectrum3dGui.stop), "clicked", G_CALLBACK(change_source_button), &spectrum3dGui);
-
-	filename = g_build_filename (G_DIR_SEPARATOR_S, DATADIR, "icons", "microphone_grey.png", NULL);
-	image = gtk_image_new_from_file(filename);
-	spectrum3dGui.mic = gtk_button_new();
-	gtk_button_set_image (GTK_BUTTON(spectrum3dGui.mic), image);
-	gtk_widget_set_name(spectrum3dGui.mic, "mic");
-	gtk_widget_set_tooltip_text (spectrum3dGui.mic, "Source is microphone; select this to record something and then load it");
-	gtk_box_pack_start(GTK_BOX(pHBox[1]), spectrum3dGui.mic, FALSE, TRUE, 2);
-	g_signal_connect(G_OBJECT(spectrum3dGui.mic), "clicked", G_CALLBACK(change_source_button), &spectrum3dGui);
-
-	spectrum3dGui.file = gtk_button_new();
+	gtk_box_pack_start(GTK_BOX(pHBox[1]), sourceMic, FALSE, TRUE, 2);
+	
+	sourceFile = gtk_button_new(); // File button
 	filename = g_build_filename (G_DIR_SEPARATOR_S, DATADIR, "icons", "file_grey.png", NULL);
 	image = gtk_image_new_from_file(filename);
-	gtk_button_set_image(GTK_BUTTON(spectrum3dGui.file),image);
-	gtk_widget_set_name(spectrum3dGui.file, "file");
-	gtk_widget_set_tooltip_text (spectrum3dGui.file, "Source is an audio file");
-	gtk_box_pack_start(GTK_BOX(pHBox[1]), spectrum3dGui.file, FALSE, FALSE, 2);
-	g_signal_connect(G_OBJECT(spectrum3dGui.file), "clicked", G_CALLBACK(change_source_button), &spectrum3dGui);
+	gtk_button_set_image(GTK_BUTTON(sourceFile),image);
+	gtk_widget_set_name(sourceFile, "file");
+	gtk_widget_set_tooltip_text (sourceFile, "Source is an audio file");
+	gtk_box_pack_start(GTK_BOX(pHBox[1]), sourceFile, FALSE, FALSE, 2);
 
+	g_signal_connect(G_OBJECT(sourceMic), "clicked", G_CALLBACK(change_source_button), sourceFile);
+	g_signal_connect(G_OBJECT(sourceFile), "clicked", G_CALLBACK(change_source_button), sourceMic);
+	
+/* "Reload" button */
 	spectrum3dGui.reload = gtk_button_new();
-	image = gtk_image_new_from_stock (GTK_STOCK_REFRESH, GTK_ICON_SIZE_LARGE_TOOLBAR);
+	filename = g_build_filename (G_DIR_SEPARATOR_S, DATADIR, "icons", "gtk-refresh.png", NULL);
+	image = gtk_image_new_from_file(filename);
+	//image = gtk_image_new_from_stock (GTK_STOCK_REFRESH, GTK_ICON_SIZE_LARGE_TOOLBAR);
 	gtk_button_set_image(GTK_BUTTON(spectrum3dGui.reload),image);
 	gtk_widget_set_sensitive (spectrum3dGui.reload, FALSE);
 	gtk_widget_set_tooltip_text (spectrum3dGui.reload, "Reload audio file (usefull if some audio parameters like equalizer or filters have been changed)");
 	gtk_box_pack_start(GTK_BOX(pHBox[1]), spectrum3dGui.reload, FALSE, FALSE, 2);
 	g_signal_connect(G_OBJECT(spectrum3dGui.reload), "clicked", G_CALLBACK(load_audio_file), NULL);
 
+/* "Analyse in real-time" button */
 	widget = gtk_check_button_new_with_label("Analyse in\nrealtime");
 	gtk_widget_set_tooltip_text (GTK_WIDGET(widget), "If checked, harmonics will be analysed and displayed at the same time; if unchecked, harmonics will be analysed first, then displayed for the whole audio file, then it can be played afterwards");
 	gtk_box_pack_start(GTK_BOX(pHBox[1]), widget, FALSE, FALSE, 0);
@@ -428,18 +427,21 @@ int main(int argc, char *argv[])
 	g_signal_connect(G_OBJECT(playButton), "clicked", G_CALLBACK(playFromSource), "NO_MESSAGE");
 	
 /* "Stop" button */
-	button = gtk_button_new();
-	gtk_widget_set_tooltip_text (button, "Stop playing audio stream");
-	image = gtk_image_new_from_stock (GTK_STOCK_MEDIA_STOP, GTK_ICON_SIZE_SMALL_TOOLBAR);
-	gtk_button_set_image(GTK_BUTTON(button),image);
-	gtk_box_pack_start(GTK_BOX(pHBox[1]), button, FALSE, FALSE, 2);
-	g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(on_stop), NULL);
+	filename = g_build_filename (G_DIR_SEPARATOR_S, DATADIR, "icons", "gtk-media-stop.png", NULL);
+	image = gtk_image_new_from_file(filename);
+	widget = gtk_button_new();
+	gtk_button_set_image(GTK_BUTTON(widget),image);
+	gtk_widget_set_tooltip_text (widget, "Stop playing audio stream");
+	gtk_box_pack_start(GTK_BOX(pHBox[1]), widget, FALSE, FALSE, 2);
+	g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(on_stop), NULL);
 
 /* "Record" button */
+	filename = g_build_filename (G_DIR_SEPARATOR_S, DATADIR, "icons", "gtk-media-record.png", NULL);
+	image = gtk_image_new_from_file(filename);
 	spectrum3dGui.record = gtk_button_new();
-	gtk_widget_set_tooltip_text (spectrum3dGui.record, "Record from microphone");
-	image = gtk_image_new_from_stock (GTK_STOCK_MEDIA_RECORD, GTK_ICON_SIZE_SMALL_TOOLBAR);
 	gtk_button_set_image(GTK_BUTTON(spectrum3dGui.record),image);
+	gtk_widget_set_tooltip_text (spectrum3dGui.record, "Record from microphone\n'Analyse in realtime' must be uncheck to use this");
+	//image = gtk_image_new_from_stock (GTK_STOCK_MEDIA_RECORD, GTK_ICON_SIZE_SMALL_TOOLBAR);
 	gtk_widget_set_sensitive (spectrum3dGui.record, FALSE);
 	gtk_box_pack_start(GTK_BOX(pHBox[1]), spectrum3dGui.record, FALSE, FALSE, 2);
 	g_signal_connect(G_OBJECT(spectrum3dGui.record), "clicked", G_CALLBACK(record_window), NULL);

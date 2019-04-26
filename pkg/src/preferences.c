@@ -30,13 +30,12 @@
 char prefPath[100], rcPath[100];
 
 /* Preferences structures are declared here */
-int sizeofPrefInt = 6;
-PreferenceInt preferenceInt[6] = {
+int sizeofPrefInt = 5;
+PreferenceInt preferenceInt[5] = {
 	{&spectrum3d.width, 600, 50, 2500, "spectrum3d.width"},
 	{&spectrum3d.height, 300, 50, 1500, "spectrum3d.height"},
 	{&spectrum3d.interval_display, 100, 100, 500, "spectrum3d.interval_display"},
 	{&spectrum3d.interval_rt, 150, 100, 500, "spectrum3d.interval_rt"},
-	{&spectrum3d.priority, 50, 50, 80, "spectrum3d.priority"},
 	{&spectrum3d.frames, 100, 50, 400, "spectrum3d.frames"}
 	}; 
 
@@ -51,18 +50,17 @@ PreferenceGLFloat preferenceGLFloat[7] = {
 	{&spectrum3d.zStep, 0.01, 0.01, 0.03, "spectrum3d.zStep"}
 	};
 
-int sizeofPrefGbool = 3;
-PreferenceGbool preferenceGbool[3] = {
-	{&spectrum3d.realtime, FALSE, 0, 1, "spectrum3d.realtime"}, 
+int sizeofPrefGbool = 2;
+PreferenceGbool preferenceGbool[2] = {
 	{&spectrum3d.enableTouch, TRUE, 0, 1, "spectrum3d.enableTouch"},
 	{&externalWindow, FALSE, 0, 1, "spectrum3d.externalWindow"}
 	};
 
-int sizeofPrefString = 1;
+/*int sizeofPrefString = 1;
 char *preferenceString[1] = {policyName};
 char prefStringPossibleValue[1][4][40] = {
 	{"policyName", "SCHED_RR", "SCHED_RR", "SCHED_FIFO"}
-	};
+	};*/
 
 #define ERROR_MESSAGE_PRINT_IN_RCFILE()  \
 	if (result < 0){  \
@@ -101,14 +99,14 @@ void set_default_values(){
 	for (i = 0; i < sizeofPrefGbool; i++){
 		*preferenceGbool[i].var = preferenceGbool[i].def;
 		}
-	for (i = 0; i < sizeofPrefString; i++){
+	/*for (i = 0; i < sizeofPrefString; i++){
 		if (strcmp(prefStringPossibleValue[i][1], "null") != 0){
 			sprintf(preferenceString[i], "%s", prefStringPossibleValue[i][1]);
 			}
 		else {
 
 			}
-		}
+		}*/
 }
 
 /* save preferences values in a 'spectrum3drc' preferences file */
@@ -164,10 +162,10 @@ void print_rc_file(){
 			fprintf(rcFile, "# %s \n%d\n", preferenceGbool[i].name, *preferenceGbool[i].var);
 			ERROR_MESSAGE_PRINT_IN_RCFILE()
 			}
-		for (i = 0; i < sizeofPrefString ; i++){
+		/*for (i = 0; i < sizeofPrefString ; i++){
 			fprintf(rcFile, "# %s \n%s\n", prefStringPossibleValue[i][0], preferenceString[i]);
 			ERROR_MESSAGE_PRINT_IN_RCFILE()
-			}
+			}*/
 		fclose(rcFile);
 		printf("... OK\n");
 		}
@@ -200,7 +198,7 @@ void compare_values(){
 			} 
 		}
 
-	for (i = 0; i < sizeofPrefString; i++){
+	/*for (i = 0; i < sizeofPrefString; i++){
 		int a = 0;
 		match = FALSE;
 		for (a = 2; a < 4; a++){
@@ -215,7 +213,7 @@ void compare_values(){
 			//print_rc_file("def");
 			i = sizeofPrefString;
 			} 
-		}
+		}*/
 	if (error == FALSE && match == TRUE){
 		printf("  ... OK\n");
 		}
@@ -260,7 +258,7 @@ void get_saved_values(){
 				i++;
 				}
 			}
-		i = 0;
+		/*i = 0;
 		while (i < sizeofPrefString){ 
 			result = fgets(confString, 100, rcFile); 
 				if (strchr(confString, '#') == NULL){
@@ -268,7 +266,7 @@ void get_saved_values(){
 					preferenceString[i][strlen(preferenceString[i])-1] = 0;
 					i++;
 					}
-			}
+			}*/
 		fclose(rcFile);	
 		compare_values();
 		}

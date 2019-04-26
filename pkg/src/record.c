@@ -25,6 +25,7 @@
 #include "record.h"
 
 void record_window() {
+	gchar *filename;
 	GtkWidget *hbox[2], *recordWindow, *button, *image, *content_area;
 
 	if (typeSource == AUDIO_FILE){
@@ -35,8 +36,8 @@ void record_window() {
 	recordWindow = gtk_dialog_new_with_buttons("Record",
 		GTK_WINDOW(NULL),
 		GTK_DIALOG_MODAL,
-		GTK_STOCK_OK,GTK_RESPONSE_OK,
-		GTK_STOCK_CANCEL,GTK_RESPONSE_CANCEL,
+		"_OK",GTK_RESPONSE_OK,
+		"_CANCEL",GTK_RESPONSE_CANCEL,
 		NULL);
 	gtk_window_set_default_size(GTK_WINDOW(recordWindow), 250, 50);
 
@@ -56,13 +57,17 @@ void record_window() {
 #endif			
 
 	button = gtk_button_new();
-	image = gtk_image_new_from_stock (GTK_STOCK_MEDIA_RECORD, GTK_ICON_SIZE_BUTTON);
+	filename = g_build_filename (G_DIR_SEPARATOR_S, DATADIR, "icons", "gtk-media-record.png", NULL);
+	image = gtk_image_new_from_file(filename);
+	//image = gtk_image_new_from_stock (GTK_STOCK_MEDIA_RECORD, GTK_ICON_SIZE_BUTTON);
 	gtk_button_set_image(GTK_BUTTON(button),image);
 	gtk_box_pack_start(GTK_BOX(hbox[0]), button, TRUE, TRUE, 0);
 	g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(playFromSource), NULL);
 	
 	button = gtk_button_new();
-	image = gtk_image_new_from_stock (GTK_STOCK_MEDIA_STOP, GTK_ICON_SIZE_BUTTON);
+	filename = g_build_filename (G_DIR_SEPARATOR_S, DATADIR, "icons", "gtk-media-stop.png", NULL);
+	image = gtk_image_new_from_file(filename);
+	//image = gtk_image_new_from_stock (GTK_STOCK_MEDIA_STOP, GTK_ICON_SIZE_BUTTON);
 	gtk_button_set_image(GTK_BUTTON(button),image);
 	gtk_box_pack_start(GTK_BOX(hbox[0]), button, TRUE, TRUE, 0);
 	g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(on_stop), NULL);

@@ -255,7 +255,7 @@ gboolean delete_event(GtkWidget *widget, Spectrum3dGui *spectrum3dGui){
 void effects_window(Spectrum3dGui *spectrum3dGui){
 	printf("create effects window\n");
 	int i = 0;
-	GtkWidget *vbox[4], *hbox[11], *button, *checkBandPass, *frame;
+	GtkWidget *vbox[4], *hbox[11], *button, *checkBandPass, *frame, *widget;
 
 #ifdef GTK3
 	GtkAdjustment *adjustment;
@@ -324,19 +324,19 @@ NULL);
 	g_signal_connect (G_OBJECT (spinBPupperValue), "value_changed", G_CALLBACK (change_filter_upper_value),
 NULL);
 
-	/*frame = gtk_frame_new("Poles");
+	frame = gtk_frame_new("Poles");
 	adjustment = gtk_adjustment_new(4, 4, 32, 1, 10, 0);
-	spinFilterPoles = gtk_spin_button_new(GTK_ADJUSTMENT(adjustment), 1, 0);
-	gtk_container_add(GTK_CONTAINER(frame), spinFilterPoles);
+	widget = gtk_spin_button_new(GTK_ADJUSTMENT(adjustment), 1, 0);
+	gtk_container_add(GTK_CONTAINER(frame), widget);
 	gtk_box_pack_start(GTK_BOX(hbox[0]), frame, TRUE, TRUE, 0);
-	g_signal_connect (G_OBJECT (spinFilterPoles), "value_changed", G_CALLBACK (change_filter_poles), NULL);
+	g_signal_connect (G_OBJECT (widget), "value_changed", G_CALLBACK (change_filter_poles), NULL);
 
 	frame = gtk_frame_new("Ripple");
 	adjustment = gtk_adjustment_new(0.25, 0, 200, 0.05, 1, 0);
-	spinFilterRipple = gtk_spin_button_new(GTK_ADJUSTMENT(adjustment), 1, 2);
-	gtk_container_add(GTK_CONTAINER(frame), spinFilterRipple);
+	widget = gtk_spin_button_new(GTK_ADJUSTMENT(adjustment), 1, 2);
+	gtk_container_add(GTK_CONTAINER(frame), widget);
 	gtk_box_pack_start(GTK_BOX(hbox[0]), frame, TRUE, TRUE, 0);
-	g_signal_connect (G_OBJECT (spinFilterRipple), "value_changed", G_CALLBACK (change_filter_ripple), NULL);*/
+	g_signal_connect (G_OBJECT (widget), "value_changed", G_CALLBACK (change_filter_ripple), NULL);
 	
 	for (i = 0; i < NBANDS; i++) {
 			

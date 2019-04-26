@@ -4,7 +4,7 @@
 
 gboolean analyse_rt, jack, newEvent, externalWindow;
 int playing, pose, zoomFactor, hzStep;
-static GtkWidget *mainWindow;
+//static GtkWidget *mainWindow;
 GtkWidget *timeLabel, *scaleSeek;
 
 typedef enum TypeSource TypeSource;

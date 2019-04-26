@@ -45,7 +45,7 @@ GLfloat YcoordFactor = 1, ZcoordFactor = 0; //factors used to get the value of t
 /* Initialise several display values */
 void init_display_values(Spectrum3dGui *spectrum3dGui){
 	spectrum3dGui->lineScale = TRUE, spectrum3dGui->textScale = TRUE, spectrum3dGui->pointer = FALSE, showPosition = TRUE;
-	colorType = PURPLE;
+	colorType = RAINBOW;
 	viewType = THREE_D;
 	showGain = 0.2;
 	zoom = 0;
@@ -141,7 +141,7 @@ gboolean compareGLfloat(GLfloat value1, GLfloat value2, GLfloat precision)
 /* Draw the spectrogram */
 gboolean display_spectro(Spectrum3dGui *spectrum3dGui){
 
-//printf("display_spectro\n");
+	//printf("display_spectro\n");
 
 /* The opengl initializing functions when gtkglext is used */
 #ifdef GTKGLEXT3
