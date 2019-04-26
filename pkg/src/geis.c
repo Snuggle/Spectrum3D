@@ -22,12 +22,14 @@ the utouch-geis-2.0.10 at https://launchpad.net/canonical-multitouch/utouch-geis
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <gtk/gtk.h>
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include <geis/geis.h>
 #include <libbamf/bamf-matcher.h>
 
 #include "geis.h"
+#include "spectrum3d.h"
 
 char *getCurrentApp()
 {
@@ -70,7 +72,7 @@ void setupGeis()
 	geis_get_configuration(geis, GEIS_CONFIGURATION_FD, &fd);
 #endif
 
-	if (enableTouch){
+	if (spectrum3d.enableTouch){
 		timeoutTouch = g_timeout_add (50, (GSourceFunc) geisGesture, NULL);
 		}		
 }
@@ -102,7 +104,7 @@ void processTouchEvent(int drag, int pinch, int rotate, int tap, int touchNumber
 		AngleZ-=angularVelocity * 100;
 		}
 	else if (tap && tapTime > 150) {
-		playFromSource();
+		playFromSource(NULL, NULL);
 		}
 }
 
@@ -266,7 +268,6 @@ gboolean geisGesture()
 {
 	char *windowName = getCurrentApp();
 	//printf("windowName = %s\n", windowName);
-	int result = 0;
 	GeisEvent eventGeis;
 	status = geis_dispatch_events(geis);
 	status = geis_next_event(geis, &eventGeis);

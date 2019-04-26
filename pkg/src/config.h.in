@@ -3,6 +3,18 @@
 /* Define to 1 if you have the `utouch-geis' library > 2.0.11. */
 #undef GEIS_12
 
+/* Define to 1 if you have the `GTK2' library */
+#undef GTK2
+
+/* Define to 1 if you have the `GTK3' library */
+#undef GTK3
+
+/* Define to 1 if you have the `GTKGLEXT1' library */
+#undef GTKGLEXT1
+
+/* Define to 1 if you have the `GTKGLEXT3' library */
+#undef GTKGLEXT3
+
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 

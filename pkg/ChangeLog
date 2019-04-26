@@ -1,3 +1,10 @@
+2012-02-10 Bernard Victor Delvaux  <nadaeck@hotmail.com>
+    Version : Spectrum3d-2.1.2 :
+    * general changes : Spectrum3d can now be compiled against gtk2 or gtk3;
+    * general changes : Spectrum3d can now use GtkGlExt instead of Sdl for OpenGL support (Sdl is still available since GtkGlExt for Gtk3 is not yet released at the time of release of this version of Spectrum3d);
+    * display.c : display loop will now pass 1000 times instead of much more as it was the case; 
+    * main.c and typesource.c : the relief of the source buttons have been changed since the background color conaot always be changed in Gtk3 by default on my system;  
+
 2012-01-27 Bernard Victor Delvaux  <nadaeck@hotmail.com>
     Version : Spectrum3d-2.0.0 :
     * general changes : sound file can now be preloaded (ie analysed and displayed) before beeing played, or can still be analysed and displayed while playing (as it was already before); also sound can be recorded and loaded as an audio_file; the sdl-gl window can now be resized at any size on the fly;

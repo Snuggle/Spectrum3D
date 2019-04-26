@@ -17,7 +17,7 @@
 #ifndef DEFINE_GEIS
 #define DEFINE_GEIS
 
-gboolean timeoutTouch, enableTouch, event, newEvent;
+gboolean timeoutTouch, event, newEvent;
 int playing, fd;
 GLfloat X, Y, Z, AngleH, AngleV, AngleZ;
 GeisStatus status;
@@ -25,6 +25,7 @@ Geis geis;
 GeisSubscription subscription;
 
 int geisGesture(); 
+void playFromSource(GtkWidget *widget, gpointer *data);
 
 #endif
 

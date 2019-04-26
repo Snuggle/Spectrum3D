@@ -20,14 +20,15 @@
 #include <gst/gst.h>
 #include <GL/gl.h>
 #include <GL/glu.h>
-#include <stdbool.h>
 #include <gtk/gtk.h>
 
 #include "config.h"
 #include "spectrum3d.h"
 #include "onclick.h"
 
-#define AUDIOFREQFACTOR AUDIOFREQ * 0.453514739
+/* Gstreamer will perform spectrum analysis on the frequencies up to the half of the AUDIOFREQ parameter. Since AUDIOFREQ is 44100Hz and since we want the values displayed untill 20000 Hz, we define this constant 0.453514739, thas has been rounded to 0.453514740 because we will divide it by an integer (for example, if the value of 10000 is not reached, this will rounded to 9999) : this factor multiplied by AUDIOFREQ gives the analysed range ofr frequencies (e.g. : for AUDIOFREQ = 44100, AUDIOFREQ * 0.453514740 = 20000)*/
+
+#define AUDIOFREQFACTOR AUDIOFREQ * 0.453514740
 
 /* Get the type of view (3D, 3D flat or 2D) */
 void change_perspective(GtkWidget *widget, gpointer data)
@@ -39,7 +40,8 @@ void change_perspective(GtkWidget *widget, gpointer data)
 
 	while(list) {
 		if(gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(widget))) {
-			label = gtk_label_get_label(GTK_LABEL(GTK_BIN(widget)->child));
+			/// label = gtk_label_get_label(GTK_LABEL(GTK_BIN(widget)->child));
+			label = gtk_menu_item_get_label(GTK_MENU_ITEM(widget));
 			list = NULL;
 		}
 		else {
@@ -105,7 +107,7 @@ void front_view()
 /* Preset */
 void set_view_from_preset()
 {
-	X = spectrum3d.presetX ;
+	X = spectrum3d.presetX;
 	Y = spectrum3d.presetY;
 	Z = spectrum3d.presetZ;
 	AngleH = spectrum3d.presetAngleH;
@@ -116,6 +118,7 @@ void set_view_from_preset()
 	newEvent = TRUE;
 }
 
+/* Reset all spec_data; this is called via a callback; reset will be done if playing is 0 */
 gboolean memset_spec_data(gpointer *data){
 	//printf("resetting spec_data\n");
 	if (playing){
@@ -143,23 +146,22 @@ void on_stop()
 }
 
 /* Get the factor that multiplies the frequency range, to make it larger (= 'zoomFactor')*/
-void cb_range_changed(GtkWidget *combo, gpointer data)
+void cb_range_changed(GtkWidget *combo, Spectrum3dGui *spectrum3dGui)
 {
 	zoomFactor = (gtk_combo_box_get_active(GTK_COMBO_BOX(combo)) + 1);
-	change_adjust_start();
+	change_adjust_start(NULL, spectrum3dGui);
 	if ((bandsNumber * zoomFactor) > ((AUDIOFREQFACTOR) / hzStep)){
 		bandsNumber = ((AUDIOFREQFACTOR)/hzStep) / zoomFactor;
-		gtk_range_set_value(GTK_RANGE(pScaleBands), (gdouble)bandsNumber);
+		gtk_range_set_value(GTK_RANGE(spectrum3dGui->scaleBands), (gdouble)bandsNumber);
 		} 
 	newEvent = TRUE;
-	getTextDisplayLabel();
 }
 
-void change_start(GtkWidget *pWidget, gpointer data)
+void change_start(GtkRange *range, gpointer data)
 {
 	gfloat iValue;
-	iValue = gtk_range_get_value(GTK_RANGE(pWidget));
-	if ((int)iValue <= ((AUDIOFREQFACTOR) - (hzStep * bandsNumber *zoomFactor)) / 2){
+	iValue = gtk_range_get_value(range);
+	if ((int)iValue <= ((AUDIOFREQFACTOR) - ((hzStep * bandsNumber *zoomFactor)-1)) / 2){
 		zoom = (int)iValue;
 		}
 	else {
@@ -167,15 +169,15 @@ void change_start(GtkWidget *pWidget, gpointer data)
 		}
 	
 	newEvent = TRUE;
-	getTextDisplayLabel();
 }
 
-void change_adjust_start() 
+void change_adjust_start(GtkRange *range, Spectrum3dGui *spectrum3dGui) 
 {	
-	gtk_adjustment_set_upper(GTK_ADJUSTMENT(adjust_start), (gdouble)((AUDIOFREQFACTOR) - (hzStep * bandsNumber *zoomFactor)) / 2);
+	gtk_adjustment_set_upper(GTK_ADJUSTMENT(spectrum3dGui->adjustStart), (gdouble)((AUDIOFREQFACTOR) - (hzStep * bandsNumber *zoomFactor)) / 2);  
 	if (zoom >= (((AUDIOFREQFACTOR) - (hzStep * bandsNumber *zoomFactor)) / 2)){
-		gtk_adjustment_set_value (GTK_ADJUSTMENT(adjust_start), gtk_adjustment_get_upper (GTK_ADJUSTMENT(adjust_start)));
+		gtk_adjustment_set_value (GTK_ADJUSTMENT(spectrum3dGui->adjustStart), gtk_adjustment_get_upper (GTK_ADJUSTMENT(spectrum3dGui->adjustStart)));
 		}
+	newEvent = TRUE;
 }
 
 gchar* format_value_start (GtkScale *scale, gdouble value) 
@@ -183,66 +185,69 @@ gchar* format_value_start (GtkScale *scale, gdouble value)
 	return g_strdup_printf ("%d", (int)value * hzStep);
  }
 
-void change_bands(GtkWidget *pWidget, gpointer data)
+void change_bands(GtkRange *range, Spectrum3dGui *spectrum3dGui)
 {
 	gfloat iValue;
-	iValue = gtk_range_get_value(GTK_RANGE(pWidget));
+	iValue = gtk_range_get_value(range);
+	/* The display is done spect_band by spect_band, and spect_band is an integer; the frequency value displayed is calculated with the maximum frequency value that is divided by 10; so we have to calculate the modulo of the scale value divided by 5 (10/hzStep) to make the value displayed by the 'ajust range' scale and the value displayed on the graph to correspond */
+	int modulo = (int)iValue % 5;
+	gtk_range_set_value(range, iValue - modulo);
 	bandsNumber = (int)iValue;
-	change_adjust_start();
+	change_adjust_start(range, spectrum3dGui);
 	if ((zoomFactor * bandsNumber) > ((AUDIOFREQFACTOR)/hzStep)) {
+		//printf("(zoomFactor * bandsNumber) = %d, (AUDIOFREQFACTOR)/hzStep = %d\n", (zoomFactor * bandsNumber), (int)((AUDIOFREQFACTOR)/hzStep));
 		zoomFactor = ((AUDIOFREQFACTOR)/hzStep) / bandsNumber;
-		//printf("zoomFactor = %d\n", zoomFactor);
-		gtk_combo_box_set_active(GTK_COMBO_BOX(pComboRange), (zoomFactor - 1));
+		gtk_combo_box_set_active(GTK_COMBO_BOX(spectrum3dGui->cbRange), (zoomFactor - 1));
 		}
 
 	newEvent = TRUE;
-	getTextDisplayLabel();
 }
 
 gchar* format_value_bands (GtkScale *scale, gdouble value) 
 {
-	return g_strdup_printf ("%d", (int)value * hzStep);
+	//int result = ((int)value * hzStep) % 10;
+	return g_strdup_printf ("%d", ((int)value * hzStep));// - result);
  }
 
 /* Enable lines */
-void check_menu_lines(GtkWidget *widget, gpointer data)
+void check_menu_lines(GtkWidget *widget, Spectrum3dGui *spectrum3dGui)
 {
 	gboolean state;
 	state = gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(widget));
 	if (state) {
-		lineScale = 1;
+		spectrum3dGui->lineScale = 1;
 		}
 	else {
-		lineScale = 0;
+		spectrum3dGui->lineScale = 0;
 		}
 
 	newEvent = TRUE;
 }
 
 /* Enable text scale */
-void check_menu_text(GtkWidget *widget, gpointer data)
+void check_menu_text(GtkWidget *widget, Spectrum3dGui *spectrum3dGui)
 {
 	gboolean state;
 	state = gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(widget));
 	if (state) {
-		textScale = 1;
+		spectrum3dGui->textScale = 1;
 		}
 	else {
-		textScale = 0;
+		spectrum3dGui->textScale = 0;
 		}
 
 	newEvent = TRUE;
 }
 
-void check_menu_pointer(GtkWidget *widget, gpointer data)
+void check_menu_pointer(GtkWidget *widget, Spectrum3dGui *spectrum3dGui)
 {
 	gboolean state;
 	state = gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(widget));
 	if (state) {
-		pointer = 1;
+		spectrum3dGui->pointer = 1;
 		}
 	else {
-		pointer = 0;
+		spectrum3dGui->pointer = 0;
 		}
 
 	newEvent = TRUE;

@@ -17,12 +17,21 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <gst/gst.h>
 #include <gtk/gtk.h>
 #include <GL/gl.h>
 #include <GL/glu.h>
-#include <SDL/SDL.h>
 
 #include "config.h"
+
+#ifdef HAVE_LIBSDL
+    #include <SDL/SDL.h>
+#endif
+
+#if defined (GTKGLEXT3) || defined (GTKGLEXT1)
+    #include <gtk/gtkgl.h>
+#endif
+
 #include "spectrum3d.h"
 #include "main.h"
 
@@ -47,10 +56,10 @@ void setPlayButtonIcon (){
 }
 
 /* Display label with the first and last displayed frequency values, and the displayed frequency range*/
-void getTextDisplayLabel(){
+void getTextDisplayLabel(GtkWidget *widget, Spectrum3dGui *spectrum3dGui){
 	char textDisplayLabel[80];
 	int startDisplay = (int)gtk_range_get_value(GTK_RANGE(pScaleStart)) * hzStep;
-	int displayRange = (int)gtk_range_get_value(GTK_RANGE(pScaleBands)) * hzStep * zoomFactor;
+	int displayRange = (int)gtk_range_get_value(GTK_RANGE(spectrum3dGui->scaleBands)) * hzStep * zoomFactor;
 	sprintf(textDisplayLabel, "From %d to %d Hz\n Range = %d Hz", startDisplay, startDisplay + displayRange, displayRange);
 	gtk_label_set_text (GTK_LABEL(displayLabel), textDisplayLabel);
 }
@@ -73,28 +82,47 @@ int main(int argc, char *argv[])
 {
 	printf("%s \nPlease report any bug to %s\n", PACKAGE_STRING, PACKAGE_BUGREPORT);	
 	
-	typeSource = NONE; 
-	spectrum3d.interval_rt = 100;
-	analyse_rt = TRUE;
-					
-	get_saved_values();
-
 	gchar *filename;
 	int i = 0;
+	gint initialWindowHeight = 170;
 	guint timeoutEvent, intervalDisplaySpectro;
-	GtkWidget *pVBox[4], *pHBox[12], *menuBar, *menu, *submenu, *menuItem, *submenuItem, *button, *pButton[7], *pButtonSelect, *pComboZoom, *pComboSpeed, *pSpinSpeed, *frame, *pScaleGain, *separator, *image, *label, *widget, *da;
-	GtkToolItem *toolItem;
-	GtkObject *adjustment;
+	GtkWidget *pVBox[4], *pHBox[13], *menuBar, *menu, *submenu, *menuItem, *submenuItem, *button, *frame, *image, *label, *widget;
 	GdkColor color;
 	Spectrum3dGui spectrum3dGui;
 	GSList *radio_menu_group;
 
-	newEvent = TRUE; // set newEvent to TRUE allows to have a first empty scale at the beginning
-	intervalDisplaySpectro = (guint)spectrum3d.interval_display;
+#if defined (GTKGLEXT3) || defined (GTKGLEXT1)
+	GdkGLConfig *glconfig;
+#endif 
 	
 	gst_init (NULL, NULL);
 	gtk_init (&argc, &argv);
 
+	get_saved_values();
+	intervalDisplaySpectro = (guint)spectrum3d.interval_display;
+
+#if defined (GTKGLEXT3) || defined (GTKGLEXT1)
+	gtk_gl_init(NULL, NULL);
+	glconfig = gdk_gl_config_new_by_mode (GDK_GL_MODE_RGB    |
+					GDK_GL_MODE_DEPTH  |
+					GDK_GL_MODE_DOUBLE);
+	  if (glconfig == NULL)
+	    {
+	      g_print ("\n*** Cannot find the double-buffered visual.\n");
+	      g_print ("\n*** Trying single-buffered visual.\n");
+
+	      /* Try single-buffered visual */
+	      glconfig = gdk_gl_config_new_by_mode (GDK_GL_MODE_RGB   |
+						    GDK_GL_MODE_DEPTH);
+	      if (glconfig == NULL)
+		{
+		  g_print ("*** No appropriate OpenGL-capable visual found.\n");
+		  exit (1);
+		}
+	    }
+#endif
+
+#ifdef HAVE_LIBSDL 
 /* SDL */
 	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
 		fprintf(stderr, "Unable to init SDL: %s\n", SDL_GetError());
@@ -103,17 +131,20 @@ int main(int argc, char *argv[])
 	configure_SDL_gl_window (spectrum3d.width, spectrum3d.height);
 	SDL_WM_SetCaption(PACKAGE_NAME, NULL);
 	SDL_EnableKeyRepeat(10, 10);
-//////////
+#endif
 	
 	initGstreamer();
 	init_audio_values();
-	init_display_values();
+	init_display_values(&spectrum3dGui);
 	
 	mainWindow = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-	gtk_widget_set_size_request (mainWindow, 700, 170);
+	gtk_widget_set_size_request (mainWindow, 700, initialWindowHeight);
 	gtk_window_set_title(GTK_WINDOW(mainWindow), PACKAGE_NAME);
 	g_signal_connect (G_OBJECT (mainWindow), "destroy", G_CALLBACK (quit_spectrum3d), NULL);
 
+#ifdef GTK3
+	gtk_container_set_reallocate_redraws (GTK_CONTAINER (mainWindow), TRUE);
+#endif
 	for (i = 0; i < 4; i++) {
 		pVBox[i] = gtk_vbox_new(FALSE, 0);
 		}
@@ -121,6 +152,7 @@ int main(int argc, char *argv[])
 	for (i = 1; i < 12; i++) {
 		pHBox[i] = gtk_hbox_new(FALSE, 0);
 		}
+	pHBox[12] = gtk_hbox_new(TRUE, 0);
 	
 	gtk_container_add(GTK_CONTAINER(mainWindow), pVBox[1]); 
 	gtk_box_pack_start(GTK_BOX(pVBox[1]), pHBox[0], FALSE, FALSE, 0);
@@ -138,7 +170,7 @@ int main(int argc, char *argv[])
 
 	menu = gtk_menu_new(); // 'Edit' submenu
         menuItem = gtk_menu_item_new_with_label("Preferences");
-	g_signal_connect(G_OBJECT(menuItem), "activate", G_CALLBACK(onPreferences), NULL);
+	g_signal_connect(G_OBJECT(menuItem), "activate", G_CALLBACK(onPreferences), &spectrum3dGui);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuItem);
 	menuItem = gtk_menu_item_new_with_label("Edit");
 	gtk_menu_item_set_submenu(GTK_MENU_ITEM(menuItem), menu);
@@ -186,16 +218,16 @@ int main(int argc, char *argv[])
 	
 			spectrum3dGui.checkMenuText = gtk_check_menu_item_new_with_label("Text (T)");
 			gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(spectrum3dGui.checkMenuText), TRUE);
-			g_signal_connect(G_OBJECT(spectrum3dGui.checkMenuText), "activate", G_CALLBACK(check_menu_text), NULL);
+			g_signal_connect(G_OBJECT(spectrum3dGui.checkMenuText), "activate", G_CALLBACK(check_menu_text), &spectrum3dGui);
 			gtk_menu_shell_append(GTK_MENU_SHELL(submenu), spectrum3dGui.checkMenuText);
 	
 			spectrum3dGui.checkMenuLines = gtk_check_menu_item_new_with_label("Lines (L)");
 			gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(spectrum3dGui.checkMenuLines), TRUE);
-			g_signal_connect(G_OBJECT(spectrum3dGui.checkMenuLines), "activate", G_CALLBACK(check_menu_lines), NULL);
+			g_signal_connect(G_OBJECT(spectrum3dGui.checkMenuLines), "activate", G_CALLBACK(check_menu_lines), &spectrum3dGui);
 			gtk_menu_shell_append(GTK_MENU_SHELL(submenu), spectrum3dGui.checkMenuLines);
 
 			spectrum3dGui.checkMenuPointer = gtk_check_menu_item_new_with_label("Pointer (P)");
-			g_signal_connect(G_OBJECT(spectrum3dGui.checkMenuPointer), "activate", G_CALLBACK(check_menu_pointer), NULL);
+			g_signal_connect(G_OBJECT(spectrum3dGui.checkMenuPointer), "activate", G_CALLBACK(check_menu_pointer), &spectrum3dGui);
 			gtk_menu_shell_append(GTK_MENU_SHELL(submenu), spectrum3dGui.checkMenuPointer);
 
 	submenu = gtk_menu_new();// 'Change/reset view' sub-submenu
@@ -254,6 +286,7 @@ int main(int argc, char *argv[])
 	filename = g_build_filename (G_DIR_SEPARATOR_S, DATADIR, "icons", "microphone.png", NULL);
 	image = gtk_image_new_from_file(filename);
 	spectrum3dGui.mic = gtk_button_new();
+	gtk_button_set_relief (GTK_BUTTON(spectrum3dGui.mic), GTK_RELIEF_NONE);
 	gtk_button_set_image (GTK_BUTTON(spectrum3dGui.mic), image);
 	gtk_widget_set_name(spectrum3dGui.mic, "mic");
 	gtk_widget_set_tooltip_text (spectrum3dGui.mic, "Source is microphone; select this to record something and then load it");
@@ -261,6 +294,7 @@ int main(int argc, char *argv[])
 	g_signal_connect(G_OBJECT(spectrum3dGui.mic), "clicked", G_CALLBACK(change_source_button), &spectrum3dGui);
 
 	spectrum3dGui.file = gtk_button_new();
+	gtk_button_set_relief (GTK_BUTTON(spectrum3dGui.file), GTK_RELIEF_NONE);
 	image = gtk_image_new_from_stock (GTK_STOCK_OPEN, GTK_ICON_SIZE_LARGE_TOOLBAR);
 	gtk_button_set_image(GTK_BUTTON(spectrum3dGui.file),image);
 	gtk_widget_set_name(spectrum3dGui.file, "file");
@@ -354,30 +388,58 @@ int main(int argc, char *argv[])
 	timeLabel=gtk_label_new("           0:00 / 0:00           ");
 	gtk_box_pack_start(GTK_BOX(pHBox[5]), timeLabel, FALSE, FALSE, 0);
 
+#if defined (GTKGLEXT3) || defined (GTKGLEXT1)
+
+	/* Resize mainWindow to contain drawing_area; using gtk_window_set_defaut() allows to shrink the window (gtk_widget_set_size_request() does not allow to shrink the window below the requested size); */
+	gtk_window_set_default_size (GTK_WINDOW(mainWindow), (gint)spectrum3d.width, initialWindowHeight + (gint)spectrum3d.height);
+
+	/* Drawing area for the display */
+	spectrum3dGui.drawing_area = gtk_drawing_area_new ();
+  
+  	/* Set OpenGL-capability to the widget */
+  	gtk_widget_set_gl_capability (spectrum3dGui.drawing_area,
+				glconfig,
+				NULL,
+				TRUE,
+				GDK_GL_RGBA_TYPE);
+	gtk_widget_set_events (spectrum3dGui.drawing_area, GDK_KEY_PRESS_MASK | GDK_KEY_RELEASE_MASK | GDK_BUTTON_PRESS_MASK | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK);
+
+	gtk_box_pack_start (GTK_BOX (pVBox[1]), spectrum3dGui.drawing_area, TRUE, TRUE, 0);
+
+	g_signal_connect (G_OBJECT (spectrum3dGui.drawing_area), "configure_event", G_CALLBACK (configure_event), NULL);
+	g_signal_connect (mainWindow, "key-press-event", G_CALLBACK (on_key_press), &spectrum3dGui);
+	g_signal_connect (mainWindow, "key-release-event", G_CALLBACK (on_key_release), &spectrum3dGui);
+	g_signal_connect (spectrum3dGui.drawing_area, "motion-notify-event", G_CALLBACK (on_mouse_motion), NULL);
+	g_signal_connect (spectrum3dGui.drawing_area, "scroll-event", G_CALLBACK (on_mouse_scroll), NULL);
+	spectrum3d.timeoutExpose = g_timeout_add (intervalDisplaySpectro, (GSourceFunc)display_spectro, &spectrum3dGui);
+#endif
+
 /* Starting value of the display */
 	frame = gtk_frame_new("Start value of display (in Hz)");
 	gtk_widget_set_tooltip_text (frame, "The lower displayed frequency (in herz)");
-	adjust_start = gtk_adjustment_new(0, 0, 5000, ((gdouble)hzStep * (gdouble)zoomFactor), (((gdouble)hzStep * (gdouble)zoomFactor) * 10), 0);
-	pScaleStart = gtk_hscale_new(GTK_ADJUSTMENT(adjust_start));
+	spectrum3dGui.adjustStart = gtk_adjustment_new(0, 0, 9000, ((gdouble)hzStep * (gdouble)zoomFactor), (((gdouble)hzStep * (gdouble)zoomFactor) * 10), 0);
+	pScaleStart = gtk_hscale_new(GTK_ADJUSTMENT(spectrum3dGui.adjustStart));
 	gtk_scale_set_digits (GTK_SCALE(pScaleStart), 0);
 	gtk_scale_set_value_pos(GTK_SCALE(pScaleStart), GTK_POS_RIGHT);
 	gtk_box_pack_start(GTK_BOX(pVBox[1]), pHBox[11], FALSE, FALSE, 0);
 	gtk_box_pack_start(GTK_BOX(pHBox[11]), frame, FALSE, FALSE, 0);
 	gtk_container_add(GTK_CONTAINER(frame), pScaleStart);
-	g_signal_connect(G_OBJECT(pScaleStart), "value-changed", G_CALLBACK(change_start), NULL);
+	g_signal_connect(G_OBJECT(pScaleStart), "value-changed", G_CALLBACK(change_start), &spectrum3dGui);
 	g_signal_connect(G_OBJECT(pScaleStart), "format-value", G_CALLBACK(format_value_start), NULL);
+	g_signal_connect(G_OBJECT(pScaleStart), "value-changed", G_CALLBACK(getTextDisplayLabel), &spectrum3dGui);
 
 /* Range of display */
 	frame = gtk_frame_new("Range of display (in Hz)");
 	gtk_widget_set_tooltip_text (frame, "The range of the displayed frequency (in herz)");
-	adjust_bands = gtk_adjustment_new(1000, 20, 1000, 20, 50, 0);
-	pScaleBands = gtk_hscale_new(GTK_ADJUSTMENT(adjust_bands));
-	gtk_scale_set_digits (GTK_SCALE(pScaleBands), 0);
-	gtk_scale_set_value_pos(GTK_SCALE(pScaleBands), GTK_POS_RIGHT);
-	gtk_container_add(GTK_CONTAINER(frame), pScaleBands);
+	spectrum3dGui.adjustBands = gtk_adjustment_new(1000, 20, 1000, 10, 50, 0);
+	spectrum3dGui.scaleBands = gtk_hscale_new(GTK_ADJUSTMENT(spectrum3dGui.adjustBands));
+	gtk_scale_set_digits (GTK_SCALE(spectrum3dGui.scaleBands), 0);
+	gtk_scale_set_value_pos(GTK_SCALE(spectrum3dGui.scaleBands), GTK_POS_RIGHT);
+	gtk_container_add(GTK_CONTAINER(frame), spectrum3dGui.scaleBands);
 	gtk_box_pack_start(GTK_BOX(pHBox[11]), frame, FALSE, FALSE, 0);
-	g_signal_connect(G_OBJECT(pScaleBands), "value-changed", G_CALLBACK(change_bands), NULL);
-	g_signal_connect(G_OBJECT(pScaleBands), "format-value", G_CALLBACK(format_value_bands), NULL);
+	g_signal_connect(G_OBJECT(spectrum3dGui.scaleBands), "value-changed", G_CALLBACK(change_bands), &spectrum3dGui);
+	g_signal_connect(G_OBJECT(spectrum3dGui.scaleBands), "format-value", G_CALLBACK(format_value_bands), NULL);
+	g_signal_connect(G_OBJECT(spectrum3dGui.scaleBands), "value-changed", G_CALLBACK(getTextDisplayLabel), &spectrum3dGui);
 	
 /* "x" label */
 	label=gtk_label_new("x");
@@ -386,23 +448,24 @@ int main(int argc, char *argv[])
 /* Factor that multiplies the range of display */
 	frame = gtk_frame_new("");
 	gtk_widget_set_tooltip_text (frame, "Factor that multiplies the frequency range, to make it larger");
-	pComboRange = gtk_combo_box_new_text();
-	gtk_container_add(GTK_CONTAINER(frame), pComboRange);
+	spectrum3dGui.cbRange = gtk_combo_box_text_new();
+	gtk_container_add(GTK_CONTAINER(frame), spectrum3dGui.cbRange);
 	gtk_box_pack_start(GTK_BOX(pHBox[11]), frame, FALSE, FALSE, 0);
 	for (i = 1; i <= 20; i++){
 		gchar text[4];
 		sprintf(text, "%d", i);
-		gtk_combo_box_append_text(GTK_COMBO_BOX(pComboRange), text);
+		gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(spectrum3dGui.cbRange), text);
 		}
-	gtk_combo_box_set_active(GTK_COMBO_BOX(pComboRange), 0);
-	g_signal_connect( G_OBJECT(pComboRange), "changed", G_CALLBACK( cb_range_changed ), NULL );
+	gtk_combo_box_set_active(GTK_COMBO_BOX(spectrum3dGui.cbRange), 0);
+	g_signal_connect( G_OBJECT(spectrum3dGui.cbRange), "changed", G_CALLBACK( cb_range_changed ), &spectrum3dGui );
+	g_signal_connect( G_OBJECT(spectrum3dGui.cbRange), "changed", G_CALLBACK(getTextDisplayLabel), &spectrum3dGui );
 	
 /* Label that shows starting value, ending value and range of display */
 	frame = gtk_frame_new("Values displayed");
 	gtk_widget_set_tooltip_text (frame, "The lower and the highest displayed value (in herz), and their range");
-	displayLabel=gtk_label_new("");
+	displayLabel=gtk_label_new(""); 
 	gtk_container_add(GTK_CONTAINER(frame), displayLabel);
-	getTextDisplayLabel();
+	getTextDisplayLabel(NULL, &spectrum3dGui);
 	gtk_box_pack_start(GTK_BOX(pHBox[11]), frame, FALSE, FALSE, 0);
 
 /* 'Gain' Gtk Scale */
@@ -428,8 +491,11 @@ int main(int argc, char *argv[])
 #endif
 
 	gtk_widget_show_all (mainWindow);
+#ifdef HAVE_LIBSDL
 	timeoutEvent = g_timeout_add (100, (GSourceFunc)sdl_event, &spectrum3dGui);
-	spectrum3d.timeoutExpose = g_timeout_add (intervalDisplaySpectro, (GSourceFunc)display_spectro, NULL);
+	spectrum3d.timeoutExpose = g_timeout_add (intervalDisplaySpectro, (GSourceFunc)display_spectro, &spectrum3dGui);
+#endif
+	printf("Showing Gtk GUI\n");
 	gtk_main ();
 
 /* Quit everything */
@@ -439,10 +505,12 @@ int main(int argc, char *argv[])
 #endif
 	on_stop();
 	g_source_remove(spectrum3d.timeoutExpose);
+#ifdef HAVE_LIBSDL
 	g_source_remove(timeoutEvent);
 	SDL_Quit();
+#endif
 
-	print_rc_file("var");
+	print_rc_file();
 
 	printf("Quit everything\nGood Bye!\n");
 	

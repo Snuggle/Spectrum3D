@@ -1,0 +1,37 @@
+
+SPECTRUM3D : GTKGLEXT SUPPORT
+
+GTKGLEXT1, used with GTK2, has been released since years and is in the repositories of the main Linux distributions. GTKGLEXT3, necessary for usage with GTK3, is in development.
+
+INSTALLATION of GTKGLEXT development version
+
+The developpment version can be found on GtkGlExt web site and should be downloaded via git.
+GtkGLExt's GNOME Git repository can be checked out anonymously:
+
+	$ git clone git://git.gnome.org/gtkglext
+
+Since it is a developpment version, it should be installed this way :
+
+1) install dependencies : 
+	- 'libgtk-3.0-dev';
+	- gtk documentation package : in Ubuntu, the 'libgtk-3-doc' package is not enough : you have to install the 'gtk-doc-tools' package; 
+
+2) go to the directory where the source of gtkglext are :
+	
+	$ cd ~/gtkglext-<version>
+
+3) since we are working on the Git version, we can use bootstrap for generating configure script and Makefiles.
+
+	$ env ACLOCAL_FLAGS='-I /pkgconfig/share/aclocal -I /gtk/share/aclocal' ./bootstrap --prefix=${HOME}/gtkglext --enable-debug=yes
+
+Do not use 'autogen.sh' as it is recommended in the README since this has been changed and the README has not been updated.
+
+4) then type :
+
+	$ ./configure
+	$ make
+	$ make install 
+
+GtkGlExt-3.0 should then be installed in /usr/local/include.
+
+

@@ -33,6 +33,9 @@ enum ViewType
 };
 ViewType viewType;
 
+void on_stop();
+void playFromSource(GtkWidget *widget, gpointer *data);
+gboolean configure_SDL_gl_window (int width, int height);
 void quit_spectrum3d();
 
 #endif

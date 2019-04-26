@@ -22,7 +22,6 @@ at http://cgit.freedesktop.org/gstreamer/gstreamer/tree/tests/examples/streams
 #include <gst/gst.h>
 
 const gchar policyName[20];
-int priority;
 
 G_BEGIN_DECLS
 

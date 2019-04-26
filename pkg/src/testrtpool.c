@@ -21,8 +21,12 @@ at http://cgit.freedesktop.org/gstreamer/gstreamer/tree/tests/examples/streams
 
 #include <pthread.h>
 #include <string.h>
+#include <gtk/gtk.h>
+#include <GL/gl.h>
+#include <GL/glu.h>
 
 #include "testrtpool.h"
+#include "spectrum3d.h"
 
 static void test_rt_pool_finalize (GObject * object);
 
@@ -72,7 +76,7 @@ default_push (GstTaskPool * pool, GstTaskPoolFunction func, gpointer data,
 	}
 
   //g_message ("set prio");
-  param.sched_priority = priority;
+  param.sched_priority = spectrum3d.priority;
   if ((res = pthread_attr_setschedparam (&attr, &param)) != 0)
     g_warning ("setschedparam: failure: %p", g_strerror (res));
 
@@ -84,7 +88,7 @@ default_push (GstTaskPool * pool, GstTaskPoolFunction func, gpointer data,
   res = pthread_create (&tid->thread, &attr, (void *(*)(void *)) func, data);
 	
   if (res == 0) {
-	printf("REALTIME mode (%s, p = %d)\n", policyName, priority);
+	printf("REALTIME mode (%s, p = %d)\n", policyName, spectrum3d.priority);
 	}
   else if (res != 0) {
     g_set_error (error, G_THREAD_ERROR, G_THREAD_ERROR_AGAIN,

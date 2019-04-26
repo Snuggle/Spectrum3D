@@ -5,8 +5,7 @@
 gboolean analyse_rt, jack, newEvent;
 int playing, pose, zoomFactor, hzStep;
 static GtkWidget *mainWindow;
-GtkWidget *pScaleBands, *pComboRange, *timeLabel, *scaleSeek;
-GtkObject *adjust_bands, *adjust_start;
+GtkWidget *timeLabel, *scaleSeek;
 
 typedef enum TypeSource TypeSource;
 enum TypeSource
@@ -24,6 +23,7 @@ enum ColorType
 };
 ColorType colorType;
 
+void onPreferences(GtkWidget* widget, gpointer data);
 void test_sound_window(GtkWidget *widget, gpointer *data);
 void change_perspective(GtkWidget *widget, gpointer data);
 void check_menu_text(GtkWidget *widget, gpointer data);
@@ -37,45 +37,40 @@ void onAbout(GtkWidget* widget, gpointer data);
 void onShortcuts (GtkWidget* widget, gpointer data);
 void onGesturesShortcuts (GtkWidget* widget, gpointer data);
 
-void get_saved_values();
-			
+void get_saved_values();		
 void initGstreamer();
+void init_audio_values();
 void init_display_values();
-void sdl_event();
-void getFileName();
+void setupGeis();
+void geisQuit();
+void print_rc_file();
+
+void change_source_button (GtkWidget *widget, Spectrum3dGui *spectrum3dGui);
 void load_audio_file();
+void set_analyse_in_rt(GtkWidget *check, gpointer data);
+void playFromSource(gchar *message);
 void on_stop();
 void record_window();
-void set_source_to_none();
-void change_source_button (GtkWidget *widget, Spectrum3dGui *spectrum3dGui);
-void set_analyse_in_rt(GtkWidget *check, gpointer data);
 void use_jack(GtkWidget *check, gpointer data);
-void playFromSource(gchar *message);
-void playTestSound(GtkWidget *pWidget, gpointer data);
-void change_freq_test_sound(GtkWidget *widget, gpointer data);
-void change_volume_test_sound(GtkWidget *pWidget, gpointer data);
-void cb_zoom_changed(GtkComboBox *combo, gpointer data);
-void cb_speed_changed(GtkComboBox *combo, gpointer data);
+void effects_window();
+void on_seek (GtkRange *range, gchar *data);
 void cb_range_changed(GtkWidget *combo, gpointer data);
-void cb_scale_changed(GtkComboBox *combo, gpointer data);
 void change_adjust(GtkWidget *pWidget, gpointer data);
 void change_bands(GtkWidget *pWidget, gpointer data);
 void change_start(GtkWidget *pWidget, gpointer data);
 gchar* format_value_start (GtkScale *scale, gdouble value);
 gchar* format_value_bands (GtkScale *scale, gdouble value);
 gboolean change_gain(GtkRange *range, GtkScrollType scroll, gdouble value, gpointer user_data);
-void effects_window();
-void onPreferences(GtkWidget* widget, gpointer data);
-void saveChange(GtkWidget* widget, gpointer data);
-void errorMessageWindow(char *message);
+gboolean display_spectro(GtkWidget *drawing_area);
 
-gboolean configure (GtkWidget *da, GdkEventConfigure *event, gpointer user_data);
-gboolean display_spectro(GtkWidget *da);
-gboolean on_key_press (GtkWidget * window, GdkEventKey*	pKey, gpointer userdata);
+gboolean configure_SDL_gl_window (int width, int height);
+void sdl_event();
+
+gboolean configure_event (GtkWidget *widget, GdkEventConfigure *event, gpointer data);
+gboolean on_key_press (GtkWidget * window, GdkEventKey *event, gpointer userdata);
+gboolean on_key_release (GtkWidget * window, GdkEventKey *event, gpointer userdata);
 gboolean on_mouse_motion (GtkWidget * window, GdkEventMotion *event, gpointer userdata);
 gboolean on_mouse_scroll (GtkWidget * window, GdkEventScroll *event, gpointer userdata);
-
-void on_seek (GtkRange *range, gchar *data);
 
 #endif
 

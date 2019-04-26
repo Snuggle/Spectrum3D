@@ -220,8 +220,13 @@ void effects_window()
 {
 if (showEqualizerWindow == FALSE){ // show window if window is hidden
 	int i = 0;
-	GtkWidget *vbox[4], *hbox[11], *button, *checkBandPass, *frame, *spinFilterRipple, *spinFilterPoles;
+	GtkWidget *vbox[4], *hbox[11], *button, *checkBandPass, *frame;
+
+#ifdef GTK3
+	GtkAdjustment *adjustment;
+#elif GTK2
 	GtkObject *adjustment;
+#endif
 			
 	effectsWindow = gtk_window_new (GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_title(GTK_WINDOW(effectsWindow), "Spectrum3d : BP/BR filter and equalizer");
@@ -236,13 +241,14 @@ if (showEqualizerWindow == FALSE){ // show window if window is hidden
 
 /* Combo box to choose the type of filter : band-pass (BP) or band-reject (BR) */
 	frame = gtk_frame_new("Type of filter");
-	comboFilter = gtk_combo_box_new_text();
+	///////// gtk_combo_box_new_text() before
+	comboFilter = gtk_combo_box_text_new();
 	gtk_container_add(GTK_CONTAINER(frame), comboFilter);
 	gtk_box_pack_start(GTK_BOX(hbox[0]), frame, FALSE, FALSE, 0);
-	gtk_combo_box_append_text(GTK_COMBO_BOX(comboFilter), "BAND PASS");
-	gtk_combo_box_append_text(GTK_COMBO_BOX(comboFilter), "BAND REJECT");
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(comboFilter), "BAND PASS");
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(comboFilter), "BAND REJECT");
 	gtk_combo_box_set_active(GTK_COMBO_BOX(comboFilter), 0);
-	g_signal_connect( G_OBJECT(comboFilter), "changed", G_CALLBACK( cb_filter_type_changed ), NULL );
+	g_signal_connect( G_OBJECT(comboFilter), "changed", G_CALLBACK( cb_filter_type_changed ), NULL ); 
 
 /* Check button to activate the BP/BR filter */
 	checkBandPass = gtk_check_button_new_with_label("Activate Band\n Pass Filter");
@@ -251,7 +257,11 @@ if (showEqualizerWindow == FALSE){ // show window if window is hidden
 
 /* Spon buttons to set lower and upper values of the BP/BR filter  */
 	frame = gtk_frame_new("Lower value of BP filter (hz)");
+#ifdef GTK3
+	adjustment = GTK_ADJUSTMENT(gtk_adjustment_new(200, 0, 40000, 1, 100, 0));
+#elif GTK2
 	adjustment = gtk_adjustment_new(200, 0, 40000, 1, 100, 0);
+#endif
 	spinBPlowerValue = gtk_spin_button_new(GTK_ADJUSTMENT(adjustment), 1, 0);
 	gtk_container_add(GTK_CONTAINER(frame), spinBPlowerValue);
 	gtk_box_pack_start(GTK_BOX(hbox[0]), frame, TRUE, TRUE, 0);
@@ -259,7 +269,11 @@ if (showEqualizerWindow == FALSE){ // show window if window is hidden
 NULL);
 
 	frame = gtk_frame_new("Upper value of BP filter (hz)");
+#ifdef GTK3
+	adjustment = GTK_ADJUSTMENT(gtk_adjustment_new(400, 0, 40000, 1, 100, 0));
+#elif GTK2
 	adjustment = gtk_adjustment_new(400, 0, 40000, 1, 100, 0);
+#endif
 	spinBPupperValue = gtk_spin_button_new(GTK_ADJUSTMENT(adjustment), 1, 0);
 	gtk_container_add(GTK_CONTAINER(frame), spinBPupperValue);
 	gtk_box_pack_start(GTK_BOX(hbox[0]), frame, TRUE, TRUE, 0);

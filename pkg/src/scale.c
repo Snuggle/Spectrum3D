@@ -56,7 +56,7 @@ void drawScale() {
 	}
 
 	else{	
-		GLfloat i = 0, alpha = 0;
+		GLfloat i = 0;
 		if (spectrum3d.frames == 1){
 			glRotatef(90, 1, 0, 0);
 			}
@@ -88,7 +88,6 @@ void RenderText() {
 	int i = 0;
 	cairo_surface_t *surface;
         cairo_t *cr;
-	GLuint textureId;
 	const unsigned char* surfaceData;
 
 	if (viewType == TWO_D){
@@ -190,10 +189,8 @@ void drawPointer(){
 }
 
 void drawPointerText(){
-	int i = 0;
 	cairo_surface_t *surface;
         cairo_t *cr;
-	GLuint textureId;
 	const unsigned char* surfaceData;
 
 	if (viewType == TWO_D){

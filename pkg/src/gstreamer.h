@@ -17,7 +17,7 @@
 #ifndef DEF_GSTREAMER
 #define DEF_GSTREAMER
 
-gboolean showEqualizerWindow, realtime, analyse_rt, jack, loading, recording;
+gboolean showEqualizerWindow, analyse_rt, jack, loading, recording;
 gchar *selected_file, *tmpPath;
 gint64 pos, len;
 int AUDIOFREQ, pose, spect_bands, playing, hzStep, frame_number_counter, bandsNumber; 
@@ -43,6 +43,7 @@ Source source;
 
 GstElement *pipeline, *equalizer, *equalizer2, *equalizer3, *BP_BRfilter, *playbin;
 
+void show_position(gchar *positionLabel);
 void setPlayButtonIcon ();
 void error_message_window(gchar *message);
 void getBand();

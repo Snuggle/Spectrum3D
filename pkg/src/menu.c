@@ -26,12 +26,12 @@
 #include "menu.h"
 
 /* Preferences window */
-void onPreferences(GtkWidget* widget, gpointer data)
+void onPreferences(GtkWidget* widget, Spectrum3dGui *spectrum3dGui)
 {
 	gboolean bState;
 	int i = 0;
 	gchar *sTabLabel[3];
-	GtkWidget *pPreferences, *pNotebook, *pTabLabel, *label, *spinFrames, *spinZStep, *spinDisplayInterval, *spinSpectrumInterval, *comboColor, *pCheckRealtime, *pComboPolicy, *pSpinPriority, *pCheckPreset, *pCheckEnableTouch, *pFrame;
+	GtkWidget *pPreferences, *pNotebook, *pTabLabel, *label, *spinFrames, *spinZStep, *spinDisplayInterval, *spinSpectrumInterval, *comboColor, *pCheckRealtime, *pComboPolicy, *pSpinPriority, *pCheckPreset, *pCheckEnableTouch, *pFrame, *content_area;
 	GtkWidget *pVBox[3];
 	for (i = 0; i < 3; i++) {
 		pVBox[i] = gtk_vbox_new(FALSE, 4);
@@ -50,7 +50,7 @@ void onPreferences(GtkWidget* widget, gpointer data)
 	gtk_window_set_default_size(GTK_WINDOW(pPreferences), 300, 300);
 
 	pNotebook = gtk_notebook_new();
-	gtk_box_pack_start(GTK_BOX(GTK_DIALOG(pPreferences)->vbox), pNotebook, TRUE, TRUE, 0);
+
 	gtk_notebook_set_tab_pos(GTK_NOTEBOOK(pNotebook), GTK_POS_TOP);
         gtk_notebook_set_scrollable(GTK_NOTEBOOK(pNotebook), TRUE);
 
@@ -89,21 +89,20 @@ void onPreferences(GtkWidget* widget, gpointer data)
 	gtk_widget_set_tooltip_text (pFrame, "Set the interval of time (in milliseconds) between each spectrum display; the lower this value is, the lower cpu is used");
 	gtk_container_add(GTK_CONTAINER(pFrame), spinDisplayInterval);
 	gtk_box_pack_start(GTK_BOX(pVBox[0]), pFrame, TRUE, TRUE, 0);
-	//gtk_box_pack_start(GTK_BOX(pVBox[0]), pHBox[1], FALSE, FALSE, 0);
 
 	label = gtk_label_new("WARNING : the lower the value, the more cpu is used; \n ideally, this value should match the 'Interval \nbetween each spectrum analysis (msec)' value");	
 	gtk_box_pack_start(GTK_BOX(pVBox[0]), label, FALSE, FALSE, 0);
 
 	/* Combo box to change the color of the display */
 	pFrame = gtk_frame_new("Color of Display");
-	comboColor = gtk_combo_box_new_text();
+	comboColor = gtk_combo_box_text_new();
 	gtk_container_add(GTK_CONTAINER(pFrame), comboColor);
 	gtk_widget_set_tooltip_text (pFrame, "Set the color of display in 'analyse in real-time' mode");
 	gtk_box_pack_start(GTK_BOX(pHBox[3]), pFrame, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(pVBox[0]), pHBox[3], FALSE, FALSE, 20);
-	gtk_combo_box_append_text(GTK_COMBO_BOX(comboColor), "PURPLE");
-	gtk_combo_box_append_text(GTK_COMBO_BOX(comboColor), "RED");
-	gtk_combo_box_append_text(GTK_COMBO_BOX(comboColor), "RAINBOW");
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(comboColor), "PURPLE");
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(comboColor), "RED");
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(comboColor), "RAINBOW");
 	gtk_combo_box_set_active(GTK_COMBO_BOX(comboColor), 0);
 
 	/* Check button to save the current position as 'Preset' */
@@ -135,17 +134,17 @@ void onPreferences(GtkWidget* widget, gpointer data)
 	pCheckRealtime = gtk_check_button_new_with_label("Enable realtime \n(without Jack)");
 	gtk_box_pack_start(GTK_BOX(pHBox[15]), pCheckRealtime, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(pVBox[1]), pHBox[15], TRUE, FALSE, 0);
-	if (realtime) {
+	if (spectrum3d.realtime) {
 		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(pCheckRealtime), TRUE);
 		}
 
 	pFrame = gtk_frame_new("Realtime Policy");
-	pComboPolicy = gtk_combo_box_new_text();
+	pComboPolicy = gtk_combo_box_text_new();
 	gtk_container_add(GTK_CONTAINER(pFrame), pComboPolicy);
 	gtk_widget_set_tooltip_text (pFrame, "Set the policy of realtime mode (when Jack is not used)");
 	gtk_box_pack_start(GTK_BOX(pHBox[15]), pFrame, TRUE, TRUE, 0);
-	gtk_combo_box_append_text(GTK_COMBO_BOX(pComboPolicy), "SCHED_RR");
-	gtk_combo_box_append_text(GTK_COMBO_BOX(pComboPolicy), "SCHED_FIFO");
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(pComboPolicy), "SCHED_RR");
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(pComboPolicy), "SCHED_FIFO");
 	if (strstr(policyName, "FIFO")){
 		gtk_combo_box_set_active(GTK_COMBO_BOX(pComboPolicy), 1);
 		}
@@ -158,7 +157,7 @@ void onPreferences(GtkWidget* widget, gpointer data)
 	gtk_widget_set_tooltip_text (pFrame, "Set the priority if realtime mode is used(whithout Jack)");
 	gtk_container_add(GTK_CONTAINER(pFrame), pSpinPriority);
 	gtk_box_pack_start(GTK_BOX(pHBox[15]), pFrame, FALSE, FALSE, 0);
-	gtk_spin_button_set_value (GTK_SPIN_BUTTON(pSpinPriority), priority);
+	gtk_spin_button_set_value (GTK_SPIN_BUTTON(pSpinPriority), spectrum3d.priority);
 
 #ifdef HAVE_LIBUTOUCH_GEIS
 ///////////////////////// 3d Notebook : "Touch" //////////////////////
@@ -173,20 +172,29 @@ void onPreferences(GtkWidget* widget, gpointer data)
 	gtk_box_pack_start(GTK_BOX(pHBox[21]), pCheckEnableTouch, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(pVBox[2]), pHBox[21], TRUE, FALSE, 0);
 	//realtime = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(pCheckRealtime));
-	if (enableTouch) {
+	if (spectrum3d.enableTouch) {
 		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(pCheckEnableTouch), TRUE);
 		}
 #endif
 
 //////////////////////// End of the Notebooks //////////////////////////
 
+#ifdef GTK3
+	content_area = gtk_dialog_get_content_area (GTK_DIALOG (pPreferences));
+	gtk_container_add (GTK_CONTAINER (content_area), pNotebook);
+	gtk_widget_show_all(pPreferences); 
+#elif defined GTK2
+	gtk_box_pack_start(GTK_BOX(GTK_DIALOG(pPreferences)->vbox), pNotebook, TRUE, TRUE, 0);
 	gtk_widget_show_all(GTK_DIALOG(pPreferences)->vbox);
+#endif
+	
 	
     	switch (gtk_dialog_run(GTK_DIALOG(pPreferences)))
 		{
 		case GTK_RESPONSE_OK:
 			// get new spectrum3d.zStep & spectrum3d.frames values and reinitialise z with those new values
-			spectrum3d.zStep = gtk_spin_button_get_value_as_float(GTK_SPIN_BUTTON(spinZStep));
+			/// spectrum3d.zStep = gtk_spin_button_get_value_as_float(GTK_SPIN_BUTTON(spinZStep)); GTK3
+			spectrum3d.zStep = gtk_spin_button_get_value(GTK_SPIN_BUTTON(spinZStep));
 			spectrum3d.frames = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(spinFrames));	
 			spectrum3d.previousFrames = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(spinFrames));
 			z = (float)spectrum3d.frames * spectrum3d.zStep;
@@ -194,7 +202,7 @@ void onPreferences(GtkWidget* widget, gpointer data)
 			spectrum3d.interval_display = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(spinDisplayInterval));	
 			guint intervalDisplaySpectro = (guint)spectrum3d.interval_display; // since the time interval is a guint, spectrum3d.interval_rt has to be casted; 
 			g_source_remove(spectrum3d.timeoutExpose);
-			spectrum3d.timeoutExpose = g_timeout_add (intervalDisplaySpectro, (GSourceFunc)display_spectro, NULL);
+			spectrum3d.timeoutExpose = g_timeout_add (intervalDisplaySpectro, (GSourceFunc)display_spectro, spectrum3dGui);
 			// get other values
 			colorType = gtk_combo_box_get_active(GTK_COMBO_BOX(comboColor));
 				 // ColorType enum is detailed in menu.h
@@ -207,12 +215,13 @@ void onPreferences(GtkWidget* widget, gpointer data)
 					spectrum3d.presetAngleV = AngleV;
 					spectrum3d.presetAngleZ = AngleZ;
 				}
-			spectrum3d.interval_rt = gtk_spin_button_get_value_as_float(GTK_SPIN_BUTTON(spinSpectrumInterval));	
-			realtime = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(pCheckRealtime));
-			gchar *string = gtk_combo_box_get_active_text(GTK_COMBO_BOX(pComboPolicy));
+			spectrum3d.interval_rt = gtk_spin_button_get_value(GTK_SPIN_BUTTON(spinSpectrumInterval));
+			spectrum3d.realtime = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(pCheckRealtime));
+			gchar *string = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(pComboPolicy));
 			sprintf(policyName, "%s", string);
-			priority = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(pSpinPriority));
-			enableTouch = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(pCheckEnableTouch));
+			spectrum3d.priority = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(pSpinPriority));
+			spectrum3d.enableTouch = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(pCheckEnableTouch));
+			newEvent = TRUE;
 		break;
 		case GTK_RESPONSE_CANCEL:
 		case GTK_RESPONSE_NONE:
@@ -230,15 +239,18 @@ void test_sound_window_destroy(GtkDialog *dialog, gint response_id, gpointer use
 }
 
 void test_sound_window(GtkWidget *pWidget, gpointer *data){
-	GtkWidget *dialog, *widget, *hbox;
+	GtkWidget *dialog, *widget, *hbox, *content_area;
+#ifdef GTK3
+	GtkAdjustment *adjustment;
+#elif defined GTK2
 	GtkObject *adjustment;
+#endif
 	dialog = gtk_dialog_new_with_buttons ("Test sound", NULL,
 			GTK_DIALOG_DESTROY_WITH_PARENT,
 			GTK_STOCK_CLOSE, GTK_RESPONSE_CLOSE,
 			NULL);
 	hbox = gtk_hbox_new (FALSE, 15);
-	gtk_container_add(GTK_CONTAINER(GTK_DIALOG(dialog)->vbox), hbox);
-
+	
 	gtk_widget_set_tooltip_text (dialog, "Play a pure sine wave sound");
 	widget = gtk_button_new_with_label("Play/Pause");
 	gtk_widget_set_tooltip_text (widget, "Play/Pause a pure sine wave sound");
@@ -259,7 +271,13 @@ NULL);
 	gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, FALSE, 4);
 	gtk_scale_button_set_value(GTK_SCALE_BUTTON(widget), 0.8);
 	g_signal_connect(G_OBJECT(widget), "value-changed", G_CALLBACK(change_volume_test_sound), NULL);
+#ifdef GTK3
+	content_area = gtk_dialog_get_content_area (GTK_DIALOG (dialog));
+	gtk_container_add (GTK_CONTAINER (content_area), hbox);
+#elif defined GTK2
+	gtk_container_add(GTK_CONTAINER(GTK_DIALOG(dialog)->vbox), hbox);
 
+#endif
 	gtk_widget_show_all (dialog);
 
 	g_signal_connect (G_OBJECT (dialog), "response", G_CALLBACK (test_sound_window_destroy), NULL);
@@ -268,25 +286,25 @@ NULL);
 /* Keyboard and Mouse shortcuts menu */
 void onShortcuts (GtkWidget* widget, gpointer data)
 {
-	GtkWidget *shortcutsWindow, *pListView, *pScrollbar;
+	GtkWidget *shortcutsWindow, *pListView, *pScrollbar, *content_area;
 	GtkListStore *pListStore;
 	GtkTreeViewColumn *pColumn;
 	GtkCellRenderer *pCellRenderer;
-	gchar *action[16] = {"Play/Pause", "Stop", "Rotate around X axis", "Rotate around Y axis", "Rotate around Z axis", "Translate along X axis", "Translate along Y axis", "Translate along Z axis", "Increase/decrease Gain", "Move pointer up/down or right/left", "Move pointer up/down or right/left fast", "Show/hide text", "Show/hide lines", "Show/hide pointer", "Reset view", "Front view"};
-	gchar *keyboard[16] = {"Space bar", "Escape", "Up/Down", "Right/Left", "SHIFT + Up/Down", "CTRL + Left/Right", "CTRL + Up/Down", "SHIFT + CTRL + Up/Down", "'g' + Up/Down", "'q' + up/down or right/left", "'a' + up/down or right/left", "'t'", "'l'", "'p'", "'r'", "'o'"};
-	gchar *mouse[16] = {"", "", "Left Click + Mouse Up/Down", "Left Click + Mouse Right/Left", "Left Click + scroll Up/Down", "Right Click + mouse Right/Left", "Right Click + mouse Up/Down", "Right Click + scroll Up/Down", "'g' + mouse Up/Down" };
+	gchar *action[16] = {"Play/Pause", "Stop", "Rotate around X axis", "Rotate around Y axis", "Rotate around Z axis", "Translate along X axis", "Translate along Y axis", "Translate along Z axis", "Increase/decrease Gain", "Move pointer up/down or right/left", "Move pointer up/down or right/left fast", "Show/hide text/line/pointer", "Reset view / Front view"};
+	gchar *keyboard[16] = {"Space bar", "Escape", "Up/Down", "Right/Left", "SHIFT + Up/Down", "CTRL + Left/Right", "CTRL + Up/Down", "SHIFT + CTRL + Up/Down", "'G' + Up/Down", "'Q' + up/down or right/left", "'A' + up/down or right/left", "'T' / 'L' / 'P'", "'R' / 'O'"};
+	gchar *mouse[16] = {"", "", "Left Click + Mouse Up/Down", "Left Click + Mouse Right/Left", "Left Click + scroll Up/Down", "Right Click + mouse Right/Left", "Right Click + mouse Up/Down", "Right Click + scroll Up/Down", "'G' + mouse Up/Down" };
 	gint i;
 
     	shortcutsWindow = gtk_dialog_new_with_buttons("Keyboard and mouse shortcuts",
-		NULL,
-		GTK_DIALOG_MODAL,
-		GTK_STOCK_OK,GTK_RESPONSE_OK,
-		NULL);
-	gtk_window_set_default_size(GTK_WINDOW(shortcutsWindow), 700, 360);
+			NULL,
+			GTK_DIALOG_MODAL,
+			GTK_STOCK_OK,GTK_RESPONSE_OK,
+			NULL);
+	gtk_window_set_default_size(GTK_WINDOW(shortcutsWindow), 500, 160);
 	
 	pListStore = gtk_list_store_new(N_COLUMN, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 	
-	for(i = 0 ; i < 16 ; ++i){
+	for(i = 0 ; i < 13 ; ++i){
 		GtkTreeIter pIter;
 		gtk_list_store_append(pListStore, &pIter);
 		gtk_list_store_set(pListStore, &pIter,
@@ -329,12 +347,18 @@ void onShortcuts (GtkWidget* widget, gpointer data)
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(pScrollbar),
 		GTK_POLICY_AUTOMATIC,
 		GTK_POLICY_AUTOMATIC);
-	gtk_container_add(GTK_CONTAINER(pScrollbar), pListView);
+	//gtk_container_add(GTK_CONTAINER(pScrollbar), pListView);
 
-	gtk_container_add(GTK_CONTAINER(GTK_DIALOG(shortcutsWindow)->vbox), pScrollbar);
-
-
+#ifdef GTK3
+	content_area = gtk_dialog_get_content_area (GTK_DIALOG (shortcutsWindow));
+	//hbox = gtk_hbox_new(TRUE, 0);
+	//gtk_box_pack_start(GTK_BOX(hbox), pScrollbar, TRUE, TRUE, 4);
+	gtk_container_add (GTK_CONTAINER (content_area), pListView);
+	gtk_widget_show_all(shortcutsWindow);
+#elif defined GTK2
+	gtk_container_add(GTK_CONTAINER(GTK_DIALOG(shortcutsWindow)->vbox), pListView);
 	gtk_widget_show_all(GTK_DIALOG(shortcutsWindow)->vbox);
+#endif
 	
     	switch (gtk_dialog_run(GTK_DIALOG(shortcutsWindow)))
 		{
@@ -349,7 +373,7 @@ void onShortcuts (GtkWidget* widget, gpointer data)
 /* Gestures menu */
 void onGesturesShortcuts (GtkWidget* widget, gpointer data)
 {
-	GtkWidget *shortcutsWindow, *pListView, *pScrollbar;
+	GtkWidget *shortcutsWindow, *pListView, *pScrollbar, *content_area;
 	GtkListStore *pListStore;
 	GtkTreeViewColumn *pColumn;
 	GtkCellRenderer *pCellRenderer;
@@ -399,12 +423,15 @@ void onGesturesShortcuts (GtkWidget* widget, gpointer data)
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(pScrollbar),
 		GTK_POLICY_AUTOMATIC,
 		GTK_POLICY_AUTOMATIC);
-	gtk_container_add(GTK_CONTAINER(pScrollbar), pListView);
-
-	gtk_container_add(GTK_CONTAINER(GTK_DIALOG(shortcutsWindow)->vbox), pScrollbar);
-
-
+	//gtk_container_add(GTK_CONTAINER(pScrollbar), pListView);
+#ifdef GTK3
+	content_area = gtk_dialog_get_content_area (GTK_DIALOG (shortcutsWindow));
+	gtk_container_add(GTK_CONTAINER(content_area), pListView);
+	gtk_widget_show_all(shortcutsWindow);
+#elif defined GTK2
+	gtk_container_add(GTK_CONTAINER(GTK_DIALOG(shortcutsWindow)->vbox), pListView);
 	gtk_widget_show_all(GTK_DIALOG(shortcutsWindow)->vbox);
+#endif
 	
     	switch (gtk_dialog_run(GTK_DIALOG(shortcutsWindow)))
 		{
@@ -418,12 +445,12 @@ void onGesturesShortcuts (GtkWidget* widget, gpointer data)
 
 void onQuickStart(GtkWidget* widget, gpointer data)
 {
-	GtkWidget *quickStartWindow, *label;
+	GtkWidget *quickStartWindow, *label, *content_area;
 	quickStartWindow = gtk_dialog_new_with_buttons("Spectrum3d : Quick Start",
-        NULL,
-        GTK_DIALOG_MODAL,
-        GTK_STOCK_OK,GTK_RESPONSE_OK,
-        NULL);
+			NULL,
+			GTK_DIALOG_MODAL,
+			GTK_STOCK_OK,GTK_RESPONSE_OK,
+			NULL);
 	gtk_window_set_default_size(GTK_WINDOW(quickStartWindow), 500, 300);
 
 	gchar *quickStartText = "* source has to be chosen first: audio file or microphone;\n\
@@ -444,8 +471,15 @@ the 3 axis (see 'Shortcuts' in menu)\n\
  * perspective and zoom can be changed even when playing is paused.";
 
 	label = gtk_label_new (quickStartText);
+#ifdef GTK3
+	content_area = gtk_dialog_get_content_area (GTK_DIALOG (quickStartWindow));
+	gtk_container_add (GTK_CONTAINER (content_area), label);
+	gtk_widget_show_all(quickStartWindow);
+#elif GTK2
 	gtk_container_add(GTK_CONTAINER(GTK_DIALOG(quickStartWindow)->vbox), label);
 	gtk_widget_show_all(GTK_DIALOG(quickStartWindow)->vbox);
+#endif
+	
 	
     	switch (gtk_dialog_run(GTK_DIALOG(quickStartWindow)))
 		{
@@ -466,8 +500,8 @@ void onAbout(GtkWidget* widget, gpointer data)
         GTK_MESSAGE_INFO,
         GTK_BUTTONS_OK,
         PACKAGE_STRING
-        "\n\nhttp://sourceforge.net/projects/spectrum3d/\n\n"
-	PACKAGE_BUGREPORT);
+        "\n  " PACKAGE_URL
+	"\n    " PACKAGE_BUGREPORT);
     gtk_dialog_run(GTK_DIALOG(pAbout));
     gtk_widget_destroy(pAbout);
 }

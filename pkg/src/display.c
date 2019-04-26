@@ -20,22 +20,33 @@
 #include <math.h>
 #include <gtk/gtk.h>
 #include <gst/gst.h>
-#include <SDL/SDL.h>
 #include <GL/gl.h>
 #include <GL/glu.h>
-//#include <gtk/gtkgl.h>
 
 #include "config.h"
+
+#ifdef HAVE_LIBSDL
+    #include <SDL/SDL.h>
+#endif
+
+#if defined GTKGLEXT3 || defined GTKGLEXT1
+    #include <gtk/gtkgl.h>
+#endif
+
 #include "spectrum3d.h"
 #include "display.h"
 
-int ii = 0, a = 0, b = 0;
-float cr = 0, cb = 1, cg = 0, k = 0;
-float i = 0, l = 0, q = 0, YcoordFactor = 1, ZcoordFactor = 0;
+/* Several of these values are used in one the display_spectro() function only but are declared here as global values to make things faster; the display_spectro() function is probably the more resources consuming function */
+int ii = 0; // ii will be used or selecting the right spect_data; it will be increased by the value of zoomFactor each times if passes in the loop
+int a = 0, b = 0, c = 0; // those integers are used as counters for the 'for' loop
+GLfloat cr = 0, cb = 1, cg = 0; // color value for opengl vertex 
+GLfloat k = 0; // this is used for to get the mean value of spect_data, when zoom_factor is != 1 
+GLfloat i = 0, l = 0, q = 0; // factors used to calculate position of the vertex 
+GLfloat YcoordFactor = 1, ZcoordFactor = 0; //factors used to get the value of the pointer 
 
 /* Initialise several display values */
-void init_display_values(){
-	lineScale = 1, textScale = 1, pointer = FALSE, showPosition = TRUE;
+void init_display_values(Spectrum3dGui *spectrum3dGui){
+	spectrum3dGui->lineScale = TRUE, spectrum3dGui->textScale = TRUE, spectrum3dGui->pointer = FALSE, showPosition = TRUE;
 	colorType = PURPLE;
 	viewType = THREE_D;
 	showGain = 0.2;
@@ -47,11 +58,61 @@ void init_display_values(){
 	x_2d = 1.4; // x_2d is the width od the display in 2d
 	X = -0.73; Y = -0.1; Z = -1; // those are the initial coordinates of the frame in 3D
 	spectrum3d.previousFrames = spectrum3d.frames; // previousFrames will be usefull when the 'Front' view will be used, to restore the initial number of frames when coming back to the previous normal 3d view
+	newEvent = TRUE; // set newEvent to TRUE allows to have a first empty scale at the beginning
 }
 
-gboolean
-configure_SDL_gl_window (int width, int height)
+/* Initialise OpenGL if GTKGLEXT is used */
+gboolean configure_event (GtkWidget *widget, GdkEventConfigure *event, gpointer data){
+
+	GtkAllocation allocation;
+	GLfloat w;   GLfloat h;
+
+	gtk_widget_get_allocation (widget, &allocation);
+	w = allocation.width;
+	h = allocation.height;
+	spectrum3d.width = (int)w;
+	spectrum3d.height = (int)h;
+	//printf("h = %d, w = %d\n", spectrum3d.width, spectrum3d.height);
+#ifdef GTKGLEXT3
+	if (!gtk_widget_begin_gl (widget))
+    		return FALSE;
+
+#elif defined GTKGLEXT1
+  	GdkGLContext *glcontext = gtk_widget_get_gl_context (widget);
+	GdkGLDrawable *gldrawable = gtk_widget_get_gl_drawable (widget);
+
+	if (!gdk_gl_drawable_gl_begin (gldrawable, glcontext))
+	{
+		g_assert_not_reached ();
+	}
+#endif
+
+  	glLoadIdentity();
+	glViewport (0, 0, (GLsizei) w, (GLsizei) h);
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_TEXTURE_2D);
+	glEnable (GL_BLEND);
+	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	gluPerspective(45, (float)2, .1, 200);
+	glMatrixMode(GL_MODELVIEW);
+
+#ifdef GTKGLEXT3
+  	gtk_widget_end_gl (widget, FALSE);
+
+#elif defined GTKGLEXT1
+	gdk_gl_drawable_gl_end (gldrawable);
+#endif
+  	newEvent = TRUE;
+	return TRUE;
+}
+
+/* Initialise SDL window and OpenGL, if SDL is used */
+#ifdef HAVE_LIBSDL
+gboolean configure_SDL_gl_window (int width, int height)
 {
+	printf("Initialize SDL-GL window\n");
 	SDL_SetVideoMode(width, height, 24, SDL_OPENGL | SDL_GL_DOUBLEBUFFER | SDL_RESIZABLE);
 
 	glLoadIdentity();
@@ -67,14 +128,32 @@ configure_SDL_gl_window (int width, int height)
 		
 	return TRUE;
 }
+#endif
 
+/* function that allows to compare two floats */
 gboolean compareGLfloat(GLfloat value1, GLfloat value2, GLfloat precision)
 {
-	return fabs (value1 - value2) < precision; // function that allows to compare two floats
+	return fabs (value1 - value2) < precision;
 }
 
 /* Draw the spectrogram */
-gboolean display_spectro(){
+gboolean display_spectro(Spectrum3dGui *spectrum3dGui){
+
+/* The opengl initializing functions when gtkglext is used, for gtkglext1 and gtkglext3 */
+#ifdef GTKGLEXT3
+	if (!gtk_widget_begin_gl (spectrum3dGui->drawing_area))
+    		return FALSE;	
+#elif defined GTKGLEXT1
+	GdkGLContext *glcontext = gtk_widget_get_gl_context (spectrum3dGui->drawing_area);
+	GdkGLDrawable *gldrawable = gtk_widget_get_gl_drawable (spectrum3dGui->drawing_area);
+
+	if (!gdk_gl_drawable_gl_begin (gldrawable, glcontext))
+	{
+		g_assert_not_reached ();
+	}
+#endif
+
+	/* Drawing will be done if newEvent is set to TRUE; this will be the case by default everythime playing is 1 without pose (playing == 1 && pose == 0); otherwise, everytime there is a new event that may change the display, newEvent will be set to TRUE : when the audio file has been completely loaded, when there is a significant event (see event.c : key event, mouse event, click event, resize event (for sdl)), when zoom is changed */
 	if (playing && pose == 0){
 		newEvent = TRUE;
 		}
@@ -85,7 +164,7 @@ gboolean display_spectro(){
 		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT); 
 		glLoadIdentity();
 
-		ii = 0, a = 0, b = 0;
+		ii = 0, a = 0, b = 0, c = 0;
 		cr = 0, cb = 1, cg = 0, k = 0;
 		i = 0, l = 0, q = 0;
 		if (viewType == THREE_D){
@@ -127,8 +206,9 @@ gboolean display_spectro(){
 				for (b = 0; b < spectrum3d.frames; b ++){
 					glBegin(GL_QUAD_STRIP);
 					i = 0;
-					for (ii = zoom; ii < spect_bands + zoom; ii+=zoomFactor) {
-						k = 0;
+					ii = zoom;
+					for (c = 0; c < bandsNumber; c++) {
+						k = 0; ii+=zoomFactor;
 						for (a = 0; a < zoomFactor; a++) {
 							k = k + spec_data[b][ii+a];
 							}
@@ -136,11 +216,11 @@ gboolean display_spectro(){
 							storedFreq = ii;
 							}
 						k = (k/zoomFactor) * showGain;
-						if (i <= y_2d) {
+						//if (i <= y_2d) {
 							glColor3f(10 * k, 0, 0); 
 							glVertex2f(l, i);
 							glVertex2f(l + x_2d/spectrum3d.frames, i);
-							} 
+						//	} 
 						i += q;
 						}
 					l += x_2d/spectrum3d.frames;
@@ -156,7 +236,7 @@ gboolean display_spectro(){
 				cr = 1, cg = 0, cb = 0;
 				q = x/bandsNumber;
 				for (b = 0; b < spectrum3d.frames; b++) {
-					i = 0;
+					i = 0, ii = 0;
 					/* set color */
 					if (colorType == RAINBOW){
 						if (b < (spectrum3d.frames * 0.5)) {
@@ -184,8 +264,9 @@ gboolean display_spectro(){
 				
 					glBegin(GL_LINE_STRIP);
 					glColor3f(cr , cg, cb); glVertex3f( 0, 0 ,l);
-					for (ii = zoom; ii < spect_bands + zoom; ii+=zoomFactor) {
-						k = 0;
+					ii = zoom;
+					for (c = 0; c < bandsNumber; c++) {
+						k = 0; ii+=zoomFactor;
 						for (a = 0; a < zoomFactor; a++) {
 							k = k + spec_data[b][ii+a];
 							}
@@ -194,7 +275,7 @@ gboolean display_spectro(){
 							storedIntensity = (40 * k/zoomFactor) - 80; // this value has to be divided by the zoomFactor first; since the spec_data are multiplied by 40 and 80 added, the oposite should be done now to get the initial intensity value in dB;
 							}
 						k = (k/zoomFactor) * showGain;
-						if (i <= x) {
+						//if (i <= x) {
 							if (source == SOUND_FILE && analyse_rt == FALSE){
 								int mult = 18;
 								glColor3f((mult/2) * k, k * mult, 1/(k * mult)); 
@@ -204,7 +285,7 @@ gboolean display_spectro(){
 								}
 							//glVertex3f( i, k ,l);
 							glVertex3f( i, k/(YcoordFactor), l - ((k/5) * ZcoordFactor));
-							}
+							//}
 						i += q;
 						}
 					glEnd();
@@ -216,7 +297,7 @@ gboolean display_spectro(){
 		/* Get value for the next turn : each value takes the value of 'preceeding' variable (spec_data[200][ii] takes the vaue of spec_data[199][ii], and so on) */
 		if (pose == 0 && analyse_rt == TRUE) {
 			for (b = spectrum3d.frames; b >= 0; b --){
-				for (ii = 0; ii < spect_bands; ii++) {
+				for (ii = 0; ii < (int)spect_bands; ii++) {
 					spec_data[b+1][ii] = spec_data[b][ii];
 					}
 				}
@@ -226,20 +307,34 @@ gboolean display_spectro(){
 	if (showPosition == 1 && analyse_rt == FALSE && playing) {
 		show_playing_position();
 		}
-	if (pointer) {
+	if (spectrum3dGui->pointer == TRUE) {
 		drawPointer();
 		drawPointerText();
 		}
-	if (textScale == 1) {
+	if (spectrum3dGui->textScale == TRUE) {
 		RenderText();
 		}
-	if (lineScale == 1) {
+	if (spectrum3dGui->lineScale == TRUE) {
 		drawScale();
 		}
 	
 	}
 
+/* The 'swap buffer' or end gl functions, depending on the use of gtkglext1, gtkglext3 or sdl */
+#ifdef GTKGLEXT3
+	gtk_widget_end_gl (spectrum3dGui->drawing_area, TRUE);
+#elif defined GTKGLEXT1
+	if (gdk_gl_drawable_is_double_buffered (gldrawable))
+			gdk_gl_drawable_swap_buffers (gldrawable);
+
+	else
+		glFlush ();
+
+	gdk_gl_drawable_gl_end (gldrawable);
+#elif defined HAVE_LIBSDL
 	SDL_GL_SwapBuffers();
+#endif
+
 	return TRUE;	
 }
 

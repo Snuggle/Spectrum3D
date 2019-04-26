@@ -143,35 +143,35 @@ void select_audio_file()
 	{
 	case GTK_RESPONSE_OK:
 	       	selected_file = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (fileSelection));
-		printf("uri of selected_file = %s\n", g_filename_to_uri(selected_file, NULL, NULL));
+		gtk_widget_destroy(fileSelection);
+		printf("Uri of selected_file = %s\n", g_filename_to_uri(selected_file, NULL, NULL));
 		//typefind_pipeline();  // this send to a function that finds type; FIXME : this has to be implemented and generate error message if type is not audio
 		if (analyse_rt == FALSE){
 				load_audio_file();
 				}
-	case GTK_RESPONSE_CANCEL:
-		printf("No file was selected...\n");
 		break;
+	case GTK_RESPONSE_CANCEL:
 	default:
-	    break;
+		printf("No file was selected...\n");
+		gtk_widget_destroy(fileSelection);
+	    	break;
 	}
-	gtk_widget_destroy(fileSelection);
 }
 
 /* Get the lenght of the pipeline */
-static gboolean get_pipeline_lenght (GstElement *pipeline)
+gboolean get_pipeline_lenght (GstElement *pipeline)
 {
-		GstFormat fmt = GST_FORMAT_TIME; 
-		if (gst_element_query_duration (pipeline, &fmt, &len)) {
-			lenght = (int)GST_TIME_AS_SECONDS(len);
-			printf("lenght = %d seconds\n", lenght);
-			if (lenght > 0 && lenght < 36000) {
-				g_main_loop_quit (load_loop);
-				return FALSE;
-				}
+	gboolean result = TRUE;
+	GstFormat fmt = GST_FORMAT_TIME; 
+	if (gst_element_query_duration (pipeline, &fmt, &len)) {
+		lenght = (int)GST_TIME_AS_SECONDS(len);
+		printf("lenght = %d seconds\n", lenght);
+		if (lenght > 0 && lenght < 36000) {
+			g_main_loop_quit (load_loop);
+			result = FALSE;
+			}
 		}
-		else {	
-			return TRUE;
-			}	
+	return result;	
 }
 
 /* Print the progression in a progress bar when loading audio file */
@@ -210,7 +210,11 @@ void show_progression() {
 	gtk_container_add(GTK_CONTAINER(progressWindow), vbox);
 
 	progress = gtk_progress_bar_new();
+#ifdef GTK3
+	gtk_progress_bar_set_inverted(GTK_PROGRESS_BAR(progress), FALSE);
+#elif GTK2
 	gtk_progress_bar_set_orientation(GTK_PROGRESS_BAR(progress), GTK_PROGRESS_LEFT_TO_RIGHT);
+#endif
 	gtk_box_pack_start(GTK_BOX(vbox), progress, TRUE, FALSE, 0);
 	button = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
 	gtk_box_pack_start(GTK_BOX(vbox), button, TRUE, FALSE, 0);
@@ -223,9 +227,7 @@ void show_progression() {
 /* Load the audio file : get its lenght, allocate memory for it, analyse the spectrum and display it */
 void load_audio_file(){
 	GstElement *playbin;
-	int i = 0;
-	gint64 len;
-
+	
 	if (selected_file == NULL){
 		error_message_window("No file was selected.\nPlease select an audio file.");
 		return;
@@ -236,8 +238,6 @@ void load_audio_file(){
 	frame_number_counter = 0;
 	
 	/* get lenght of the file; for that, a pipeline will be run with a "fakesink"; the loop will be terminated when a valid value is obtained */
-	GstFormat fmt = GST_FORMAT_TIME;
-	gst_init(NULL, NULL);
 	load_loop = g_main_loop_new(NULL, FALSE);
 	playbin = gst_element_factory_make ("playbin", NULL);
 	g_assert (playbin);
@@ -275,11 +275,13 @@ void change_source_button (GtkWidget *widget, Spectrum3dGui *spectrum3dGui){
 	// STOP BUTTON : stops everything
 	const gchar *stopButton = gtk_widget_get_name (spectrum3dGui->stop);
 	if (strcmp(stopButton, buttonName) == 0){
+		gtk_button_set_relief (GTK_BUTTON(widget), GTK_RELIEF_NORMAL);
 		gdk_color_parse ("gold",&color);
 		gtk_widget_modify_bg(GTK_WIDGET(widget), GTK_STATE_NORMAL, &color);
 		gtk_widget_modify_bg(GTK_WIDGET(widget), GTK_STATE_PRELIGHT, &color);
 		}
 	else {
+		gtk_button_set_relief (GTK_BUTTON(spectrum3dGui->stop), GTK_RELIEF_NONE);
 		gdk_color_parse ("grey",&color);
 		gtk_widget_modify_bg(GTK_WIDGET(spectrum3dGui->stop), GTK_STATE_NORMAL, &color);
 		gtk_widget_modify_bg(GTK_WIDGET(spectrum3dGui->stop), GTK_STATE_PRELIGHT, &color);
@@ -288,12 +290,14 @@ void change_source_button (GtkWidget *widget, Spectrum3dGui *spectrum3dGui){
 	// MICROPHONE BUTTON
 	const gchar *micButton = gtk_widget_get_name (spectrum3dGui->mic);
 	if (strcmp(micButton, buttonName) == 0){
+		gtk_button_set_relief (GTK_BUTTON(widget), GTK_RELIEF_NORMAL);
 		gdk_color_parse ("gold",&color);
 		gtk_widget_modify_bg(GTK_WIDGET(widget), GTK_STATE_NORMAL, &color);
 		gtk_widget_modify_bg(GTK_WIDGET(widget), GTK_STATE_PRELIGHT, &color);
 		typeSource = MIC;
 		}
 	else {
+		gtk_button_set_relief (GTK_BUTTON(spectrum3dGui->mic), GTK_RELIEF_NONE);
 		gdk_color_parse ("grey",&color);
 		gtk_widget_modify_bg(GTK_WIDGET(spectrum3dGui->mic), GTK_STATE_NORMAL, &color);
 		gtk_widget_modify_bg(GTK_WIDGET(spectrum3dGui->mic), GTK_STATE_PRELIGHT, &color);
@@ -302,6 +306,7 @@ void change_source_button (GtkWidget *widget, Spectrum3dGui *spectrum3dGui){
 	// FILE BUTTON : a file will be analysed, either in real-time (harmonics analysed and displayed at the same time) or preloaded (harmonics analysed first, then displayed, then the file can be played;
 	const gchar *fileButton = gtk_widget_get_name (spectrum3dGui->file);
 	if (strcmp(fileButton, buttonName) == 0){
+		gtk_button_set_relief (GTK_BUTTON(widget), GTK_RELIEF_NORMAL);
 		gdk_color_parse ("gold",&color);
 		gtk_widget_modify_bg(GTK_WIDGET(widget), GTK_STATE_NORMAL, &color);
 		gtk_widget_modify_bg(GTK_WIDGET(widget), GTK_STATE_PRELIGHT, &color);
@@ -309,6 +314,7 @@ void change_source_button (GtkWidget *widget, Spectrum3dGui *spectrum3dGui){
 		select_audio_file();
 		}
 	else {
+		gtk_button_set_relief (GTK_BUTTON(spectrum3dGui->file), GTK_RELIEF_NONE);
 		gdk_color_parse ("grey",&color);
 		gtk_widget_modify_bg(GTK_WIDGET(spectrum3dGui->file), GTK_STATE_NORMAL, &color);
 		gtk_widget_modify_bg(GTK_WIDGET(spectrum3dGui->file), GTK_STATE_PRELIGHT, &color);

@@ -23,6 +23,8 @@ When 'Touch' function is activated, everything seems 'captured' by the 'Touch' f
 
 Any time a gesture is detected, no X interaction will occur. For example, if you listen for one finger drag on a trackpad you won't be able to move the cursor while it resides within the window you are listening to gesture events from. This is to prevent one physical interaction from firing two separate events through the system. It is be possible to "filter" gestures so that only 2 fingers gestures are taken in charge, and the mouse can still be controlled by one finger touch. However this is not possible for libutouch-geis version inferior or equal to 2.0.11 (Bug#769859, https://bugs.launchpad.net/utouch-geis/+bug/769859), and this is fixed in the 2.1.0 version. However, if you use Ubuntu 11.04 Natty Narwhal, that has the 2.0.10 version in the repositories, you will be affected, unless replace it by the 2.1.0 version (or higher); you have to install it directly from the utouch-geis website (https://launchpad.net/utouch-geis).
 
+I don't know if multitouch support can easily be implemented in Ubuntu Lucid Lynx (10.04) or earlier.
+
 A possible future alternative : Ginn
 ------------------------------------
 If you don't want to use uTouch-geis, it should be possible to use the excellent 'Ginn' software (https://launchpad.net/canonical-multitouch/ginn) that allows to "inject" gestures without installing the geis API. However, Ginn cannot yet "inject" gestures in a 'SDL' window such as spctrum3d's main window (Bug#751354, https://bugs.launchpad.net/ginn/+bug/751354), but the developpers are planning to implement it. When it will be possible, Ginn will have to be started as root.

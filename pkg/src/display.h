@@ -17,8 +17,8 @@
 #ifndef DEFINE_DISPLAY
 #define DEFINE_DISPLAY
 
-gboolean pointer, analyse_rt, showPosition, newEvent;
-int pose, firstPass3D, zoom, zoomFactor, textScale, lineScale, bandsNumber, storedFreq, hzStep, playing;
+gboolean analyse_rt, showPosition, newEvent;
+int pose, firstPass3D, zoom, zoomFactor, bandsNumber, storedFreq, hzStep, playing;
 guint spect_bands;
 float showGain, storedIntensity;
 GLfloat AngleH, AngleV, AngleZ, z, X, Y, Z, x, x_2d, y_2d, Xpointer, Ypointer;
@@ -51,9 +51,11 @@ enum ViewType
 };
 ViewType viewType;
 
+void show_playing_position();
+void drawPointer();
+void drawPointerText();
 void drawScale();
 void RenderText();
-void drawPointer();
 
 #endif
 

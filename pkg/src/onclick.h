@@ -17,8 +17,8 @@
 #ifndef DEFINE_ONCLICK
 #define DEFINE_ONCLICK
 
-gboolean pointer, newEvent, jack, loading, analyse_rt;
-int AUDIOFREQ, playing, pose, zoom, zoomFactor, textScale, lineScale, bandsNumber, hzStep;
+gboolean newEvent, jack, loading, analyse_rt;
+int AUDIOFREQ, playing, pose, zoom, zoomFactor, bandsNumber, hzStep;
 float showGain;
 GLfloat x, z, X, Y, Z, AngleH, AngleV, AngleZ;
 GLfloat spec_data[405][11030];
@@ -37,15 +37,10 @@ enum ViewType
 };
 ViewType viewType;
 
-GtkObject *adjust_bands, *adjust_start;
-GtkWidget *pScaleBands, *pComboRange, *spectroWindow;
 GMainLoop *loop;
 GstElement *pipeline;
 
 void setPlayButtonIcon();
-void getTextDisplayLabel();
-void onReset();
-void displaySpectro();
 void change_adjust_start();
 
 #endif

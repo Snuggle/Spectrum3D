@@ -27,8 +27,7 @@
 //GtkWidget *playButton, *recButton;
 
 void record_window() {
-	int i = 0;
-	GtkWidget *hbox[2], *recordWindow, *button, *image;
+	GtkWidget *hbox[2], *recordWindow, *button, *image, *content_area;
 
 	if (typeSource == AUDIO_FILE){
 		error_message_window("Source should be set on microphone to record sound");
@@ -46,7 +45,12 @@ void record_window() {
 	hbox[0] = gtk_hbox_new(TRUE, 10);
 	hbox[1] = gtk_hbox_new(TRUE, 0);
 	
-	gtk_box_pack_start(GTK_BOX(GTK_DIALOG(recordWindow)->vbox), hbox[0], TRUE, TRUE, 0);			
+#ifdef GTK3
+	content_area = gtk_dialog_get_content_area (GTK_DIALOG (recordWindow));
+	gtk_container_add (GTK_CONTAINER (content_area), hbox[0]);
+#elif GTK2
+	gtk_box_pack_start(GTK_BOX(GTK_DIALOG(recordWindow)->vbox), hbox[0], TRUE, TRUE, 0);
+#endif			
 
 	button = gtk_button_new();
 	image = gtk_image_new_from_stock (GTK_STOCK_MEDIA_RECORD, GTK_ICON_SIZE_BUTTON);
@@ -62,7 +66,7 @@ void record_window() {
 	
   	gtk_widget_show_all (recordWindow);
 
-	analyse_rt = TRUE; // analyse_rt is set artificially to TRUE in order that spectrum values can passed to one another at the end of the displaySpectro() function; it will set back to FALSE when record window is destroyed;
+	analyse_rt = TRUE; // analyse_rt is set to TRUE for the time of recording in order that spectrum values can passed to one another at the end of the displaySpectro() function; it will set back to FALSE when record window is destroyed;
 	recording = TRUE; // recording is set to TRUE; it will be set to FALSE when the recordWindow is detroyed;
 
 	switch (gtk_dialog_run(GTK_DIALOG(recordWindow)))

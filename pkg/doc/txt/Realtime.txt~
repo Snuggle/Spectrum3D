@@ -31,7 +31,7 @@ How to check that you are using realtime policy?
 
 If realtime mode is chosen, gstreamer will play the sound with the RR ('Round Robin') policy with a priority of 50. You can check that the RR policy is used by typing in a terminal :
 
-	 ps -cLe
+	ps -cLe
 
 while Spectrum3d is playing; you'll see something like this :
 
@@ -48,7 +48,7 @@ The thread called "alsasrc:src" is running with the RR policy ('RR' in the 3d co
 What about Jack?
 ----------------
 
-This is not needed for Jack, since, if Jack is run in realtime mode, all its clients (including the Gstreamer thread of Spectrum3d) are run in realtime mode also. So for Jack, realtime mode depends on Jack, since Spectrum3d connects to Jack as a client.
+This is not needed for Jack, since, if Jack is run in realtime mode, all its clients (including the Gstreamer thread of Spectrum3d) are run in realtime mode also. So for Jack realtime mode depends on Jack, since Spectrum3d connects to Jack as a client.
 
 
 

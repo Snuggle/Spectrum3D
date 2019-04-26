@@ -57,9 +57,11 @@ void init_audio_values(){
 	memset(spec_data, 0, sizeof(spec_data));
 	playing = 0;
 	pose = 0;
-	spect_bands = 11025; // number of sptracl bands analysed by thre 'spectrum' element of gstreamer
+	analyse_rt = TRUE;
+	typeSource = NONE;
+	spect_bands = 11025; // number of spectral bands analysed by thre 'spectrum' element of gstreamer
 	AUDIOFREQ = 44100; // Sampling rate
-	bandsNumber = 1000; // number of bands didplayed on the screen
+	bandsNumber = 1000; // number of bands displayed on the screen
 	hzStep = (AUDIOFREQ/2) / spect_bands; // number of herz in 1 'band'
 	BPlowerFreq = 0; BPupperFreq = 40000; // limit of Band-Pass(BP) filters
 	tmpPath = g_build_filename (G_DIR_SEPARATOR_S, g_get_tmp_dir(), "spectrum3d.flac", NULL); // path of the recorded file (in the 'tmp' directory)
@@ -166,7 +168,7 @@ void on_seek (GtkRange *range, gchar *data)
 static gboolean cb_print_position (GstElement *pipeline){
 
 	gchar positionLabel[50];
-	gchar shortPos[7], shortLen[7];
+	//gchar shortPos[7], shortLen[7];
 	GstFormat fmt = GST_FORMAT_TIME;
 	if (gst_element_query_position (pipeline, &fmt, &pos)
 	&& gst_element_query_duration (pipeline, &fmt, &len)) {
@@ -193,23 +195,23 @@ static gboolean cb_print_position (GstElement *pipeline){
 }
 
 int checkJackActive(){
+	int result = 0;
 #ifdef HAVE_LIBJACK
 	printf("*** Checking if JACK is running (Jack error messages are normal):\n");
 	jack_client_t *src_client;
-	jack_status_t status;
+	//jack_status_t status;
 	src_client = jack_client_open ("src_client", JackNoStartServer, NULL); 
 	if (src_client != NULL) {
 		printf("JACK seems to be running. Please stop JACK and start playing again\n");
-		return 1;
+		result = 1;
 		}
 	else if (src_client == NULL) {
 		printf("*** --> OK, JACK is not running\n");
-		return 0;
 		}
 #endif
-#ifndef HAVE_LIBJACK
-	return 0;
-#endif
+
+	return result;
+
 }
 
 
@@ -496,7 +498,7 @@ else if (playing == 0) {
 			}
 
 /* if realtime is enabled */
-		if (realtime && jack == FALSE) {
+		if (spectrum3d.realtime && jack == FALSE) {
 			busRT = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
 			gst_bus_set_sync_handler (busRT, (GstBusSyncHandler) sync_bus_handler, pipeline);
 			gst_object_unref (busRT);

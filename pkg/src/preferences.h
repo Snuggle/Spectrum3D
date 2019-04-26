@@ -2,12 +2,7 @@
 #ifndef DEFINE_PREFERENCES
 #define DEFINE_PREFERENCES
 
-gboolean realtime, enableTouch, pointer;
 gchar policyName[20];
-int zoom, zoomFactor, textScale, lineScale, priority;
-guint spect_bands;
-float showGain; 
-
 FILE *rcFile;
 
 typedef enum ColorType ColorType;
@@ -26,7 +21,6 @@ struct PreferenceInt
 	int min;		// minimum value
 	int max;		// maximun value
 	char *name;		// name of the variable, in a string
-	//char* info;		// any information that could be uselfull
 }; 
 
 // Structure containing everything regarding the default values that are a GLFloat
@@ -46,28 +40,12 @@ struct PreferenceGbool
 {
 	gboolean* var;		// variable name, stored as a pointer
 	gboolean def;		// default value
+	gboolean min;		// minimum value; always 0 or FALSE
+	gboolean max;		// maximun value; always 1 or TRUE
 	char *name;		// name of the variable, in a string
 }; 
 
-typedef struct PreferenceString PreferenceString;
-struct PreferenceString
-{
-	char* var[20];		// variable name, stored as a pointer
-	char *name;		// name of the variable, in a string
-}; 
-
-void getFileName();
-void defaultValues();
-void makeDefaultPreferencesFile();
-void onPreferences(GtkWidget* widget, gpointer data);
-void changeWidth(GtkSpinButton *spinButton, gpointer user_data);
-void saveChange(GtkWidget* widget, gpointer data);
-void onQuickStart(GtkWidget* widget, gpointer data);
-void onAbout(GtkWidget* widget, gpointer data);
-void onDisplay(GtkWidget *pBtn, gpointer data);
-void onShortcuts (GtkWidget* widget, gpointer data);
-void onGesturesShortcuts (GtkWidget* widget, gpointer data);
-//void errorMessageWindow(char *message);
+void error_message_window(gchar *message);
 
 #endif
 

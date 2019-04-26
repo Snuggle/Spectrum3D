@@ -18,8 +18,10 @@ enum TypeSource
 };
 TypeSource typeSource;
 
+void playFromSource(GtkWidget *widget, gpointer *data);
 void on_stop();
 void load_audio_file();
+void error_message_window(gchar *message);
 
 #endif
 

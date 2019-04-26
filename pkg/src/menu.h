@@ -17,9 +17,8 @@
 #ifndef DEFINE_MENU
 #define DEFINE_MENU
 
-gboolean realtime, enableTouch;
+gboolean newEvent;
 char prefPath[100], policyName[20];
-int priority;
 GLfloat z, X, Y, Z, AngleH, AngleV, AngleZ; 
 FILE *rcFile;
 GMainLoop *loopTestSound;

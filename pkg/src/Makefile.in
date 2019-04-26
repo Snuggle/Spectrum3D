@@ -94,8 +94,14 @@ GEIS_LIBS = @GEIS_LIBS@
 GREP = @GREP@
 GSTREAMER_CFLAGS = @GSTREAMER_CFLAGS@
 GSTREAMER_LIBS = @GSTREAMER_LIBS@
-GTK_CFLAGS = @GTK_CFLAGS@
-GTK_LIBS = @GTK_LIBS@
+GTK2_CFLAGS = @GTK2_CFLAGS@
+GTK2_LIBS = @GTK2_LIBS@
+GTK3_CFLAGS = @GTK3_CFLAGS@
+GTK3_LIBS = @GTK3_LIBS@
+GTKGLEXT1_CFLAGS = @GTKGLEXT1_CFLAGS@
+GTKGLEXT1_LIBS = @GTKGLEXT1_LIBS@
+GTKGLEXT3_CFLAGS = @GTKGLEXT3_CFLAGS@
+GTKGLEXT3_LIBS = @GTKGLEXT3_LIBS@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
@@ -166,8 +172,7 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 
-#spectrum3d_CFLAGS = $(GSTREAMER_CFLAGS) $(GTK_CFLAGS) $(BAMF_CFLAGS)
-#spectrum3d_LDADD = $(GSTREAMER_LIBS) $(GTK_LIBS) $(BAMF_LIBS)
+#AM_CFLAGS=-Wall -Wextra -O2 -g
 spectrum3d_SOURCES = display.c events.c equalizer.c geis.c gstreamer.c main.c menu.c onclick.c preferences.c record.c scale.c testrtpool.c typesource.c display.h equalizer.h events.h geis.h gstreamer.h main.h menu.h onclick.h preferences.h record.h scale.h spectrum3d.h testrtpool.h typesource.h
 AM_CPPFLAGS = -DDATADIR='"$(datadir)"'
 all: config.h
