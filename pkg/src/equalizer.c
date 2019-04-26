@@ -30,7 +30,11 @@
 
 gboolean activateFilter;
 GtkWidget *widgetF[10], *widgetB[10], *widgetG[10], *spinBPlowerValue, *spinBPupperValue;
+#ifdef GSTREAMER1
+GObject *band, *band2, *band3;
+#elif defined GSTREAMER0
 GstObject *band, *band2, *band3;
+#endif
 gdouble freq;
 gdouble bw;
 gdouble gain;
@@ -48,7 +52,8 @@ on_gain_changed (GtkRange * range, gpointer user_data) // change gain of equaliz
   GstObject *band = GST_OBJECT (user_data);
   gdouble value = gtk_range_get_value (range);
 
-  g_object_set (band, "gain", value, NULL);
+  g_object_set (G_OBJECT(band), "gain", value, NULL);
+  //g_object_unref (G_OBJECT (band));
 }
 
 static void
@@ -57,7 +62,8 @@ on_gain_changed2 (GtkRange * range, gpointer user_data) // change gain of equali
   GstObject *band = GST_OBJECT (user_data);
   gdouble value = gtk_range_get_value (range);
 
-  g_object_set (band, "gain", value, NULL);
+  g_object_set (G_OBJECT(band), "gain", value, NULL);
+  //g_object_unref (G_OBJECT (band));
 }
 
 static void
@@ -66,7 +72,8 @@ on_gain_changed3 (GtkRange * range, gpointer user_data) // change gain of equali
   GstObject *band = GST_OBJECT (user_data);
   gdouble value = gtk_range_get_value (range);
 
-  g_object_set (band, "gain", value, NULL);
+  g_object_set (G_OBJECT(band), "gain", value, NULL);
+  //g_object_unref (G_OBJECT (band));
 }
 
 static void
@@ -75,7 +82,8 @@ on_bandwidth_changed (GtkRange * range, gpointer user_data) // change bandwidth 
   GstObject *band = GST_OBJECT (user_data);
   gdouble value = gtk_range_get_value (range);
 
-  g_object_set (band, "bandwidth", value, NULL);
+  g_object_set (G_OBJECT(band), "bandwidth", value, NULL);
+  //g_object_unref (G_OBJECT (band));
 }
 
 static void
@@ -84,7 +92,8 @@ on_bandwidth_changed2 (GtkRange * range, gpointer user_data) // change bandwidth
   GstObject *band = GST_OBJECT (user_data);
   gdouble value = gtk_range_get_value (range);
 
-  g_object_set (band, "bandwidth", value, NULL);
+  g_object_set (G_OBJECT(band), "bandwidth", value, NULL);
+  //g_object_unref (G_OBJECT (band));
 }
 
 static void
@@ -93,8 +102,10 @@ on_bandwidth_changed3 (GtkRange * range, gpointer user_data) // change bandwidth
   GstObject *band = GST_OBJECT (user_data);
   gdouble value = gtk_range_get_value (range);
 
-  g_object_set (band, "bandwidth", value, NULL);
+  g_object_set (G_OBJECT(band), "bandwidth", value, NULL);
+  //g_object_unref (G_OBJECT (band));
 }
+
 
 /* control frequency */
 static void
@@ -107,7 +118,8 @@ on_freq_changed (GtkRange * range, gpointer user_data) // change frequency range
   gchar *label = g_strdup_printf ("%d Hz", (int) (value + 0.5));
   gtk_frame_set_label (GTK_FRAME (parent_parent), label);
   g_free (label);
-  g_object_set (band, "freq", value, NULL);
+  g_object_set (G_OBJECT(band), "freq", value, NULL);
+  //g_object_unref (G_OBJECT (band));
 }
 
 static void
@@ -120,7 +132,8 @@ on_freq_changed2 (GtkRange * range, gpointer user_data) // change frequency rang
   gchar *label = g_strdup_printf ("%d Hz", (int) (value + 0.5));
   gtk_frame_set_label (GTK_FRAME (parent_parent), label);
   g_free (label);
-  g_object_set (band, "freq", value, NULL);
+  g_object_set (G_OBJECT(band), "freq", value, NULL);
+  //g_object_unref (G_OBJECT (band));
 }
 
 static void
@@ -133,7 +146,8 @@ on_freq_changed3 (GtkRange * range, gpointer user_data) // change frequency rang
   gchar *label = g_strdup_printf ("%d Hz", (int) (value + 0.5));
   gtk_frame_set_label (GTK_FRAME (parent_parent), label);
   g_free (label);
-  g_object_set (band, "freq", value, NULL);
+  g_object_set (G_OBJECT(band), "freq", value, NULL);
+  //g_object_unref (G_OBJECT (band));
 }
 
 void getBand(){

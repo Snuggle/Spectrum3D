@@ -35,6 +35,8 @@ const GValue *magni, *magnitudes;
 gdouble freqTestSound = 440;
 GstElement *srcTestSound;
 static GstTaskPool *pool;
+GTimer *timer = NULL;
+gdouble elapsed_time = 0;
 
 #define NBANDS 10
 
@@ -117,6 +119,7 @@ sync_bus_handler (GstBus * bus, GstMessage * message, GstElement * bin)
 /* Gstreamer message handler */
 gboolean message_handler (GstBus * bus, GstMessage * message, gpointer data)
 {	
+	//printf("Elapsed time = %f sec\n", g_timer_elapsed (timer, NULL));
 	int ii = 0;
 
 	//printf("message = %d\n", message->type);			
@@ -170,8 +173,14 @@ static gboolean cb_print_position (GstElement *pipeline){
 	gchar positionLabel[50];
 	//gchar shortPos[7], shortLen[7];
 	GstFormat fmt = GST_FORMAT_TIME;
+#ifdef GSTREAMER1
+	if (gst_element_query_position (pipeline, fmt, &pos)
+	&& gst_element_query_duration (pipeline, fmt, &len)) 
+#elif defined GSTREAMER0
 	if (gst_element_query_position (pipeline, &fmt, &pos)
-	&& gst_element_query_duration (pipeline, &fmt, &len)) {
+	&& gst_element_query_duration (pipeline, &fmt, &len))
+#endif
+	{
 		gdouble setPos = ((gdouble)pos)/((gdouble)len) * 100;
 		/* pScaleSeek has to be updated with the new time value, but the callback (that updates the time values when pScaleSeek has been changed) doesn't have to be activated; the callback to the 'on_seek' function while moving pScaleSeek has to be blocked */
 		g_signal_handlers_block_by_func(G_OBJECT(scaleSeek), G_CALLBACK(on_seek), NULL);
@@ -253,6 +262,8 @@ if (playing){
 		setPlayButtonIcon();
 		if (source == MICRO){
 			gst_element_set_state (pipeline, GST_STATE_PAUSED);
+			g_timer_stop (timer);
+			printf("pause timer\n");
 			}
 		else if (source == SOUND_FILE){
 			gst_element_set_state (playbin, GST_STATE_PAUSED);
@@ -263,6 +274,7 @@ if (playing){
 		setPlayButtonIcon();
 		if (source == MICRO){
 			gst_element_set_state (pipeline, GST_STATE_PLAYING);
+			g_timer_continue (timer);
 			}
 		else if (source == SOUND_FILE){
 			gst_element_set_state (playbin, GST_STATE_PLAYING);
@@ -366,7 +378,11 @@ else if (playing == 0) {
 				}
 			}
 		else if (source == SOUND_FILE) {
+#ifdef GSTREAMER1
+			playbin = gst_element_factory_make ("playbin", NULL);
+#elif defined GSTREAMER0
 			playbin = gst_element_factory_make ("playbin2", NULL);
+#endif
 			g_assert (playbin);
 			g_object_set (G_OBJECT (playbin), "uri", g_filename_to_uri(selected_file, NULL, NULL), NULL);
 			}
@@ -438,23 +454,37 @@ else if (playing == 0) {
 		gst_bin_add_many (GST_BIN (pipeline), equalizer, equalizer2, equalizer3, audioconvert2, BP_BRfilter, audioconvert3, spectrum, flacenc, sink, NULL);
 
 /* link elements */
-		caps = gst_caps_new_simple ("audio/x-raw-int", "rate", G_TYPE_INT, AUDIOFREQ, NULL);
+#ifdef GSTREAMER1
+	caps = gst_caps_new_simple ("audio/x-raw", "rate", G_TYPE_INT, AUDIOFREQ, NULL);
+#elif defined GSTREAMER0
+	caps = gst_caps_new_simple ("audio/x-raw-int", "rate", G_TYPE_INT, AUDIOFREQ, NULL);
+#endif
 		if (source == MICRO){
 			if (jack) {
 				if (!gst_element_link (src, equalizer)) {
-			    fprintf (stderr, "can't link elements 1\n");
+			    fprintf (stderr, "can't link elements \n");
 				exit (1);
 					}
 				}
 			else {
-				if (!gst_element_link_filtered (src, equalizer, caps)) {
+#ifdef GSTREAMER1
+	if (!gst_element_link (src, equalizer))
+#elif defined GSTREAMER0
+	if (!gst_element_link_filtered (src, equalizer, caps)) 
+#endif
+				 {
 				    fprintf (stderr, "can't link elements 1\n");
 					exit (1);
 				}
 			    }
 			}
 		else if (source == SOUND_FILE){
-			if (!gst_element_link_filtered (audioconvert, equalizer, caps)){
+#ifdef GSTREAMER1
+	if (!gst_element_link (audioconvert, equalizer))
+#elif defined GSTREAMER0
+	if (!gst_element_link_filtered (audioconvert, equalizer, caps))
+#endif
+			{
 			    fprintf (stderr, "can't link elements 2\n");
 				exit (1);
 			    }
@@ -499,13 +529,18 @@ else if (playing == 0) {
 /* if realtime is enabled */
 		if (spectrum3d.realtime && jack == FALSE) {
 			busRT = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
+#ifdef GSTREAMER1
+			gst_bus_set_sync_handler (busRT, (GstBusSyncHandler) sync_bus_handler, pipeline, NULL);
+#elif defined GSTREAMER0
 			gst_bus_set_sync_handler (busRT, (GstBusSyncHandler) sync_bus_handler, pipeline);
+#endif
 			gst_object_unref (busRT);
 			}
 
 /* set state to PLAYING and start main loop */
 		if (source == MICRO) {
 			ret = gst_element_set_state (pipeline, GST_STATE_PLAYING);
+			timer = g_timer_new ();
 			}
 		else if (source == SOUND_FILE) {
 			gst_element_set_state (playbin, GST_STATE_PLAYING);
@@ -521,6 +556,9 @@ else if (playing == 0) {
 /* stop playing */
 		if (source == MICRO) {
 			gst_element_set_state (pipeline, GST_STATE_NULL);
+			if (timer != NULL) g_timer_continue(timer);
+			g_timer_stop (timer);
+			printf("Elapsed time = %f sec\n", g_timer_elapsed (timer, NULL));
 			}
 		else if (source == SOUND_FILE) {
 			g_source_remove(timeoutPrintPosition);

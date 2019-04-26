@@ -1,4 +1,9 @@
-2012-02-15 Bernard Victor Delvaux  <nadaeck@hotmail.com>
+2013-02-26 Bernard Victor Delvaux  <nadaeck@hotmail.com>
+    Version : Spectrum3d-2.4.0 :
+    * gstreamer.c : spectrum3d can now be compiled against gstreamer-1.0 or gstreamer-0.10;
+    * record.c and typesource.c : length of a audio file depending on its recorded (a timer is run when recording) or preexisting origin (a pipeline is created and its length is measured); there was a bug with this in Spectrum3d-2.4.0;
+
+2013-02-15 Bernard Victor Delvaux  <nadaeck@hotmail.com>
     Version : Spectrum3d-2.3.0 :
     * general changes : some deprecated functions have been replaced in Gtk3;
     * general changes : new main icon;

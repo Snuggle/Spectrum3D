@@ -2,6 +2,9 @@
 #ifndef DEFINE_SPECTRUM3D
 #define DEFINE_SPECTRUM3D
 
+gboolean debug;
+#define DEBUG(...) if(debug == TRUE) printf(__VA_ARGS__);
+
 /* Spectrum3dGui structure declares elements that are part the the Gtk GUI of Spectrum3D and have to be passed to another function */    
 typedef struct 
 {

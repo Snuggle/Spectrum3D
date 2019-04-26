@@ -14,7 +14,7 @@ FOR UBUNTU from 10.10 : All dependencies are available in the Ubuntu repositorie
 
 		- gcc, pkg-config, automake;
 		- libgtk-2.0-dev or libgtk-3.0-dev;
-		- libgstreamer0.10-dev;
+		- libgstreamer0.10-dev or libgstreamer1.0-dev;
 	For DISPLAY (OpenGL extension): SDL is used by default; GtkGlExt can be used instead and its version should match the GTK version (GTKGLEXT1 for GTK2, GTKGLEXT3 for GTK3); however, GTKGLEXT3 is still in development; the development version should be installed then (see later); the display of harmonics itself will look exactly the same regardless of the library that is used. 
 		- EITHER : lidsdl1.2-dev; this should be the default choice;
 		- OR : libgtkglext1-dev for Gtk2 or libgtkglext for Gtk3 (this version is in developpment and should be compiled from source (see documentation) but is already supported in Spectrum3d); note that GtkGlExt version should match Gtk version;

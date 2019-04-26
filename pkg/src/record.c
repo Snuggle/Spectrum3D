@@ -79,7 +79,7 @@ void record_window() {
 			analyse_rt = FALSE;
 			selected_file = g_build_filename (tmpPath, NULL);
 			printf("tmpPath is %s\n", selected_file);
-    			load_audio_file();
+    			load_audio_file("rec");
 		break;
 		case GTK_RESPONSE_CANCEL:
 		case GTK_RESPONSE_NONE:

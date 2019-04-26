@@ -3,10 +3,11 @@
 #define DEFINE_TYPESOURCE
 
 gboolean analyse_rt, loading, newEvent;
-gchar *selected_file;
+gchar *selected_file, *tmpPath;
 int spect_bands, frame_number_counter, playing, numberOfFrames;
 gint64 len, pos;
 GstElement *pipeline;
+GMainLoop *loop;
 GLfloat spec_data[405][11030];
 
 typedef enum TypeSource TypeSource;

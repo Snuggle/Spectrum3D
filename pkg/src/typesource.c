@@ -26,9 +26,10 @@
 #include "spectrum3d.h"
 #include "typesource.h"
 
-int lenght = 0;
+int length = 0;
 GtkWidget *progressWindow;
 GMainLoop *load_loop;
+GTimer *timer;
 
 /* Quit everything except GTK GUI */
 void set_source_to_none(){
@@ -147,7 +148,7 @@ void select_audio_file()
 		printf("Uri of selected_file = %s\n", g_filename_to_uri(selected_file, NULL, NULL));
 		//typefind_pipeline();  // this send to a function that finds type; FIXME : this has to be implemented and generate error message if type is not audio
 		if (analyse_rt == FALSE){
-				load_audio_file();
+				load_audio_file("file");
 				}
 		break;
 	case GTK_RESPONSE_CANCEL:
@@ -159,15 +160,21 @@ void select_audio_file()
 }
 
 /* Get the lenght of the pipeline */
-gboolean get_pipeline_lenght (GstElement *pipeline)
+gboolean get_pipeline_length (GstElement *pipelineLength)
 {
 	printf("get_pipeline_length\n");
 	gboolean result = TRUE;
+	gint64 leng;
 	GstFormat fmt = GST_FORMAT_TIME; 
-	if (gst_element_query_duration (pipeline, &fmt, &len)) {
-		lenght = (int)GST_TIME_AS_SECONDS(len);
-		printf("lenght = %d seconds\n", lenght);
-		if (lenght > 0 && lenght < 36000) {
+#ifdef GSTREAMER1
+	if (gst_element_query_duration (pipelineLength, fmt, &leng))
+#elif defined GSTREAMER0
+	if (gst_element_query_duration (pipelineLength, &fmt, &leng)) 
+#endif
+	    {
+		length = (int)GST_TIME_AS_SECONDS(leng);
+		printf("length of stream = %d seconds\n", length);
+		if (length > 0 && length < 36000) {
 			g_main_loop_quit (load_loop);
 			result = FALSE;
 			}
@@ -178,8 +185,14 @@ gboolean get_pipeline_lenght (GstElement *pipeline)
 /* Print the progression in a progress bar when loading audio file */
 gboolean update_progress_bar(GtkWidget *progress) {
 	GstFormat fmt = GST_FORMAT_TIME;
+#ifdef GSTREAMER1
+	if (gst_element_query_position (pipeline, fmt, &pos)
+	&& gst_element_query_duration (pipeline, fmt, &len)) 
+#elif defined GSTREAMER0
 	if (gst_element_query_position (pipeline, &fmt, &pos)
-	&& gst_element_query_duration (pipeline, &fmt, &len)) {
+	&& gst_element_query_duration (pipeline, &fmt, &len))
+#endif
+	    {
 		gdouble setPos = ((gdouble)pos)/((gdouble)len);
 		//printf("setPos = %f\n", setPos);
 		if (setPos >= 0 && setPos <= 1) {
@@ -203,7 +216,7 @@ void show_progression() {
 	progressWindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_modal (GTK_WINDOW(progressWindow), TRUE);
 	gtk_window_set_title(GTK_WINDOW(progressWindow), "Loading file");
-	gtk_window_set_default_size(GTK_WINDOW(progressWindow), 320, 180);
+	gtk_window_set_default_size(GTK_WINDOW(progressWindow), 320, 100);
 	gtk_container_set_border_width(GTK_CONTAINER(progressWindow), 4);
 	g_signal_connect(G_OBJECT(progressWindow), "delete-event", G_CALLBACK(on_stop), NULL);
 
@@ -223,17 +236,17 @@ void show_progression() {
 #endif
 	gtk_box_pack_start(GTK_BOX(vbox), progress, TRUE, FALSE, 0);
 	button = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
-	gtk_box_pack_start(GTK_BOX(vbox), button, TRUE, FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), button, FALSE, TRUE, 0);
 	gtk_widget_show_all(progressWindow);
 
 	g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(on_stop), NULL);
 	g_timeout_add (200, (GSourceFunc) update_progress_bar, progress);
 }
 
-/* Load the audio file : get its lenght, allocate memory for it, analyse the spectrum and display it */
-void load_audio_file(){
-	printf("load audio file\n");
-	GstElement *playbin;
+/* Load the audio file : get its lenght, allocate memory for it, analyse the spectrum and display it; 'fileType' depends on the type of type sent : either a file recorded with spectrum3d, or a preexisting file ('file') */
+void load_audio_file(gchar *fileType){
+	DEBUG("load audio file : %s\n", fileType);
+	GstElement *playbin, *pipelineLength;
 	
 	if (selected_file == NULL){
 		error_message_window("No file was selected.\nPlease select an audio file.");
@@ -241,23 +254,31 @@ void load_audio_file(){
 		}
 
 	loading = TRUE; // loading is set to TRUE; it will be set to FALSE again when the audio file hab been loaded;
-	// (re)initialize frame_number_counter
-	frame_number_counter = 0;
+	frame_number_counter = 0; // (re)initialize frame_number_counter
 	
-	/* get lenght of the file; a 'playbin' pipeline is created with the file and its length is retrieved */
-	load_loop = g_main_loop_new(NULL, FALSE);
-	playbin = gst_element_factory_make ("playbin", NULL);
-	g_assert (playbin);
-	g_object_set (G_OBJECT (playbin), "uri", g_filename_to_uri(selected_file, NULL, NULL), NULL);
-	GstFormat fmt = GST_FORMAT_TIME; 
-	if (gst_element_query_duration (playbin, &fmt, &len)) {
-		lenght = (int)GST_TIME_AS_SECONDS(len);
-		printf("lenght = %d seconds\n", lenght);
+	/* get lenght of the file : if the file is recorded by spectrum3d ('fileType' == "rec"), the timer length will be used; if a preexisting file is loaded ('fileType' == "file"), a 'playbin' pipeline is created with the file and its length is retrieved */
+	if (g_strcmp0(fileType, "rec") == 0) {
+		length = (int)(g_timer_elapsed (timer, NULL));
+			}
+	else if (g_strcmp0(fileType, "file") == 0) {
+		load_loop = g_main_loop_new(NULL, FALSE);
+	#ifdef GSTREAMER1
+				playbin = gst_element_factory_make ("playbin", NULL);
+	#elif defined GSTREAMER0
+				playbin = gst_element_factory_make ("playbin2", NULL);
+	#endif
+		g_assert (playbin);
+		g_object_set (G_OBJECT (playbin), "uri", g_filename_to_uri(selected_file, NULL, NULL), NULL);
+		g_timeout_add (200, (GSourceFunc) get_pipeline_length, playbin);
+		gst_element_set_state (playbin, GST_STATE_PAUSED);
+		g_main_loop_run (load_loop);
+		gst_element_set_state (playbin, GST_STATE_NULL);
 		}
 	
 	/* Calculate time interval between frames according to the lenght of the file; we will use a number of 'frames' = 200 to have everything displayed on the same screen */ 
 
-	spectrum3d.interval_loaded = (lenght * 1000) / spectrum3d.frames;
+	DEBUG("fileType is '%s'; length = %d \n", fileType, length); 
+	spectrum3d.interval_loaded = (length * 1000) / spectrum3d.frames;
 
 	/* Get spectral data */
 	show_progression();
@@ -266,7 +287,7 @@ void load_audio_file(){
 	printf("Audio file is loaded\n");
 	loading = FALSE;
 	newEvent = TRUE;
-}
+} 
 
 /* Source buttons that behave almost like radio buttons; the typseSource is chosen; everything is stopped with the call to set_source_to_none, then the typeSource is chosen, even if the typeSource remains the same  */
 void change_source_button (GtkWidget *widget, Spectrum3dGui *spectrum3dGui){

@@ -156,7 +156,6 @@ gtk_container_add(GTK_CONTAINER(window), spectrum3dGui->drawing_area);
 	g_signal_connect (window, "motion-notify-event", G_CALLBACK (on_mouse_motion), NULL);
 	g_signal_connect (window, "scroll-event", G_CALLBACK (on_mouse_scroll), NULL);
 	g_signal_connect (G_OBJECT (spectrum3dGui->drawing_area), "configure_event", G_CALLBACK (configure_event), NULL);
-	//SDL_EnableKeyRepeat(10, 10);
 
 	gtk_widget_show_all(window);
 }
@@ -164,7 +163,15 @@ gtk_container_add(GTK_CONTAINER(window), spectrum3dGui->drawing_area);
 int main(int argc, char *argv[])
 {
 	printf("%s \nPlease report any bug to %s\n", PACKAGE_STRING, PACKAGE_BUGREPORT);	
-	
+	//printf("number of arg = %d, argv = %s\n", argc, argv[1]);
+	/*printf("argc = %d\n", argc);
+	if (argv[1] != NULL) {
+		if (strstr (argv[1],"debug") != NULL) {
+		debug = TRUE;
+		printf("debug = TRUE\n");
+			}  
+		}
+	DEBUG("debug is true\n");*/
 	gchar *filename;
 	int i = 0;
 	gint initialWindowHeight = 170;
@@ -173,6 +180,7 @@ int main(int argc, char *argv[])
 	GdkColor color;
 	Spectrum3dGui spectrum3dGui;
 	GSList *radio_menu_group;
+	GError **error;
 
 #if defined (GTKGLEXT3) || defined (GTKGLEXT1)
 	GdkGLConfig *glconfig;
@@ -214,7 +222,7 @@ int main(int argc, char *argv[])
 	gtk_widget_realize(spectrum3dGui.mainWindow);
 	gtk_window_set_title(GTK_WINDOW(spectrum3dGui.mainWindow), PACKAGE_NAME);
 	filename = g_build_filename (G_DIR_SEPARATOR_S, DATADIR, "icons", "spectrum3d.png", NULL);
-	gtk_window_set_icon(GTK_WINDOW(spectrum3dGui.mainWindow), create_pixbuf(filename));
+	gtk_window_set_icon(GTK_WINDOW(spectrum3dGui.mainWindow), gdk_pixbuf_new_from_file (filename, error));
 	g_signal_connect (G_OBJECT (spectrum3dGui.mainWindow), "destroy", G_CALLBACK (quit_spectrum3d), NULL);
 
 #ifdef GTK3

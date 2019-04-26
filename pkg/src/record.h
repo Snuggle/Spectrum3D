@@ -36,7 +36,7 @@ void playFromSource(GtkWidget *widget, gpointer *data);
 void on_stop();
 void setPlayButtonIcon (GtkWidget *widget, gpointer data);
 void error_message_window(gchar *message);
-void load_audio_file();
+void load_audio_file(gchar *fileType);
 
 #endif
 

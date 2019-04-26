@@ -4,7 +4,7 @@
 ############### INITIALIZE EVERYTHING ######################
 
 AC_INIT([Spectrum3d],
-	[2.3.0],
+	[2.4.0],
 	[nadaeck@hotmail.com], 
 	[spectrum3d],
 	[spectrum3d.sourceforge.net])
@@ -43,6 +43,7 @@ jack=1
 geis=1
 gtk=0
 gtkglext=0
+gstreamer=0
 
 # Check and link for GTK3
 AS_IF([test "x$enable_gtk3" != "xno" && test "x$enable_gtk2" != "xyes"], [
@@ -90,11 +91,20 @@ AC_CHECK_LIB([GL], [glClear], [],
 AC_CHECK_LIB([GLU], [gluBeginCurve], [],
 	[AC_MSG_ERROR([OpenGL(GLU) library is required for this program])])
 
-# Check and link for GSTREAMER-0.10
-PKG_CHECK_MODULES([GSTREAMER], [gstreamer-0.10], [
-				CFLAGS="$CFLAGS $GSTREAMER_CFLAGS"
-   				LIBS="$LIBS $GSTREAMER_LIBS"
-				], [AC_MSG_ERROR([GSTREAMER (gstreamer-0.10) library (libgstreamer) is required])])
+# Check and link for GSTREAMER : version 1.0 is searched by default, then version 0.10 is searched
+PKG_CHECK_MODULES([GSTREAMER], [gstreamer-1.0], [
+		gstreamer=1
+		CFLAGS="$CFLAGS $GSTREAMER_CFLAGS"
+		LIBS="$LIBS $GSTREAMER_LIBS"
+		AC_DEFINE([GSTREAMER1], [1], [Define to 1 if you have the `Gstreamer-1.0' library])		  	
+		], [
+			PKG_CHECK_MODULES([GSTREAMER], [gstreamer-0.10], [
+			gstreamer=0
+			CFLAGS="$CFLAGS $GSTREAMER_CFLAGS"
+			LIBS="$LIBS $GSTREAMER_LIBS"
+			AC_DEFINE([GSTREAMER0], [1], [Define to 1 if you have the `Gstreamer-0.10' library])
+			], [AC_MSG_ERROR([Gstreamer library (libgstreamer-0.10 or libgstreamer-1.0) is required])])
+		])
 
 # Check and link for JACK (if jacklib is present and if this option is not disabled)
 AS_IF([test "x$enable_jack" != "xno"], [
@@ -137,6 +147,9 @@ AS_ECHO()
 AC_MSG_NOTICE([If you want to use gtkglext, its version should match the gtk version (gtkglext-1.0 for gtk-2.0, gtkglext-3.0 for gtk-3.0)])
 AS_ECHO()
 AC_MSG_NOTICE([     ******************************************])
+AS_IF([test "$gstreamer" == "1"], 
+	[AC_MSG_NOTICE([     *  Gstreamer version ...............1.0  *])],
+	[AC_MSG_NOTICE([     *  Gstreamer version ..............0.10  *])])
 AS_IF([test "$gtk" == "2"], 
 	[AC_MSG_NOTICE([     *  GTK version .................GTK-2.0  *])],
 	[AC_MSG_NOTICE([     *  GTK version .................GTK-3.0  *])])

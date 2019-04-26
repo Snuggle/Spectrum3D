@@ -1,5 +1,11 @@
 /* src/config.h.in.  Generated from configure.ac by autoheader.  */
 
+/* Define to 1 if you have the `Gstreamer-0.10' library */
+#undef GSTREAMER0
+
+/* Define to 1 if you have the `Gstreamer-1.0' library */
+#undef GSTREAMER1
+
 /* Define to 1 if you have the `GTK2' library */
 #undef GTK2
 
